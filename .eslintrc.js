@@ -11,6 +11,9 @@ module.exports = {
     'html'
   ],
   // add your custom rules here
-  rules: {},
+  rules: {
+    semi: 'off',
+    'import/first': 'off',
+  },
   globals: {}
 }

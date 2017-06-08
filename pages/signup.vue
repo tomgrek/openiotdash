@@ -1,10 +1,19 @@
 <template>
   <section class="container">
-    <my-header :username="username"/>
-    <img src="../assets/img/logo.png" alt="Nuxt.js Logo" class="logo" />
     <h1 class="title">
-      Use {{zig}}
+      Sign Up
     </h1>
+    <form action="/auth/signup" method="post">
+      <div>
+        <span>Email Address: </span>
+        <input type="text" name="email" />
+      </div>
+      <div>
+        <span>Password:</span>
+        <input type="text" name="password" />
+      </div>
+      <input type="submit" value="Submit">
+    </form>
   </section>
 </template>
 
@@ -13,27 +22,17 @@
 console.log('hi');
 
 import axios from '~plugins/axios';
-import MyHeader from '~components/Header.vue';
 
 export default {
   name: 'index',
-  components: {
-    MyHeader,
-  },
   data() {
     return {
       zig: 'false',
     };
   },
-  async asyncData(context) {
-    // let {username} = await axios.get('/user');
+  async asyncData() {
+    //let { data } = await axios.get('/zig');
     return {
-      username: (() => {
-        if (context.req && context.req.user && context.req.user.username) {
-          return context.req.user.username;
-        }
-        return null
-      })(),
     };
   },
   head() {
@@ -42,7 +41,6 @@ export default {
     };
   },
   mounted() {
-    //console.log('mounted', this.$store.state, this.request);
     setTimeout(() => fetch('/zig', {credentials: 'include'}).then(res => res.json()).then(z => this.zig = z.yay), 2000);
   },
 }

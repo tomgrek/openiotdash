@@ -15,8 +15,14 @@ router.post('/signup', (req, res, next) => {
     bcrypt.hash(req.body.password, salt, (err, hash) => {
       if (err) return next(err);
       let apiKey = crypto.createHash('md5').update(req.body.email).digest('hex').slice(2,12);
-      _db.run('INSERT INTO users VALUES(NULL,?,?,?,?)', [req.body.email, hash, req.body.email, apiKey]);
-      res.json({});
+      _db.run('INSERT INTO users VALUES(NULL,?,?,?,?)', [req.body.email, hash, req.body.email, apiKey]).then(
+        () => _db.get('SELECT * from users WHERE email=?', [req.body.email]).then(user => {
+          req.logIn(user, err => {
+            if (err) console.log(err);
+            res.redirect('/');
+          });
+        })
+      );
     });
   });
 });

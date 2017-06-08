@@ -11,7 +11,7 @@ const users = [
 /* GET users listing. */
 router.get('/users', function (req, res, next) {
   res.json(users)
-})
+});
 
 /* GET user by ID. */
 router.get('/users/:id', function (req, res, next) {
@@ -21,6 +21,6 @@ router.get('/users/:id', function (req, res, next) {
   } else {
     res.sendStatus(404)
   }
-})
+});
 
 export default router

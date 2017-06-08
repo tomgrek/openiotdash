@@ -18,7 +18,7 @@ const host = process.env.HOST || '127.0.0.1';
 const port = process.env.PORT || 3000;
 
 db.open('./openiotdash.sqlite').then(() => {
-  db.exec('create table if not exists users(id integer primary key, username varchar, password varchar, email varchar, apikey varchar)', console.log);
+  db.exec('create table if not exists users(id integer primary key, username varchar, password varchar, email varchar, apikey varchar)');
 });
 
 app.use(session({ secret: 'openiotdash', resave: true, saveUninitialized: true  }));
@@ -31,21 +31,23 @@ app.set('port', port);
 app.use('/api', passportConfig.isAuthenticated, api);
 app.use('/auth', auth.router);
 
-// Start nuxt.js
+app.get('/zig', (req, res) => {
+  res.json({yay:'true'});
+});
+app.get('/user', (req, res) => {
+  return res.json({name:'tom'});
+});
+
 async function start() {
-  // Import and Set Nuxt.js options
-  let config = require('../nuxt.config.js')
-  config.dev = !(process.env.NODE_ENV === 'production')
-  // Instanciate nuxt.js
-  const nuxt = new Nuxt(config)
-  // Add nuxt.js middleware
-  app.use(nuxt.render)
-  // Listen the server
-  app.listen(port, host)
-  console.log('Server listening on ' + host + ':' + port) // eslint-disable-line no-console
+  let config = require('../nuxt.config.js');
+  config.dev = !(process.env.NODE_ENV === 'production');
+  const nuxt = new Nuxt(config);
+  app.use(nuxt.render);
+  app.listen(port, host);
+  console.log('Server listening on ' + host + ':' + port);
 }
 
-start()
+start();
 
 module.exports = {
   db,

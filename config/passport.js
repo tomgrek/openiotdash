@@ -13,8 +13,8 @@ passport.serializeUser((user, done) => {
 });
 
 passport.deserializeUser((id, done) => {
-  _db.get('SELECT * FROM users WHERE id=?', [id]).then((err, user) => {
-    done(err, user);
+  _db.get('SELECT * FROM users WHERE id=?', [id]).then(user => {
+    done(null, user);
   });
 });
 
@@ -23,41 +23,12 @@ passport.use(new LocalStrategy({ usernameField: 'email', passwordField: 'passwor
     if (!user) {
       return done(null, false, { msg: `Email ${email} not found.` });
     }
-    console.log(password, user.password);
     bcrypt.compare(password, user.password, (err, isMatch) => {
-      console.log(err, isMatch);
       if (err) return done(err);
       if (isMatch) return done(null, user);
       return done(null, false, { msg: 'Invalid email or password.' });
     });
   });
-
-  // User.findOne({ email: email.toLowerCase() }, (err, user) => {
-  //   if (err) { return done(err); }
-  //   if (!user) {
-  //     return done(null, false, { msg: `Email ${email} not found.` });
-  //   }
-  //   user.comparePassword(password, (err, isMatch) => {
-  //     if (err) { return done(err); }
-  //     if (isMatch) {
-  //       return done(null, user);
-  //     }
-  //     return done(null, false, { msg: 'Invalid email or password.' });
-  //   });
-  // });
-  //   userSchema.pre('save', function save(next) {
-  //   const user = this;
-  //   if (!user.isModified('password')) { return next(); }
-  //   bcrypt.genSalt(10, (err, salt) => {
-  //     if (err) { return next(err); }
-  //     bcrypt.hash(user.password, salt, null, (err, hash) => {
-  //       if (err) { return next(err); }
-  //       user.password = hash;
-  //       user.apiKey = crypto.createHash('md5').update(user.email).digest('hex').slice(2,12);
-  //       next();
-  //     });
-  //   });
-  // });
 }));
 
 exports.init = (db) => {
