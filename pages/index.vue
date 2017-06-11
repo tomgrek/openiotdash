@@ -1,7 +1,6 @@
 <template>
   <section class="container">
     <my-header :username="username"/>
-    <img src="../assets/img/logo.png" alt="Nuxt.js Logo" class="logo" />
     <h1 class="title">
       Use {{zig}}
     </h1>
@@ -10,7 +9,7 @@
 
 <script>
 
-console.log('hi');
+import { title } from '~components/config/config';
 
 import axios from '~plugins/axios';
 import MyHeader from '~components/Header.vue';
@@ -38,20 +37,23 @@ export default {
   },
   head() {
     return {
-      title: 'Open IoT Dash',
+      title,
     };
   },
   mounted() {
     //console.log('mounted', this.$store.state, this.request);
-    setTimeout(() => fetch('/zig', {credentials: 'include'}).then(res => res.json()).then(z => this.zig = z.yay), 2000);
+    // setTimeout(() => fetch('/zig', {credentials: 'include'}).then(res => res.json()).then(z => this.zig = z.yay), 2000);
   },
 }
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
+@import "../assets/css/main.scss";
+
 .title
 {
   margin: 30px 0;
+  color: $primary-text;
 }
 .users
 {

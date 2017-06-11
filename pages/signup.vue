@@ -1,5 +1,6 @@
 <template>
   <section class="container">
+    <my-header :username="null"/>
     <h1 class="title">
       Sign Up
     </h1>
@@ -18,13 +19,16 @@
 </template>
 
 <script>
+import MyHeader from '~components/Header.vue';
 
-console.log('hi');
-
+import { title } from '~components/config/config';
 import axios from '~plugins/axios';
 
 export default {
   name: 'index',
+  components: {
+    MyHeader,
+  },
   data() {
     return {
       zig: 'false',
@@ -37,11 +41,11 @@ export default {
   },
   head() {
     return {
-      title: 'Open IoT Dash',
+      title,
     };
   },
   mounted() {
-    setTimeout(() => fetch('/zig', {credentials: 'include'}).then(res => res.json()).then(z => this.zig = z.yay), 2000);
+    //setTimeout(() => fetch('/zig', {credentials: 'include'}).then(res => res.json()).then(z => this.zig = z.yay), 2000);
   },
 }
 </script>

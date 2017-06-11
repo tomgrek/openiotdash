@@ -2,12 +2,6 @@ import { Router } from 'express'
 
 var router = Router()
 
-// Mock Users
-const users = [
-  { name: 'Alexandre' },
-  { name: 'Sébastien' }
-]
-
 /* GET users listing. */
 router.get('/users', function (req, res, next) {
   res.json(users)
