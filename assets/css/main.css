@@ -12,3 +12,17 @@ a {
   color: inherit;
   text-decoration: inherit;
 }
+input[type="submit"] {
+  border: none;
+  outline: none;
+  padding: 0.6rem 1rem;
+  font-weight: 600;
+}
+input[type="submit"]:hover {
+  filter: brightness(0.9);
+  color: white;
+}
+input[type="submit"]:active {
+  filter: brightness(0.8);
+  box-shadow: 1px 1px 5px lightgray;
+}

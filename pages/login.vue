@@ -2,10 +2,10 @@
   <section class="container">
     <my-header :username="null"/>
     <h1 class="title">
-      Sign Up
+      Log In
     </h1>
     <div class="form-container">
-      <form action="/auth/signup" method="post">
+      <form action="/auth/login" method="post">
         <div style="width: 50%; position: relative; display: inline-block; text-align: right; padding-right: 0.5rem;">
           <div>Email Address: </div>
           <div>Password:</div>
@@ -27,7 +27,7 @@ import { title } from '~components/config/config';
 import axios from '~plugins/axios';
 
 export default {
-  name: 'signup',
+  name: 'login',
   components: {
     MyHeader,
   },
@@ -47,7 +47,6 @@ export default {
     };
   },
   mounted() {
-    //setTimeout(() => fetch('/zig', {credentials: 'include'}).then(res => res.json()).then(z => this.zig = z.yay), 2000);
   },
 }
 </script>
@@ -63,5 +62,9 @@ export default {
   display: inline-block;
   width: 33%;
   line-height: 4rem;
+}
+input[type="submit"] {
+  border-radius: 4px;
+  background-color: $button-color;
 }
 </style>

@@ -1,6 +1,6 @@
 <template>
   <header>
-    <span class="header-text">{{headerOptions.headerText}}</span>
+    <nuxt-link to="/"><span class="header-text">{{headerOptions.headerText}}</span></nuxt-link>
     <span v-on:click="profileShowing = !profileShowing" class="header-userbutton" v-if="loggedIn && headerOptions.displayUsername">
       {{username}}
       <ul v-on:mouseout="profileShowing = false" v-show="profileShowing">

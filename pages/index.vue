@@ -2,14 +2,17 @@
   <section class="container">
     <my-header :username="username"/>
     <h1 class="title">
-      Use {{zig}}
+      {{indexOptions.title}}
     </h1>
+    <div class="links-container">
+      <div><nuxt-link v-if="username === null" to="/login">Log In</nuxt-link></div>
+      <div><nuxt-link v-if="username === null" to="/signup">Create An Account</nuxt-link></div>
+    </div>
   </section>
 </template>
 
 <script>
-
-import { title } from '~components/config/config';
+import { title, indexOptions } from "~components/config/config";
 
 import axios from '~plugins/axios';
 import MyHeader from '~components/Header.vue';
@@ -21,7 +24,7 @@ export default {
   },
   data() {
     return {
-      zig: 'false',
+      indexOptions,
     };
   },
   async asyncData(context) {
@@ -41,8 +44,6 @@ export default {
     };
   },
   mounted() {
-    //console.log('mounted', this.$store.state, this.request);
-    // setTimeout(() => fetch('/zig', {credentials: 'include'}).then(res => res.json()).then(z => this.zig = z.yay), 2000);
   },
 }
 </script>
@@ -50,19 +51,15 @@ export default {
 <style lang="scss" scoped>
 @import "../assets/css/main.scss";
 
-.title
-{
+.title {
   margin: 30px 0;
   color: $primary-text;
 }
-.users
-{
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-.user
-{
-  margin: 10px 0;
+.links-container {
+  border: 1px solid $border-color;
+  display: inline-block;
+  width: 33%;
+  line-height: 4rem;
+  text-decoration: underline;
 }
 </style>

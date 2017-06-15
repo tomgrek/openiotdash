@@ -5,4 +5,7 @@ module.exports = {
     headerText: 'My Dashboard',
     displayUsername: true,
   },
+  indexOptions: {
+    title: 'Welcome to my Open IoT Dashboard',
+  }, 
 };
