@@ -1,0 +1,137 @@
+<html><head>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+</head>
+<body>
+  <h1> d3 test</h1>
+  <div class="container" style="overflow: hidden; border: 1px solid black; height: 500px; opacity: 0.9; position: absolute; left: 20px; top: 100px; width: 900px;">
+    <span style="position: absolute; top: 5px; left: 5px;">a</span>
+  </div>
+</body>
+<script>
+
+/////new axis stuffs
+var margin = {top: -5, right: -5, bottom: -5, left: -5},
+    width = 900 - margin.left - margin.right,
+    height = 500 - margin.top - margin.bottom;
+var svg = d3.select("body").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+    .style("position", "absolute")
+    .style("top", "100px")
+    .style("left", "20px")
+    .style("z-index", "-1")
+  .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.right + ")")
+
+var rect = svg.append("rect")
+.attr("width", width)
+.attr("height", height)
+.style("fill", "none")
+.style("pointer-events", "all");
+
+var container = svg.append("g");
+
+container.append("g")
+.attr("class", "x axis")
+.selectAll("line")
+.data(d3.range(0, width, 10))
+.enter().append("line")
+.attr("x1", function(d) { return d; })
+.attr("y1", 0)
+.attr("x2", function(d) { return d; })
+.attr("y2", height);
+
+container.append("g")
+.attr("class", "y axis")
+.selectAll("line")
+.data(d3.range(0, height, 10))
+.enter().append("line")
+.attr("x1", 0)
+.attr("y1", function(d) { return d; })
+.attr("x2", width)
+.attr("y2", function(d) { return d; });
+///// end new
+
+var c = d3.select('.container');
+var c_node = document.getElementsByClassName('container')[0];
+
+var d = c.append('div')
+  .attr('class', 'box')
+  .style('transform', 'translate(0px, 0px)')
+  .call(d3.drag()
+    .on('drag', dragged)
+    .on('end', () => {
+      //offsetX = d3.event.x;
+      //offsetY = d3.event.y;
+      dragging = false;
+    })
+  );
+
+var s = d.append('span').html('ZIG');
+
+var zoom = d3.zoom()
+    .scaleExtent([1, 30])
+    .translateExtent([[-c_node.clientWidth + 80, -c_node.clientHeight + 80], [1000, 1000]])
+    .on("zoom", zoomed);
+
+var r = 0, resolution = 20;
+
+offsetX = 0;
+offsetY = 0;
+svgOffsetY = 0;
+svgOffsetX = 0;
+
+function dragged(d) {
+  svgValid = false;
+  d3.event.sourceEvent.stopPropagation();
+
+  let x = d3.event.x;
+  let y = d3.event.y;
+
+  let style = d3.select(this).style('transform');
+  let st = style.match(/scale\((.*)\)/i);
+
+  let styleStr = 'translate(' + (x - 40) + 'px, ' + (y - 40) + 'px)';
+  if (st !== null && st[1]) {
+    styleStr = styleStr + ' scale(' + parseFloat(st[1]) + ')';
+  }
+  d3.select(this).style('transform', styleStr);
+  offsetX = (x - svgOffsetX - 40);
+  offsetY = (y - svgOffsetY - 40);
+}
+
+c.call(zoom);
+svg.call(zoom);
+
+function zoomed() {
+  let transform = d3.event.transform;
+  let x = transform.x;
+  let y = transform.y;
+
+  let boxTransform = Math.pow(transform.k, 4);
+  d.style("transform", "translate(" + (x + offsetX) + "px, " + (y + offsetY) + "px) scale(" + (boxTransform) + ")");
+  d.style("box-shadow", `${(boxTransform-1)*10}px ${(boxTransform-1)*10}px ${(boxTransform-1)*10}px lightgray`);
+  svg.attr("transform", "translate(" + transform.x + ", " + transform.y + ") scale(" + transform.k + ")");
+  svgOffsetY = transform.y;
+  svgOffsetX = transform.x;
+}
+</script>
+<style>
+* {
+  transform-origin: left;
+}
+.axis line {
+  fill: none;
+  stroke: #ddd;
+  shape-rendering: crispEdges;
+  vector-effect: non-scaling-stroke;
+}
+
+.box {
+  width: 80px; height: 80px;
+  display: inline-block;
+  position: relative;
+  border: 1px solid red;
+  top: 0;
+}
+</html>
