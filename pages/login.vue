@@ -61,6 +61,7 @@ export default {
   border: 1px solid $border-color;
   display: inline-block;
   width: 33%;
+  max-width: 26rem;
   line-height: 4rem;
 }
 input[type="submit"] {

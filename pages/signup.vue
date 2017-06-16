@@ -61,7 +61,15 @@ export default {
 .form-container {
   border: 1px solid $border-color;
   display: inline-block;
-  width: 33%;
+  width: 33vw;
+  max-width: 26rem;
   line-height: 4rem;
+}
+input[type="text"], input[type="password"] {
+  max-width: 90%;
+}
+input[type="submit"] {
+  border-radius: 4px;
+  background-color: $button-color;
 }
 </style>

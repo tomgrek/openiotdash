@@ -15,14 +15,31 @@ a {
 input[type="submit"] {
   border: none;
   outline: none;
-  padding: 0.6rem 1rem;
+  padding: 0.6rem 1.4rem;
+  font-size: 1.1rem;
   font-weight: 600;
 }
-input[type="submit"]:hover {
+button {
+  border: none;
+  outline: none;
+  padding: 0.6rem 1.4rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+.small-button {
+  padding: 0.4rem 0.8rem;
+  font-size: 0.9rem;
+  border-radius: 4px;
+}
+input[type="submit"]:hover, .small-button:hover {
   filter: brightness(0.9);
   color: white;
 }
-input[type="submit"]:active {
+input[type="submit"]:active, .small-button:active {
   filter: brightness(0.8);
   box-shadow: 1px 1px 5px lightgray;
+}
+input[type="text"], input[type="password"] {
+  font-weight: 500;
+  line-height: 1.6rem;
 }
