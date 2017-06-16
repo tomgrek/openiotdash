@@ -13,9 +13,13 @@
         </div>
         <div class="dashboards-list">
           <ul>
-            <li>
+            <li class="dashboards-list-item">
               <input type="checkbox"></input>
-              dash1
+              dash1{{dashboards}}
+            </li>
+            <li class="dashboards-list-item">
+              <input type="checkbox"></input>
+              dash2
             </li>
           </ul>
         </div>
@@ -44,15 +48,19 @@ export default {
     };
   },
   async asyncData(context) {
-    // let {username} = await axios.get('/user');
-    return {
-      username: (() => {
+      let username = (() => {
         if (context.req && context.req.user && context.req.user.username) {
           return context.req.user.username;
         }
-        return null
-      })(),
-    };
+        return null;
+      })();
+      let dashboards = await axios.get('/api/dashboards'); //: 'tom',// await axios.get('/api/dashboards'),
+      console.log(username, dashboards.data);
+      return {
+        username,
+        dashboards: dashboards.data,
+      };
+    //};
   },
   head() {
     return {
@@ -107,8 +115,13 @@ export default {
   }
   input[type="checkbox"] {
     position: absolute;
-    left: 1rem;
+    left: -1.4rem;
     top: 0.5rem;
+  }
+  .dashboards-list-item {
+    text-align: left;
+    padding: 0 1rem;
+    position: relative;
   }
 }
 </style>

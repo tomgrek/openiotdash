@@ -1,9 +1,9 @@
 import { Router } from 'express';
 
-import dashboards from './dashboards';
-
 var router = Router();
 
-router.use(dashboards);
+router.get('/dashboards', (req, res, next) => {
+  res.json(['tom']);
+});
 
 export default router;

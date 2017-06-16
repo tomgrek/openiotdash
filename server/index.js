@@ -42,7 +42,8 @@ async function start() {
 
   app.set('port', port);
 
-  app.use('/api', passportConfig.isAuthenticated, api);
+  app.use('/api', api); // TODO: this should be renamed 'data'. Its only called by the app, not ajax.
+  //passportConfig.isAuthenticated,
   app.use('/auth', auth.router);
 
   await openDb();
