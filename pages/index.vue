@@ -13,13 +13,9 @@
         </div>
         <div class="dashboards-list">
           <ul>
-            <li class="dashboards-list-item">
+            <li v-for="dashboard in dashboards" class="dashboards-list-item">
               <input type="checkbox"></input>
-              dash1{{dashboards}}
-            </li>
-            <li class="dashboards-list-item">
-              <input type="checkbox"></input>
-              dash2
+              {{dashboard}}
             </li>
           </ul>
         </div>
@@ -54,11 +50,10 @@ export default {
         }
         return null;
       })();
-      let dashboards = await axios.get('/api/dashboards'); //: 'tom',// await axios.get('/api/dashboards'),
-      console.log(username, dashboards.data);
+      let { data } = await axios.get('/api/dashboards'); //: 'tom',// await axios.get('/api/dashboards'),
       return {
         username,
-        dashboards: dashboards.data,
+        dashboards: data,
       };
     //};
   },
