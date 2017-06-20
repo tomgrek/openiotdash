@@ -37,7 +37,6 @@ export default {
     };
   },
   async asyncData() {
-    //let { data } = await axios.get('/zig');
     return {
     };
   },

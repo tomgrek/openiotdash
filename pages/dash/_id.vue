@@ -1,28 +1,9 @@
 <template>
   <section class="container">
     <my-header :username="username"/>
-    <h1 class="title">
-      {{indexOptions.title}}
+    <h1 class="title">{{this.$router.currentRoute.params.id}}
+      {{dashboard.title}}
     </h1>
-    <div class="links-container">
-      <div v-if="username !== null">
-        <div class="dashboards-header">
-          <span class="dashboards-title">My Dashboards</span>
-          <button class="small-button new-button">New</button>
-          <button class="small-button delete-button">Delete</button>
-        </div>
-        <div class="dashboards-list">
-          <ul>
-            <li v-for="dashboard in dashboards" class="dashboards-list-item">
-              <input type="checkbox"></input>
-              <nuxt-link :to="`/dash/${dashboard.id}`">{{dashboard.title}}</nuxt-link>
-            </li>
-          </ul>
-        </div>
-      </div>
-      <div><nuxt-link v-if="username === null" to="/login">Log In</nuxt-link></div>
-      <div><nuxt-link v-if="username === null" to="/signup">Create An Account</nuxt-link></div>
-    </div>
   </section>
 </template>
 
@@ -33,7 +14,7 @@ import axios from '~plugins/axios';
 import MyHeader from '~components/Header.vue';
 
 export default {
-  name: 'index',
+  name: 'dash',
   middleware: ['authentication', 'dashboards'],
   components: {
     MyHeader,
@@ -43,11 +24,17 @@ export default {
       indexOptions,
     };
   },
+  computed: {
+    username() {
+      return this.$store.state.authUser;
+    },
+  },
   async asyncData(context) {
+    let dashboard = await axios.get(`/data/dashboard/${context.params.id}`);
+    context.store.commit('setSelectedDashboard', dashboard.data);
     return {
-      username: context.username,
-      dashboards: context.dashboards,
-    }
+       dashboard: dashboard.data,
+    };
   },
   head() {
     return {
@@ -60,7 +47,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@import "../assets/css/main.scss";
+@import "../../assets/css/main.scss";
 
 .title {
   margin: 30px 0;

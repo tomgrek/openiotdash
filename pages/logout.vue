@@ -8,7 +8,10 @@
 export default {
   name: 'logout',
   mounted() {
-    fetch('/auth/logout', {credentials: 'include'}).then(() => this.$router.replace('/'));
+    fetch('/auth/logout', {credentials: 'include'}).then(() => {
+      this.$router.replace('/');
+      this.$store.commit('clearAll');
+    });
   },
 }
 </script>

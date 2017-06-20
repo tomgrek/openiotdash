@@ -23,6 +23,7 @@
     "passport": "^0.3.2",
     "passport-local": "^1.0.0",
     "request": "^2.81.0",
+    "sequelize": "^4.1.0",
     "source-map-support": "^0.4.15",
     "sqlite": "^2.8.0"
   },

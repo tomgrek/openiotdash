@@ -39,5 +39,5 @@ exports.isAuthenticated = (req, res, next) => {
   if (req.isAuthenticated()) {
     return next();
   }
-  res.json({status: 'bad', message: 'No token supplied, you need to be logged in to request this resource'});
+  return res.json({status: 'bad', message: 'No token supplied, you need to be logged in to request this resource'});
 };

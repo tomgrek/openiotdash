@@ -1,12 +1,15 @@
+'use strict';
+
 import Nuxt from 'nuxt';
 import express from 'express';
-
-import api from './api';
+import data from './data';
 import auth from './auth';
+
+import models from '../models';
 
 const db = require('sqlite');
 
-async function openDb() {
+async function openUserDb() {
   db.open('./openiotdash.db').then(() => {
     db.exec('create table if not exists users(id integer primary key, username varchar, password varchar, email varchar, apikey varchar)');
   });
@@ -21,7 +24,10 @@ async function start() {
 
   const session = require('express-session');
   const SQLiteStore = require('connect-sqlite3')(session);
-  const bodyParser = require( 'body-parser' );
+  const bodyParser = require('body-parser');
+
+  // asyncData methods are called server-side; reject external attempts to GET those urls.
+  const localhostChecker = require('../plugins/localhost-checker');
 
   const app = express();
   const host = process.env.HOST || '127.0.0.1';
@@ -42,11 +48,11 @@ async function start() {
 
   app.set('port', port);
 
-  app.use('/api', api); // TODO: this should be renamed 'data'. Its only called by the app, not ajax.
-  //passportConfig.isAuthenticated,
+  app.use('/data', localhostChecker.check, data);
+  // app.use('/api', passportConfig.isAuthenticated, api);
   app.use('/auth', auth.router);
 
-  await openDb();
+  await openUserDb();
   let config = require('../nuxt.config.js');
   config.dev = !(process.env.NODE_ENV === 'production');
   const nuxt = new Nuxt(config);

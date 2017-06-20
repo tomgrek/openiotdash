@@ -4,9 +4,12 @@ import passport from 'passport';
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
 
+import whoami from './whoami/';
+
 let _db;
 
 const router = Router();
+router.use('/whoami', whoami);
 
 router.post('/signup', (req, res, next) => {
   bcrypt.genSalt(10, (err, salt) => {
