@@ -105,7 +105,7 @@ export default {
 
     let zoom = d3.zoom()
         .scaleExtent([1, 24])
-        .translateExtent([[-c_node.clientWidth, -c_node.clientHeight], [c_node.clientWidth, c_node.clientHeight]])
+        .translateExtent([[-c_node.clientWidth, -c_node.clientHeight], [c_node.clientWidth*2, c_node.clientHeight*2]])
         .on("zoom", zoomed);
 
     c.call(zoom);
@@ -119,6 +119,11 @@ export default {
 
       let style = d3.select(this).style('transform');
       let st = style.match(/scale\((.*)\)/i);
+
+      if (x < (svgOffsetX+40)) return;
+      if (x + 40 > width + svgOffsetX) return;
+      if (y < (svgOffsetY+40)) return;
+      if (y + 40 > height + svgOffsetY) return;
 
       let styleStr = 'translate(' + (x - 40) + 'px, ' + (y - 40) + 'px)';
       if (st !== null && st[1]) {
