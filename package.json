@@ -17,6 +17,7 @@
     "body-parser": "^1.17.2",
     "connect-sqlite3": "^0.9.9",
     "cross-env": "^5.0.0",
+    "d3": "^4.9.1",
     "express": "^4.15.3",
     "express-session": "^1.15.3",
     "nuxt": "^1.0.0-alpha.3",
