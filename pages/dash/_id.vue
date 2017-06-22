@@ -6,7 +6,7 @@
       </div>
       <div class="sidebar">
         <div class="sidebar-header">Components</div>
-        <div class="component" draggable=true v-on:dragend="dropped($event)"></div>
+        <div class="component" draggable=true v-on:dragend="dropped($event, 0)"></div>
       </div>
     </div>
   </section>
@@ -28,8 +28,17 @@ export default {
     return {
       indexOptions,
       components: [],
+      predefinedComponents: [
+        {
+          title: 'comp1',
+          content: `<span style="color:red">dash</span>`,
+          script: 'console.log("hi")',
+        },
+      ],
       dragged: null,
       zoomed: null,
+      svgOffsetX: 0,
+      svgOffsetY: 0,
     };
   },
   computed: {
@@ -41,18 +50,18 @@ export default {
     nothing(e) {
       e.preventDefault();
       e.stopPropagation();
-      console.log(e);
     },
-    dropped(e) {
+    dropped(e, id) {
       e.preventDefault();
       e.stopPropagation();
-      console.log(e);
       let c = d3.select('.canvas-container');
       let c_node = c.node();
+      console.log(this.svgOffsetX);
       this.components.push(c.append('div')
+        .html(this.predefinedComponents[id].content)
         .attr('class', 'box')
-        .attr('offsetX', e.pageX)
-        .attr('offsetY', e.offsetY - 80)
+        .attr('offsetX', e.pageX - this.svgOffsetX)
+        .attr('offsetY', e.offsetY - 80 - this.svgOffsetY)
         .style('transform', `translate(${e.pageX}px, ${e.offsetY - 80}px)`)
         .call(d3.drag()
           .on('drag', this.dragged)
@@ -60,6 +69,7 @@ export default {
             //dragging = false;
           })
         ));
+      eval(this.predefinedComponents[id].script);
     },
   },
   async asyncData(context) {
@@ -75,6 +85,8 @@ export default {
     };
   },
   mounted() {
+    var self = this;
+    console.log(this);
     const margin = {top: -5, right: -5, bottom: -5, left: -5};
     let bbox = document.getElementsByClassName('canvas-container')[0].getBoundingClientRect();
     const width = parseInt(bbox.width) - 4;
@@ -121,33 +133,6 @@ export default {
     let c = d3.select('.canvas-container');
     let c_node = c.node();
 
-    this.components.push(c.append('div')
-      .attr('class', 'box')
-      .attr('offsetX', 0)
-      .attr('offsetY', 0)
-      .style('transform', 'translate(0px, 0px)')
-      .call(d3.drag()
-        .on('drag', dragged)
-        .on('end', () => {
-          //dragging = false;
-        })
-      ));
-
-    this.components.push(c.append('div')
-      .attr('class', 'box')
-      .attr('offsetX', 100)
-      .attr('offsetY', 100)
-      .style('transform', 'translate(100px, 100px)')
-      .call(d3.drag()
-        .on('drag', dragged)
-        .on('end', () => {
-          //dragging = false;
-        })
-    ));
-
-    let svgOffsetY = 0;
-    let svgOffsetX = 0;
-
     function dragged(d) {
       d3.event.sourceEvent.stopPropagation();
 
@@ -157,10 +142,10 @@ export default {
       let style = d3.select(this).style('transform');
       let st = style.match(/scale\((.*)\)/i);
 
-      if (x < (svgOffsetX+40)) return;
-      if (x + 40 > width + svgOffsetX) return;
-      if (y < (svgOffsetY+40)) return;
-      if (y + 40 > height + svgOffsetY) return;
+      if (x < (self.svgOffsetX+40)) return;
+      if (x + 40 > width + self.svgOffsetX) return;
+      if (y < (self.svgOffsetY+40)) return;
+      if (y + 40 > height + self.svgOffsetY) return;
 
       let styleStr = 'translate(' + (x - 40) + 'px, ' + (y - 40) + 'px)';
       if (st !== null && st[1]) {
@@ -168,22 +153,22 @@ export default {
       }
       let meD3 = d3.select(this);
       meD3.style('transform', styleStr);
-      meD3.attr('offsetX', (x - svgOffsetX - 40));
-      meD3.attr('offsetY', (y - svgOffsetY - 40));
+      meD3.attr('offsetX', (x - self.svgOffsetX - 40));
+      meD3.attr('offsetY', (y - self.svgOffsetY - 40));
     }
     this.dragged = dragged;
 
     const zoomed = () => {
       let transform = d3.event.transform;
-      let boxTransform = Math.pow(transform.k, 4);
+      let boxTransform = Math.pow(transform.k, 3);
       //console.log(parseFloat(d.attr('offsetX')) + parseFloat(transform.x), d.attr('offsetY'));
       for (var selection of this.components) {
         selection.style("transform", "translate(" + (transform.x + parseFloat(selection.attr('offsetX')) ) + "px, " + (transform.y + parseFloat(selection.attr('offsetY'))) + "px) scale(" + (boxTransform) + ")");
         selection.style("box-shadow", `${(boxTransform-1)*10}px ${(boxTransform-1)*10}px ${(boxTransform-1)*10}px lightgray`);
       }
       svg.attr("transform", "translate(" + transform.x + ", " + transform.y + ") scale(" + transform.k + ")");
-      svgOffsetY = transform.y;
-      svgOffsetX = transform.x;
+      self.svgOffsetY = transform.y;
+      self.svgOffsetX = transform.x;
     }
     let zoom = d3.zoom()
         .scaleExtent([1, 24])
@@ -218,7 +203,7 @@ export default {
   height: 90%;
 }
 .sidebar {
-  width: 20%;
+  width: 16rem;
   background-color: $background-color;
   height: 100%;
   display: inline-block;
@@ -245,7 +230,7 @@ export default {
   height: 100%;
   opacity: 0.9;
   position: relative;
-  width: 80%;
+  width: calc(100% - 16rem);
   text-align: left;
   display: inline-block;
 }
