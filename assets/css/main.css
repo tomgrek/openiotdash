@@ -46,13 +46,16 @@ input[type="text"], input[type="password"] {
 .axis line {
   fill: none;
   stroke: #ddd;
-  shape-rendering: crispEdges;
+  shape-rendering: auto;
   vector-effect: non-scaling-stroke;
 }
 .box {
   width: 80px; height: 80px;
   display: inline-block;
-  position: relative;
+  position: absolute;
   border: 1px solid red;
+  background-color: aliceblue;
+  opacity: 0.8;
   top: 0; left: 0;
+  mix-blend-mode: difference;
 }

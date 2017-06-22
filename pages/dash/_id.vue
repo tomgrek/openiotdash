@@ -2,7 +2,7 @@
   <section class="container">
     <my-header :username="username"/>
     <h1 class="title">{{this.$router.currentRoute.params.id}}
-      {{dashboard.title}}
+      Project {{!dashboard.title}}
     </h1>
     <div v-once class="canvas-container">
     </div>
@@ -55,6 +55,7 @@ export default {
         .style("top", "2px")
         .style("left", "2px")
         .style("z-index", "-1")
+        .style("transform", "translateZ(0)")
       .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.right + ")");
     let rect = svg.append("rect")
@@ -89,17 +90,31 @@ export default {
     let c = d3.select('.canvas-container');
     let c_node = c.node();
 
-    var d = c.append('div')
+    var d = [];
+    d.push(c.append('div')
       .attr('class', 'box')
+      .attr('offsetX', 0)
+      .attr('offsetY', 0)
       .style('transform', 'translate(0px, 0px)')
       .call(d3.drag()
         .on('drag', dragged)
         .on('end', () => {
           //dragging = false;
         })
-      );
-    let offsetX = 0;
-    let offsetY = 0;
+      ));
+
+    d.push(c.append('div')
+      .attr('class', 'box')
+      .attr('offsetX', 100)
+      .attr('offsetY', 100)
+      .style('transform', 'translate(100px, 100px)')
+      .call(d3.drag()
+        .on('drag', dragged)
+        .on('end', () => {
+          //dragging = false;
+        })
+    ));
+
     let svgOffsetY = 0;
     let svgOffsetX = 0;
 
@@ -129,16 +144,20 @@ export default {
       if (st !== null && st[1]) {
         styleStr = styleStr + ' scale(' + parseFloat(st[1]) + ')';
       }
-      d3.select(this).style('transform', styleStr);
-      offsetX = (x - svgOffsetX - 40);
-      offsetY = (y - svgOffsetY - 40);
+      let meD3 = d3.select(this);
+      meD3.style('transform', styleStr);
+      meD3.attr('offsetX', (x - svgOffsetX - 40));
+      meD3.attr('offsetY', (y - svgOffsetY - 40));
     }
 
     function zoomed() {
       let transform = d3.event.transform;
       let boxTransform = Math.pow(transform.k, 4);
-      d.style("transform", "translate(" + (transform.x + offsetX) + "px, " + (transform.y + offsetY) + "px) scale(" + (boxTransform) + ")");
-      d.style("box-shadow", `${(boxTransform-1)*10}px ${(boxTransform-1)*10}px ${(boxTransform-1)*10}px lightgray`);
+      //console.log(parseFloat(d.attr('offsetX')) + parseFloat(transform.x), d.attr('offsetY'));
+      for (var selection of d) {
+        selection.style("transform", "translate(" + (transform.x + parseFloat(selection.attr('offsetX')) ) + "px, " + (transform.y + parseFloat(selection.attr('offsetY'))) + "px) scale(" + (boxTransform) + ")");
+        selection.style("box-shadow", `${(boxTransform-1)*10}px ${(boxTransform-1)*10}px ${(boxTransform-1)*10}px lightgray`);
+      }
       svg.attr("transform", "translate(" + transform.x + ", " + transform.y + ") scale(" + transform.k + ")");
       svgOffsetY = transform.y;
       svgOffsetX = transform.x;
@@ -209,10 +228,10 @@ export default {
   width: 90vw;
   text-align: left;
 }
-.axis line {
+line {
   fill: none;
-  stroke: #ddd;
-  shape-rendering: crispEdges;
+  stroke: #f00;
+  shape-rendering: auto;
   vector-effect: non-scaling-stroke;
 }
 </style>
