@@ -48,7 +48,12 @@ input[type="text"], input[type="password"] {
   stroke: #ddd;
   shape-rendering: auto;
   vector-effect: non-scaling-stroke;
+  pointer-events: none;
 }
+rect {
+  pointer-events: none;
+}
+
 .box {
   width: 80px; height: 80px;
   display: inline-block;

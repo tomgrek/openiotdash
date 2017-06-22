@@ -1,10 +1,13 @@
 <template>
   <section class="container">
-    <my-header :username="username"/>
-    <h1 class="title">{{this.$router.currentRoute.params.id}}
-      Project {{!dashboard.title}}
-    </h1>
-    <div v-once class="canvas-container">
+    <my-header :username="username" :extended="dashboard.title"/>
+    <div class="main-container">
+      <div v-once class="canvas-container" v-on:dragover="nothing($event)" v-on:drop="nothing($event)">
+      </div>
+      <div class="sidebar">
+        <div class="sidebar-header">Components</div>
+        <div class="component" draggable=true v-on:dragend="dropped($event)"></div>
+      </div>
     </div>
   </section>
 </template>
@@ -24,11 +27,39 @@ export default {
   data() {
     return {
       indexOptions,
+      components: [],
+      dragged: null,
+      zoomed: null,
     };
   },
   computed: {
     username() {
       return this.$store.state.authUser;
+    },
+  },
+  methods: {
+    nothing(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      console.log(e);
+    },
+    dropped(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      console.log(e);
+      let c = d3.select('.canvas-container');
+      let c_node = c.node();
+      this.components.push(c.append('div')
+        .attr('class', 'box')
+        .attr('offsetX', e.pageX)
+        .attr('offsetY', e.offsetY - 80)
+        .style('transform', `translate(${e.pageX}px, ${e.offsetY - 80}px)`)
+        .call(d3.drag()
+          .on('drag', this.dragged)
+          .on('end', () => {
+            //dragging = false;
+          })
+        ));
     },
   },
   async asyncData(context) {
@@ -90,8 +121,7 @@ export default {
     let c = d3.select('.canvas-container');
     let c_node = c.node();
 
-    var d = [];
-    d.push(c.append('div')
+    this.components.push(c.append('div')
       .attr('class', 'box')
       .attr('offsetX', 0)
       .attr('offsetY', 0)
@@ -103,7 +133,7 @@ export default {
         })
       ));
 
-    d.push(c.append('div')
+    this.components.push(c.append('div')
       .attr('class', 'box')
       .attr('offsetX', 100)
       .attr('offsetY', 100)
@@ -117,14 +147,6 @@ export default {
 
     let svgOffsetY = 0;
     let svgOffsetX = 0;
-
-    let zoom = d3.zoom()
-        .scaleExtent([1, 24])
-        .translateExtent([[-c_node.clientWidth, -c_node.clientHeight], [c_node.clientWidth*2, c_node.clientHeight*2]])
-        .on("zoom", zoomed);
-
-    c.call(zoom);
-    //svg.call(zoom);
 
     function dragged(d) {
       d3.event.sourceEvent.stopPropagation();
@@ -149,12 +171,13 @@ export default {
       meD3.attr('offsetX', (x - svgOffsetX - 40));
       meD3.attr('offsetY', (y - svgOffsetY - 40));
     }
+    this.dragged = dragged;
 
-    function zoomed() {
+    const zoomed = () => {
       let transform = d3.event.transform;
       let boxTransform = Math.pow(transform.k, 4);
       //console.log(parseFloat(d.attr('offsetX')) + parseFloat(transform.x), d.attr('offsetY'));
-      for (var selection of d) {
+      for (var selection of this.components) {
         selection.style("transform", "translate(" + (transform.x + parseFloat(selection.attr('offsetX')) ) + "px, " + (transform.y + parseFloat(selection.attr('offsetY'))) + "px) scale(" + (boxTransform) + ")");
         selection.style("box-shadow", `${(boxTransform-1)*10}px ${(boxTransform-1)*10}px ${(boxTransform-1)*10}px lightgray`);
       }
@@ -162,6 +185,12 @@ export default {
       svgOffsetY = transform.y;
       svgOffsetX = transform.x;
     }
+    let zoom = d3.zoom()
+        .scaleExtent([1, 24])
+        .translateExtent([[-c_node.clientWidth, -c_node.clientHeight], [c_node.clientWidth*2, c_node.clientHeight*2]])
+        .on("zoom", zoomed);
+
+    c.call(zoom);
   },
 }
 </script>
@@ -181,57 +210,43 @@ export default {
     text-decoration: underline;
   }
 }
-.dashboards-header {
-  background-color: $background-dark;
+.main-container {
   text-align: left;
-  padding: 0 1rem;
+  padding: 1rem 1rem;
+  display: block;
   position: relative;
-  .dashboards-title {
-    font-weight: 900;
-  }
-  .new-button {
-    position: absolute;
-    right: 1rem;
-    top: 1.1rem;
-  }
-  .delete-button {
-    position: absolute;
-    right: 5rem;
-    top: 1.1rem;
-  }
+  height: 90%;
 }
-.dashboards-list {
+.sidebar {
+  width: 20%;
+  background-color: $background-color;
+  height: 100%;
+  display: inline-block;
   position: relative;
-  line-height: 2rem;
-  li {
-    list-style: none;
+  border-left: 1px solid $dark-border;
+  border-right: 0;
+  padding: 0 0 0 1rem;
+  float: right;
+  .sidebar-header {
+    background-color: $background-dark;
+    padding: 0.5rem 0.5rem;
+    margin-bottom: 0.5rem;
   }
-  input[type="checkbox"] {
-    position: absolute;
-    left: -1.4rem;
-    top: 0.5rem;
-  }
-  .dashboards-list-item {
-    text-align: left;
-    padding: 0 1rem;
+  .component {
+    display: inline-block;
     position: relative;
+    border: 1px solid black;
+    width: 100%;
+    height: 8rem;
   }
 }
 .canvas-container {
   overflow: hidden;
-  border: 1px solid black;
-  height: 80vh;
+  height: 100%;
   opacity: 0.9;
   position: relative;
-  margin-left: auto;
-  margin-right: auto;
-  width: 90vw;
+  width: 80%;
   text-align: left;
-}
-line {
-  fill: none;
-  stroke: #f00;
-  shape-rendering: auto;
-  vector-effect: non-scaling-stroke;
+  display: inline-block;
 }
 </style>

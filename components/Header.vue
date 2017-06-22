@@ -1,6 +1,8 @@
 <template>
   <header>
-    <nuxt-link to="/"><span class="header-text">{{headerOptions.headerText}}</span></nuxt-link>
+    <nuxt-link to="/"><span class="header-text">{{headerOptions.headerText}}
+    </span></nuxt-link>
+    <span v-if="extended" class="extended-header">{{extended}}</span>
     <span v-on:click="profileShowing = !profileShowing" class="header-userbutton" v-if="loggedIn && headerOptions.displayUsername">
       {{username}}
       <ul v-on:mouseout="profileShowing = false" v-show="profileShowing">
@@ -21,7 +23,7 @@ export default {
       profileShowing: false,
     };
   },
-  props: ['username'],
+  props: ['username', 'extended'],
   computed: {
     loggedIn() {
       return !!this.$props.username;
@@ -64,6 +66,11 @@ header {
   ul {
     list-style: none;
     text-decoration: underline;
+  }
+  .extended-header {
+    padding-left: 2rem;
+    font-size: 0.9rem;
+    color: $light-text;
   }
 }
 </style>
