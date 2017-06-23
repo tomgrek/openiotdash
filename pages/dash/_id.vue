@@ -31,8 +31,60 @@ export default {
       predefinedComponents: [
         {
           title: 'comp1',
-          content: `<span style="color:red">dash</span>`,
-          script: 'console.log("hi")',
+          content: `<span id="tom" style="color:red">dash</span>`,
+          script: `console.log(document.querySelector("#tom"));
+                    var x = d3.scaleTime()
+                      .rangeRound([0, 120]);
+
+                    var y = d3.scaleLinear()
+                      .rangeRound([120, 0]);
+                    let margin = {top: 0, right: 0, bottom: 0, left: 0};
+                    let svg = d3.select(document.querySelector("#tom")).append("svg")
+                        .attr("width", 80)
+                        .attr("height", 80)
+                    let g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+                    var parseTime = d3.timeParse("%d-%b-%y");
+                    var line = d3.line()
+                    .x(function(d) { return x(d.date); })
+                    .y(function(d) { return y(d.close); });
+
+                    d3.tsv("/data.tsv", function(d) {
+                      d.date = parseTime(d.date);
+                      d.close = +d.close;
+                      return d;
+                    }, function(error, data) {
+                      if (error) throw error;
+
+                      x.domain(d3.extent(data, function(d) { return d.date; }));
+                      y.domain(d3.extent(data, function(d) { return d.close; }));
+
+                      g.append("g")
+                          .attr("transform", "translate(0," + 80 + ")")
+                          .call(d3.axisBottom(x))
+                        .select(".domain")
+                          .remove();
+
+                      g.append("g")
+                          .call(d3.axisLeft(y))
+                        .append("text")
+                          .attr("fill", "#000")
+                          .attr("transform", "rotate(-90)")
+                          .attr("y", 6)
+                          .attr("dy", "0.71em")
+                          .attr("text-anchor", "end")
+                          .text("Price ($)");
+
+                      g.append("path")
+                          .datum(data)
+                          .attr("fill", "none")
+                          .attr("stroke", "steelblue")
+                          .attr("stroke-linejoin", "round")
+                          .attr("stroke-linecap", "round")
+                          .attr("stroke-width", 1.5)
+                          .attr("d", line);
+                    });
+
+                    `,
         },
       ],
       dragged: null,
@@ -55,20 +107,21 @@ export default {
       e.preventDefault();
       e.stopPropagation();
       let c = d3.select('.canvas-container');
-      let c_node = c.node();
-      console.log(this.svgOffsetX);
+
       this.components.push(c.append('div')
         .html(this.predefinedComponents[id].content)
         .attr('class', 'box')
         .attr('offsetX', e.pageX - this.svgOffsetX)
         .attr('offsetY', e.offsetY - 80 - this.svgOffsetY)
+        .style('resize', 'both')
+        .style('overflow', 'auto')
         .style('transform', `translate(${e.pageX}px, ${e.offsetY - 80}px)`)
-        .call(d3.drag()
-          .on('drag', this.dragged)
-          .on('end', () => {
-            //dragging = false;
-          })
-        ));
+          .call(d3.drag()
+            .on('drag', this.dragged)
+            .on('end', () => {
+              //dragging = false;
+            })
+          ));
       eval(this.predefinedComponents[id].script);
     },
   },
@@ -86,7 +139,7 @@ export default {
   },
   mounted() {
     var self = this;
-    console.log(this);
+    window.d3 = d3;
     const margin = {top: -5, right: -5, bottom: -5, left: -5};
     let bbox = document.getElementsByClassName('canvas-container')[0].getBoundingClientRect();
     const width = parseInt(bbox.width) - 4;
@@ -134,6 +187,8 @@ export default {
     let c_node = c.node();
 
     function dragged(d) {
+      if (d3.event.sourceEvent.shiftKey) return;
+
       d3.event.sourceEvent.stopPropagation();
 
       let x = d3.event.x;
@@ -152,6 +207,7 @@ export default {
         styleStr = styleStr + ' scale(' + parseFloat(st[1]) + ')';
       }
       let meD3 = d3.select(this);
+
       meD3.style('transform', styleStr);
       meD3.attr('offsetX', (x - self.svgOffsetX - 40));
       meD3.attr('offsetY', (y - self.svgOffsetY - 40));
