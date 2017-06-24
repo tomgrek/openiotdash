@@ -31,58 +31,70 @@ export default {
       predefinedComponents: [
         {
           title: 'comp1',
-          content: `<span id="tom" style="color:red">dash</span>`,
-          script: `console.log(document.querySelector("#tom"));
-                    var x = d3.scaleTime()
-                      .rangeRound([0, 120]);
+          content: `<div id="tom" style="position: absolute;"></div>`,
+          script: `
 
-                    var y = d3.scaleLinear()
-                      .rangeRound([120, 0]);
                     let margin = {top: 0, right: 0, bottom: 0, left: 0};
-                    let svg = d3.select(document.querySelector("#tom")).append("svg")
-                        .attr("width", 80)
-                        .attr("height", 80)
-                    let g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-                    var parseTime = d3.timeParse("%d-%b-%y");
-                    var line = d3.line()
-                    .x(function(d) { return x(d.date); })
-                    .y(function(d) { return y(d.close); });
+                    // let svg = d3.select(document.querySelector("#tom")).append("svg")
 
-                    d3.tsv("/data.tsv", function(d) {
-                      d.date = parseTime(d.date);
-                      d.close = +d.close;
-                      return d;
-                    }, function(error, data) {
-                      if (error) throw error;
+                    setInterval(() => {
+                      document.querySelector('#tom').innerHTML = '';
 
-                      x.domain(d3.extent(data, function(d) { return d.date; }));
-                      y.domain(d3.extent(data, function(d) { return d.close; }));
+                      let svg = d3.select(document.querySelector("#tom")).append("svg")
 
-                      g.append("g")
-                          .attr("transform", "translate(0," + 80 + ")")
-                          .call(d3.axisBottom(x))
-                        .select(".domain")
-                          .remove();
+                      let height = document.querySelector("#tom").parentElement.getBoundingClientRect().height - 16;
+                      let width = document.querySelector("#tom").parentElement.getBoundingClientRect().width - 16;
+                      svg.attr("height", height);
+                      svg.attr("width", width);
+                      var x = d3.scaleTime().range([0, width]);
 
-                      g.append("g")
-                          .call(d3.axisLeft(y))
-                        .append("text")
-                          .attr("fill", "#000")
-                          .attr("transform", "rotate(-90)")
-                          .attr("y", 6)
-                          .attr("dy", "0.71em")
-                          .attr("text-anchor", "end")
-                          .text("Price ($)");
+                      var y = d3.scaleLinear().range([0, height]);
+                      let g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+                      var parseTime = d3.timeParse("%d-%b-%y");
+                      var line = d3.line()
+                      .x(function(d) { return x(d.date); })
+                      .y(function(d) { return y(d.close); });
 
-                      g.append("path")
-                          .datum(data)
-                          .attr("fill", "none")
-                          .attr("stroke", "steelblue")
-                          .attr("stroke-linejoin", "round")
-                          .attr("stroke-linecap", "round")
-                          .attr("stroke-width", 1.5)
-                          .attr("d", line);
-                    });
+                      d3.tsv("/data.tsv", function(d) {
+                        d.date = parseTime(d.date);
+                        d.close = +d.close;
+                        return d;
+                      }, function(error, data) {
+                        if (error) throw error;
+
+                        // x.domain(d3.extent(data, function(d) { return d.date; }));
+                        // y.domain(d3.extent(data, function(d) { return d.close; }));
+                        x.domain(d3.extent(data, function(d) { return d.date; }));
+                        y.domain([0, d3.max(data, function(d) { return d.close; })]);
+
+                        // g.append("g")
+                        //     .attr("transform", "translate(0," + 80 + ")")
+                        //     .call(d3.axisBottom(x))
+                        //   .select(".domain")
+                        //     .remove();
+                        //
+                        // g.append("g")
+                        //     .call(d3.axisLeft(y))
+                        //   .append("text")
+                        //     .attr("fill", "#000")
+                        //     .attr("transform", "rotate(-90)")
+                        //     .attr("y", 6)
+                        //     .attr("dy", "0.71em")
+                        //     .attr("text-anchor", "end")
+                        //     .text("Price ($)");
+
+                        g.append("path")
+                            .datum(data)
+                            .attr("fill", "none")
+                            .attr("stroke", "steelblue")
+                            .attr("stroke-linejoin", "round")
+                            .attr("stroke-linecap", "round")
+                            .attr("stroke-width", 1.5)
+                            .attr("d", line);
+                      });
+
+                    }, 1000);
+
 
                     `,
         },
@@ -114,6 +126,7 @@ export default {
         .attr('offsetX', e.pageX - this.svgOffsetX)
         .attr('offsetY', e.offsetY - 80 - this.svgOffsetY)
         .style('resize', 'both')
+        .style('position', 'relative')
         .style('overflow', 'auto')
         .style('transform', `translate(${e.pageX}px, ${e.offsetY - 80}px)`)
           .call(d3.drag()
@@ -187,8 +200,8 @@ export default {
     let c_node = c.node();
 
     function dragged(d) {
-      if (d3.event.sourceEvent.shiftKey) return;
 
+      if (d3.event.sourceEvent.shiftKey) return;
       d3.event.sourceEvent.stopPropagation();
 
       let x = d3.event.x;
@@ -217,8 +230,7 @@ export default {
     const zoomed = () => {
       let transform = d3.event.transform;
       let boxTransform = Math.pow(transform.k, 3);
-      //console.log(parseFloat(d.attr('offsetX')) + parseFloat(transform.x), d.attr('offsetY'));
-      for (var selection of this.components) {
+      for (let selection of this.components) {
         selection.style("transform", "translate(" + (transform.x + parseFloat(selection.attr('offsetX')) ) + "px, " + (transform.y + parseFloat(selection.attr('offsetY'))) + "px) scale(" + (boxTransform) + ")");
         selection.style("box-shadow", `${(boxTransform-1)*10}px ${(boxTransform-1)*10}px ${(boxTransform-1)*10}px lightgray`);
       }
