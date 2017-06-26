@@ -63,7 +63,5 @@ rect {
   opacity: 0.8;
   top: 0; left: 0;
   /*mix-blend-mode: difference;*/
-}
-.expander {
-  overflow: auto;
+  /*transition: transform 0.1s ease;*/
 }
