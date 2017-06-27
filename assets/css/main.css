@@ -57,11 +57,23 @@ rect {
 .box {
   width: 80px; height: 80px;
   display: inline-block;
-  position: absolute;
+  position: relative;
   border: 1px solid gray;
   background-color: aliceblue;
   opacity: 0.8;
-  top: 0; left: 0;
+  top: 0;
+  left: 0;
+  transform-origin: center;
   /*mix-blend-mode: difference;*/
   /*transition: transform 0.1s ease;*/
+}
+.title-bar {
+  height: 1.5rem;
+  width: 100%;
+  display: inline-block;
+  position: absolute;
+  border: 1px solid gray;
+  background-color: green;
+  opacity: 0.9;
+  top: 0; left: 0;
 }

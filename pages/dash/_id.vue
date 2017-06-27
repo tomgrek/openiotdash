@@ -103,6 +103,7 @@ export default {
       zoomed: null,
       svgOffsetX: 0,
       svgOffsetY: 0,
+      clickOffsetX: false,
     };
   },
   computed: {
@@ -115,30 +116,34 @@ export default {
       e.preventDefault();
       e.stopPropagation();
     },
-    wrap(content) {
-      return `<div style="height: 1rem; background-color: green;">Component Title${content}</div>`;
-    },
     dropped(e, id) {
       e.preventDefault();
       e.stopPropagation();
       let c = d3.select('.canvas-container');
 
       let div = c.append('div')
-        .html(this.predefinedComponents[id].content)
         .attr('class', 'box')
+        .html(this.predefinedComponents[id].content)
         .attr('offsetX', e.pageX - this.svgOffsetX)
         .attr('offsetY', e.offsetY - 80 - this.svgOffsetY)
         .style('position', 'absolute')
-        .style('z-index', 40)
         .style('transform', `translate(${e.pageX - 15}px, ${e.offsetY - 80}px)`)
-          .call(d3.drag()
-            .on('drag', this.dragged)
-            .on('end', () => {
-              //dragging = false;
-            })
-          );
+        .call(d3.drag()
+          .on('drag', this.dragged)
+          .on('end', () => {
+            //dragging = false;
+            this.clickOffsetX = false;
+            this.clickOffsetY = false;
+          })
+        );
 
-      div.append('div').style('height', '1.5rem').style('background-color', 'green').style('z-index', 50);
+
+      let tb = div.append('div')
+        .attr('class', 'title-bar')
+      tb.node().onclick = (e) => {
+        console.log(e);
+        e.stopPropagation();
+      }
 
           var resizer = document.createElement('div');
           resizer.className = 'resizer';
@@ -256,14 +261,17 @@ export default {
     let c = d3.select('.canvas-container');
     let c_node = c.node();
 
-    function dragged(d) {
+    function dragged() {
+      let elm = this;
+      //if (d3.event.sourceEvent.target.className !== 'title-bar') elm = this.parentElement;
       if (d3.event.sourceEvent.shiftKey) return;
       d3.event.sourceEvent.stopPropagation();
+      if (d3.event.sourceEvent.target.className !== 'title-bar') return;
 
       let x = d3.event.x;
       let y = d3.event.y;
 
-      let style = d3.select(this).style('transform');
+      let style = d3.select(elm).style('transform');
       let st = style.match(/scale\((.*)\)/i);
 
       if (x < (self.svgOffsetX+40)) return;
@@ -271,14 +279,20 @@ export default {
       if (y < (self.svgOffsetY+40)) return;
       if (y + 40 > height + self.svgOffsetY) return;
 
-      let styleStr = 'translate(' + (x - 40) + 'px, ' + (y - 40) + 'px)';
+
+      let smaller = parseInt(style.split(',')[0].split('(')[1]);
+      let smallerY = parseInt(style.split(',')[1].split(')')[0]);
+
+      if (!this.clickOffsetX) this.clickOffsetX = x - smaller;
+      if (!this.clickOffsetY) this.clickOffsetY = y - smallerY;
+      let styleStr = 'translate(' + (x - this.clickOffsetX) + 'px, ' + (y - this.clickOffsetY) + 'px)';
       if (st !== null && st[1]) {
         styleStr = styleStr + ' scale(' + parseFloat(st[1]) + ')';
       }
-      let meD3 = d3.select(this);
+      let meD3 = d3.select(elm);
       meD3.style('transform', styleStr);
-      meD3.attr('offsetX', (x - self.svgOffsetX - 40));
-      meD3.attr('offsetY', (y - self.svgOffsetY - 40));
+      meD3.attr('offsetX', (x + this.clickOffsetX - self.svgOffsetX));
+      meD3.attr('offsetY', (y - this.clickOffsetY - self.svgOffsetY));
     }
     this.dragged = dragged;
 
