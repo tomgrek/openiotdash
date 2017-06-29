@@ -6,7 +6,7 @@
       </div>
       <div class="sidebar">
         <div class="sidebar-header">Components</div>
-        <div class="component" draggable=true v-on:dragend="dropped($event, 0)"></div>
+        <div v-for="component in predefinedComponents" v-html="component.preview" class="component" draggable=true v-on:dragend="dropped($event, 0)"></div>
       </div>
     </div>
   </section>
@@ -17,6 +17,8 @@ import { title, indexOptions } from "~components/config/config";
 import * as d3 from "d3";
 import axios from '~plugins/axios';
 import MyHeader from '~components/Header.vue';
+
+import BasicChart from '../../predefined_components/BasicChart';
 
 export default {
   name: 'dash',
@@ -29,81 +31,14 @@ export default {
       indexOptions,
       components: [],
       predefinedComponents: [
-        {
-          title: 'comp1',
-          content: `<div id="tom" style="position: absolute;"></div>`,
-          script: `
-
-                    let margin = {top: 0, right: 0, bottom: 0, left: 0};
-                    // let svg = d3.select(document.querySelector("#tom")).append("svg")
-
-                    // setInterval(() => {
-                    //   document.querySelector('#tom').innerHTML = '';
-                    //
-                    //   let svg = d3.select(document.querySelector("#tom")).append("svg")
-                    //
-                    //   let height = document.querySelector("#tom").parentElement.getBoundingClientRect().height - 16;
-                    //   let width = document.querySelector("#tom").parentElement.getBoundingClientRect().width - 16;
-                    //   svg.attr("height", height);
-                    //   svg.attr("width", width);
-                    //   var x = d3.scaleTime().range([0, width]);
-                    //
-                    //   var y = d3.scaleLinear().range([0, height]);
-                    //   let g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-                    //   var parseTime = d3.timeParse("%d-%b-%y");
-                    //   var line = d3.line()
-                    //   .x(function(d) { return x(d.date); })
-                    //   .y(function(d) { return y(d.close); });
-                    //
-                    //   d3.tsv("/data.tsv", function(d) {
-                    //     d.date = parseTime(d.date);
-                    //     d.close = +d.close;
-                    //     return d;
-                    //   }, function(error, data) {
-                    //     if (error) throw error;
-                    //
-                    //     // x.domain(d3.extent(data, function(d) { return d.date; }));
-                    //     // y.domain(d3.extent(data, function(d) { return d.close; }));
-                    //     x.domain(d3.extent(data, function(d) { return d.date; }));
-                    //     y.domain([0, d3.max(data, function(d) { return d.close; })]);
-                    //
-                    //     // g.append("g")
-                    //     //     .attr("transform", "translate(0," + 80 + ")")
-                    //     //     .call(d3.axisBottom(x))
-                    //     //   .select(".domain")
-                    //     //     .remove();
-                    //     //
-                    //     // g.append("g")
-                    //     //     .call(d3.axisLeft(y))
-                    //     //   .append("text")
-                    //     //     .attr("fill", "#000")
-                    //     //     .attr("transform", "rotate(-90)")
-                    //     //     .attr("y", 6)
-                    //     //     .attr("dy", "0.71em")
-                    //     //     .attr("text-anchor", "end")
-                    //     //     .text("Price ($)");
-                    //
-                    //     g.append("path")
-                    //         .datum(data)
-                    //         .attr("fill", "none")
-                    //         .attr("stroke", "steelblue")
-                    //         .attr("stroke-linejoin", "round")
-                    //         .attr("stroke-linecap", "round")
-                    //         .attr("stroke-width", 1.5)
-                    //         .attr("d", line);
-                    //   });
-                    //
-                    // }, 1000);
-
-
-                    `,
-        },
+        BasicChart,
       ],
       dragged: null,
       zoomed: null,
       svgOffsetX: 0,
       svgOffsetY: 0,
       clickOffsetX: false,
+      clickOffsetY: false,
     };
   },
   computed: {
@@ -123,11 +58,14 @@ export default {
 
       let div = c.append('div')
         .attr('class', 'box')
+        .style('height', this.predefinedComponents[id].height + 'px')
+        .style('width', this.predefinedComponents[id].width + 'px')
         .html(this.predefinedComponents[id].content)
-        .attr('offsetX', e.pageX - this.svgOffsetX)
-        .attr('offsetY', e.offsetY - 80 - this.svgOffsetY)
+        .attr('offsetX', e.pageX - this.svgOffsetX + (this.predefinedComponents[id].width/2))
+        .attr('offsetY', e.offsetY - (this.predefinedComponents[id].height/2) - this.svgOffsetY)
+        .attr('uuid', id)
         .style('position', 'absolute')
-        .style('transform', `translate(${e.pageX - 15}px, ${e.offsetY - 80}px)`)
+        .style('transform', `translate(${e.pageX + this.predefinedComponents[id].width/2}px, ${e.offsetY - this.predefinedComponents[id].height/2}px)`)
         .call(d3.drag()
           .on('drag', this.dragged)
           .on('end', () => {
@@ -136,53 +74,49 @@ export default {
             this.clickOffsetY = false;
           })
         );
-
+      let node = div.node();
 
       let tb = div.append('div')
         .attr('class', 'title-bar')
-      tb.node().onclick = (e) => {
-        console.log(e);
-        e.stopPropagation();
-      }
+        .html(this.predefinedComponents[id].title);
 
-          var resizer = document.createElement('div');
+      // tb.node().onclick = (e) => {
+      //   console.log(e);
+      //   e.stopPropagation();
+      // }
+
+          let resizer = document.createElement('div');
           resizer.className = 'resizer';
-          resizer.style.width = '10px';
-          resizer.style.height = '10px';
-          resizer.style.background = 'red';
-          resizer.style.position = 'absolute';
-          resizer.style.visibility = 'hidden';
-          resizer.style.right = 0;
-          resizer.style.bottom = 0;
-          resizer.style.cursor = 'se-resize';
-          let node = div.node();
           node.appendChild(resizer);
-          function Resize(e) {
+          const resize = (e) => {
             if (!e.shiftKey) { return stopResize(e); }
-            //if (e.target !== div.node()) return;
             e.preventDefault();
             e.stopPropagation();
-             node.style.width = (e.clientX - parseInt(node.getAttribute('offsetX'))) + 'px';
-             node.style.height = (e.clientY - parseInt(node.getAttribute('offsetY')) - 40) + 'px';
+            let newWidth = parseInt(node.style.width) + e.movementX;
+            let newHeight = parseInt(node.style.height) + e.movementY;
+            let event = new CustomEvent('resized', { detail: { width: newWidth, height: newHeight } });
+            node.style.width = newWidth + 'px';
+            node.style.height = newHeight + 'px';
+            node.dispatchEvent(event);
           }
-
-          function initResize(e) {
+          const initResize = (e) => {
             if (!e.shiftKey) return;
             e.preventDefault();
             e.stopPropagation();
-             document.addEventListener('mousemove', Resize, false);
-             document.addEventListener('mouseup', stopResize, false);
+            document.addEventListener('mousemove', resize, false);
+            document.addEventListener('mouseup', stopResize, false);
           }
-          function stopResize(e) {
-              document.removeEventListener('mousemove', Resize, false);
-              document.removeEventListener('mouseup', stopResize, false);
+          const stopResize = (e) => {
+            document.removeEventListener('mousemove', resize, false);
+            document.removeEventListener('mouseup', stopResize, false);
           }
-
 
           resizer.addEventListener('mousedown', initResize, false);
 
       this.components.push(div);
       eval(this.predefinedComponents[id].script);
+      let event = new CustomEvent('created', { detail: { width: this.predefinedComponents[id].width, height: this.predefinedComponents[id].height } });
+      node.dispatchEvent(event);
     },
   },
   async asyncData(context) {
@@ -198,9 +132,8 @@ export default {
     };
   },
   mounted() {
-    var self = this;
+    let self = this;
     window.d3 = d3;
-
     window.onkeydown = e => {
       function stopShowingResizer(e) {
         for (var node of document.getElementsByClassName('resizer')) {
@@ -215,20 +148,19 @@ export default {
         }
       }
     };
-    const margin = {top: -5, right: -5, bottom: -5, left: -5};
+
     let bbox = document.getElementsByClassName('canvas-container')[0].getBoundingClientRect();
-    const width = parseInt(bbox.width) - 4;
-    const height = parseInt(bbox.height) - 4;
+    const width = parseInt(bbox.width);
+    const height = parseInt(bbox.height);
     let svg = d3.select(".canvas-container").append("svg")
         .attr("width", width)
         .attr("height", height)
         .style("position", "absolute")
-        .style("top", "2px")
-        .style("left", "2px")
+        .style("top", "0")
+        .style("left", "0")
         .style("z-index", "-1")
         .style("transform", "translateZ(0)")
       .append("g")
-        .attr("transform", "translate(" + margin.left + "," + margin.right + ")");
     let rect = svg.append("rect")
       .attr("width", width)
       .attr("height", height)
@@ -263,36 +195,40 @@ export default {
 
     function dragged() {
       let elm = this;
-      //if (d3.event.sourceEvent.target.className !== 'title-bar') elm = this.parentElement;
       if (d3.event.sourceEvent.shiftKey) return;
       d3.event.sourceEvent.stopPropagation();
-      if (d3.event.sourceEvent.target.className !== 'title-bar') return;
+      if (d3.event.sourceEvent.target.className !== 'title-bar') {
+        if (!self.clickOffsetX) return;
+      }
 
       let x = d3.event.x;
       let y = d3.event.y;
 
-      let style = d3.select(elm).style('transform');
+      let style = elm.style.transform;
       let st = style.match(/scale\((.*)\)/i);
 
-      if (x < (self.svgOffsetX+40)) return;
-      if (x + 40 > width + self.svgOffsetX) return;
-      if (y < (self.svgOffsetY+40)) return;
-      if (y + 40 > height + self.svgOffsetY) return;
+      let elW = parseInt(elm.style.width) / 2;
+      let elH = parseInt(elm.style.height);
+      if (x < (self.svgOffsetX+elW)) return;
+      if (x + elW > width + self.svgOffsetX) return;
+      if (y < (self.svgOffsetY)) return;
+      if (y + elH > height + self.svgOffsetY) return;
 
+      if (!self.clickOffsetX) {
+        let smaller = parseInt(style.split(',')[0].split('(')[1]);
+        let smallerY = parseInt(style.split(',')[1].split(')')[0]);
+        self.clickOffsetX = x - smaller;
+        self.clickOffsetY = y - smallerY;
+      }
 
-      let smaller = parseInt(style.split(',')[0].split('(')[1]);
-      let smallerY = parseInt(style.split(',')[1].split(')')[0]);
-
-      if (!this.clickOffsetX) this.clickOffsetX = x - smaller;
-      if (!this.clickOffsetY) this.clickOffsetY = y - smallerY;
-      let styleStr = 'translate(' + (x - this.clickOffsetX) + 'px, ' + (y - this.clickOffsetY) + 'px)';
+      let styleStr = 'translate(' + (x - self.clickOffsetX) + 'px, ' + (y - self.clickOffsetY) + 'px)';
       if (st !== null && st[1]) {
         styleStr = styleStr + ' scale(' + parseFloat(st[1]) + ')';
       }
       let meD3 = d3.select(elm);
       meD3.style('transform', styleStr);
-      meD3.attr('offsetX', (x + this.clickOffsetX - self.svgOffsetX));
-      meD3.attr('offsetY', (y - this.clickOffsetY - self.svgOffsetY));
+      meD3.attr('offsetX', (x - self.svgOffsetX - self.clickOffsetX));
+      meD3.attr('offsetY', (y - self.svgOffsetY - self.clickOffsetY));
     }
     this.dragged = dragged;
 
@@ -301,7 +237,7 @@ export default {
       let boxTransform = Math.pow(transform.k, 3);
       for (let selection of this.components) {
         selection.style("transform", "translate(" + (transform.x + parseFloat(selection.attr('offsetX')) ) + "px, " + (transform.y + parseFloat(selection.attr('offsetY'))) + "px) scale(" + (boxTransform) + ")");
-        selection.style("box-shadow", `${(boxTransform-1)*10}px ${(boxTransform-1)*10}px ${(boxTransform-1)*10}px lightgray`);
+        selection.style("box-shadow", `${(boxTransform-1)*10}px ${(boxTransform-1)*10}px ${(boxTransform-1)*30}px lightgray`);
       }
       svg.attr("transform", "translate(" + transform.x + ", " + transform.y + ") scale(" + transform.k + ")");
       self.svgOffsetY = transform.y;
@@ -338,6 +274,7 @@ export default {
   display: block;
   position: relative;
   height: 90%;
+  transform: translateZ(0);
 }
 .sidebar {
   width: 16rem;

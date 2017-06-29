@@ -55,7 +55,6 @@ rect {
 }
 
 .box {
-  width: 80px; height: 80px;
   display: inline-block;
   position: relative;
   border: 1px solid gray;
@@ -67,13 +66,26 @@ rect {
   /*mix-blend-mode: difference;*/
   /*transition: transform 0.1s ease;*/
 }
+.resizer {
+  position: absolute;
+  height: 10px;
+  width: 10px;
+  right: 0;
+  bottom: 0;
+  visibility: hidden;
+  border-left: 1px solid darkgray;
+  border-top: 1px solid darkgray;
+}
 .title-bar {
-  height: 1.5rem;
+  cursor: default;
   width: 100%;
   display: inline-block;
   position: absolute;
-  border: 1px solid gray;
-  background-color: green;
+  color: black;
+  line-height: 1.5rem;
+  padding-left: 0.5rem;
+  font-size: 0.9rem;
+  background-color: darkgray;
   opacity: 0.9;
   top: 0; left: 0;
 }
