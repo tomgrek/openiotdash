@@ -1,13 +1,14 @@
 module.exports = {
   head: {
-    title: 'starter',
+    title: 'Open IoT Dash',
     meta: [
       { charset: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
       { hid: 'description', name: 'description', content: 'A self-hosted, open-source IoT dashboard' }
     ],
     link: [
-      { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }
+      { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
+      { rel: 'stylesheet', href: '//fonts.googleapis.com/icon?family=Material+Icons' },
     ]
   },
   /*

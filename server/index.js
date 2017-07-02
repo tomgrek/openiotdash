@@ -4,6 +4,7 @@ import Nuxt from 'nuxt';
 import express from 'express';
 import data from './data';
 import auth from './auth';
+import api from './api';
 
 import models from '../models';
 
@@ -32,6 +33,7 @@ async function start() {
   const app = express();
   const host = process.env.HOST || '127.0.0.1';
   const port = process.env.PORT || 3000;
+  app.set('port', port);
 
   app.use(session({
     secret: 'openiotdash',
@@ -43,13 +45,12 @@ async function start() {
     }),
   }));
   app.use(bodyParser.urlencoded({ extended: true }));
+  app.use(bodyParser.json());
   app.use(passport.initialize());
   app.use(passport.session());
 
-  app.set('port', port);
-
   app.use('/data', localhostChecker.check, data);
-  // app.use('/api', passportConfig.isAuthenticated, api);
+  app.use('/api', passportConfig.isAuthenticated, api);
   app.use('/auth', auth.router);
 
   await openUserDb();

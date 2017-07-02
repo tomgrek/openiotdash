@@ -20,6 +20,7 @@
     "d3": "^4.9.1",
     "express": "^4.15.3",
     "express-session": "^1.15.3",
+    "marked": "^0.3.6",
     "nuxt": "^1.0.0-alpha.3",
     "passport": "^0.3.2",
     "passport-local": "^1.0.0",

@@ -1,10 +1,15 @@
 <template>
   <section class="container">
+    <ModalRename v-if="showModal" @close="showModal = false" :currentTitle="dashboard.title" :setTitleFn="setTitle"/>
     <my-header :username="username" :extended="dashboard.title"/>
     <div class="main-container">
       <div v-once class="canvas-container" v-on:dragover="nothing($event)" v-on:drop="nothing($event)">
       </div>
       <div class="sidebar">
+        <div class="sidebar-header">Manage</div>
+        <i class="material-icons toolicon" style="margin-bottom: 0.5rem; margin-right: 0.5rem;" title="Save">save</i>
+        <i @click="showModal = true" class="material-icons toolicon" style="margin-bottom: 0.5rem; margin-right: 0.5rem;" title="Rename">title</i>
+        <i class="material-icons toolicon" style="margin-bottom: 0.5rem;" title="Delete">delete</i>
         <div class="sidebar-header">Components</div>
         <div v-for="component in predefinedComponents" v-html="component.preview" class="component" draggable=true v-on:dragend="dropped($event, 0)"></div>
       </div>
@@ -16,7 +21,8 @@
 import { title, indexOptions } from "~components/config/config";
 import * as d3 from "d3";
 import axios from '~plugins/axios';
-import MyHeader from '~components/Header.vue';
+import MyHeader from '~components/Header';
+import ModalRename from '~components/modal_rename';
 
 import BasicChart from '../../predefined_components/BasicChart';
 
@@ -25,6 +31,7 @@ export default {
   middleware: ['authentication', 'dashboards'],
   components: {
     MyHeader,
+    ModalRename,
   },
   data() {
     return {
@@ -39,6 +46,7 @@ export default {
       svgOffsetY: 0,
       clickOffsetX: false,
       clickOffsetY: false,
+      showModal: false,
     };
   },
   computed: {
@@ -47,6 +55,17 @@ export default {
     },
   },
   methods: {
+    setTitle(title) {
+      let oldTitle = this.dashboard.title;
+      this.dashboard.title = title;
+      let body = JSON.stringify({id: this.$route.params.id, title: title});
+      fetch(`/api/dashboards/save/title`, {headers: {'Content-Type': 'application/json'}, method: 'POST', body, credentials: 'include'})
+        .then(resp => {
+          if (resp.status !== 200) {
+            this.dashboard.title = oldTitle;
+          }
+        });
+    },
     nothing(e) {
       e.preventDefault();
       e.stopPropagation();
@@ -78,7 +97,8 @@ export default {
 
       let tb = div.append('div')
         .attr('class', 'title-bar')
-        .html(this.predefinedComponents[id].title);
+        .html(`<span>${this.predefinedComponents[id].title}</span>
+                <span class="settings-icon material-icons">settings</span>`);
 
       // tb.node().onclick = (e) => {
       //   console.log(e);
@@ -128,7 +148,7 @@ export default {
   },
   head() {
     return {
-      title,
+      title: this.dashboard.title,
     };
   },
   mounted() {
@@ -207,12 +227,18 @@ export default {
       let style = elm.style.transform;
       let st = style.match(/scale\((.*)\)/i);
 
-      let elW = parseInt(elm.style.width) / 2;
-      let elH = parseInt(elm.style.height);
-      if (x < (self.svgOffsetX+elW)) return;
-      if (x + elW > width + self.svgOffsetX) return;
-      if (y < (self.svgOffsetY)) return;
-      if (y + elH > height + self.svgOffsetY) return;
+      // This should keep the component on the board, but decided not critical for now.
+      // let elW = parseInt(elm.style.width) / 2;
+      // let elH = parseInt(elm.style.height);
+      // let left = parseInt(style.slice(style.indexOf('(') + 1, style.indexOf(',')));
+      // if (x + left < (self.svgOffsetX+elW)) {
+      //
+      //   console.log(x, self.svgOffsetX, elW, style, left);
+      //   return;
+      // }
+      // if (x + elW > width + self.svgOffsetX) return;
+      // if (y < (self.svgOffsetY)) return;
+      // if (y + elH > height + self.svgOffsetY) return;
 
       if (!self.clickOffsetX) {
         let smaller = parseInt(style.split(',')[0].split('(')[1]);
