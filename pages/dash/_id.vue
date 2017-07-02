@@ -63,6 +63,9 @@ export default {
         .then(resp => {
           if (resp.status !== 200) {
             this.dashboard.title = oldTitle;
+            this.$store.commit('addAlert', { msg: 'Error saving new name.', type: 'error'});
+          } else {
+            this.$store.commit('addAlert', { msg: 'New name saved successfully.', type: 'success'});
           }
         });
     },
@@ -137,6 +140,7 @@ export default {
       eval(this.predefinedComponents[id].script);
       let event = new CustomEvent('created', { detail: { width: this.predefinedComponents[id].width, height: this.predefinedComponents[id].height } });
       node.dispatchEvent(event);
+      this.$store.commit('addAlert', { msg: 'Hold shift to resize.', type: 'info'});
     },
   },
   async asyncData(context) {

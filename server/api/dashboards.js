@@ -12,7 +12,7 @@ router.post('/dashboards/save/:what', (req, res, next) => {
   }).then(d => {
     if (req.params.what === 'title') {
       d.title = req.body.title;
-      d.save().then(console.log).then(() => res.status(200).end());
+      d.save().then(() => res.status(200).end());
     }
   });
 

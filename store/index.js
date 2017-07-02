@@ -1,7 +1,10 @@
+'use strict';
+
 export const state = () => ({
   authUser: null,
   dashboards: null,
   selectedDashboard: null,
+  alerts: [],
 });
 
 export const mutations = {
@@ -18,5 +21,11 @@ export const mutations = {
     // For logout
     state.authUser = null;
     state.dashboards = null;
+  },
+  addAlert(state, alert) {
+    state.alerts.push(alert);
+  },
+  removeAlert(state) {
+    state.alerts.shift();
   },
 };
