@@ -10,6 +10,9 @@ const Dashboard = sql.define('dashboard', {
   definition: {
     type: Sequelize.TEXT,
   },
+  visibility: {
+    type: Sequelize.INTEGER, // 0 = private, 1 = visible with link (ie public but unlisted)
+  },
 }, {
   timestamps: true,
 });

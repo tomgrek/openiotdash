@@ -1,10 +1,15 @@
 export default {
   title: 'comp1',
+  uuid: null,
   content: `<div style="position: absolute;"></div>`,
   preview: `<span>Basic Line Chart</span>`,
+  defaultSettings: {},
+  settings: {},
+  settingsDisplay: `<div>Settings go here</div>`,
   height: 100,
   width: 200,
   script: `
+            console.log(this, node);
             const draw = e => {
               node.children[0].innerHTML = '';
               let svg = d3.select(node.children[0]).append("svg")
@@ -42,10 +47,16 @@ export default {
               });
             };
             node.addEventListener('created', e => {
+              this.uuid = e.detail.uuid;
               draw(e);
             });
             node.addEventListener('resized', (e) => {
+              this.height = e.detail.height;
+              this.width = e.detail.width;
               draw(e);
+            });
+            node.addEventListener('settings', (e) => {
+              console.log(e, this.height, this.width, this.uuid);
             });
           `,
 }

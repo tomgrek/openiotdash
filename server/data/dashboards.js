@@ -25,6 +25,7 @@ router.get('/dashboard/:id', (req, res, next) => {
       'createdAt',
       'title',
       'definition',
+      'visibility',
     ],
     where: {
       id: req.params.id,

@@ -1,14 +1,16 @@
 <template>
   <section class="container">
-    <ModalRename v-if="showModal" @close="showModal = false" :currentTitle="dashboard.title" :setTitleFn="setTitle"/>
+    <ModalRename v-if="showModal_rename" @close="showModal_rename = false" :currentTitle="dashboard.title" :setTitleFn="setTitle"/>
+    <ModalSave v-if="showModal_save" @close="showModal_save = false" :currentVisibility="dashboard.visibility" :setVisibilityFn="setVisibility"/>
     <my-header :username="username" :extended="dashboard.title"/>
     <div class="main-container">
       <div v-once class="canvas-container" v-on:dragover="nothing($event)" v-on:drop="nothing($event)">
       </div>
       <div class="sidebar">
         <div class="sidebar-header">Manage</div>
-        <i class="material-icons toolicon" style="margin-bottom: 0.5rem; margin-right: 0.5rem;" title="Save">save</i>
-        <i @click="showModal = true" class="material-icons toolicon" style="margin-bottom: 0.5rem; margin-right: 0.5rem;" title="Rename">title</i>
+        <i @click="showModal_save = true" class="material-icons toolicon" style="margin-bottom: 0.5rem; margin-right: 0.5rem;" title="Save">save</i>
+        <i @click="showModal_rename = true" class="material-icons toolicon" style="margin-bottom: 0.5rem; margin-right: 0.5rem;" title="Rename">title</i>
+        <i class="material-icons toolicon" style="margin-bottom: 0.5rem; margin-right: 0.5rem;" title="Settings">settings</i>
         <i class="material-icons toolicon" style="margin-bottom: 0.5rem;" title="Delete">delete</i>
         <div class="sidebar-header">Components</div>
         <div v-for="component in predefinedComponents" v-html="component.preview" class="component" draggable=true v-on:dragend="dropped($event, 0)"></div>
@@ -21,8 +23,10 @@
 import { title, indexOptions } from "~components/config/config";
 import * as d3 from "d3";
 import axios from '~plugins/axios';
+import { getUuid } from '~plugins/utils';
 import MyHeader from '~components/Header';
 import ModalRename from '~components/modal_rename';
+import ModalSave from '~components/modal_save';
 
 import BasicChart from '../../predefined_components/BasicChart';
 
@@ -32,6 +36,7 @@ export default {
   components: {
     MyHeader,
     ModalRename,
+    ModalSave,
   },
   data() {
     return {
@@ -40,13 +45,15 @@ export default {
       predefinedComponents: [
         BasicChart,
       ],
+      individualComponents: [],
       dragged: null,
       zoomed: null,
       svgOffsetX: 0,
       svgOffsetY: 0,
       clickOffsetX: false,
       clickOffsetY: false,
-      showModal: false,
+      showModal_rename: false,
+      showModal_save: false,
     };
   },
   computed: {
@@ -69,6 +76,20 @@ export default {
           }
         });
     },
+    setVisibility(visibility) {
+      let oldVisibility = this.dashboard.visibility;
+      this.dashboard.visibility = visibility;
+      let body = JSON.stringify({id: this.$route.params.id, visibility: visibility});
+      fetch(`/api/dashboards/save/visibility`, {headers: {'Content-Type': 'application/json'}, method: 'POST', body, credentials: 'include'})
+        .then(resp => {
+          if (resp.status !== 200) {
+            this.dashboard.visibility = oldVisibility;
+            this.$store.commit('addAlert', { msg: 'Error setting visibility.', type: 'error'});
+          } else {
+            this.$store.commit('addAlert', { msg: 'Visibility saved successfully.', type: 'success'});
+          }
+        });
+    },
     nothing(e) {
       e.preventDefault();
       e.stopPropagation();
@@ -78,6 +99,7 @@ export default {
       e.stopPropagation();
       let c = d3.select('.canvas-container');
 
+      let uuid = getUuid();
       let div = c.append('div')
         .attr('class', 'box')
         .style('height', this.predefinedComponents[id].height + 'px')
@@ -85,7 +107,7 @@ export default {
         .html(this.predefinedComponents[id].content)
         .attr('offsetX', e.pageX - this.svgOffsetX + (this.predefinedComponents[id].width/2))
         .attr('offsetY', e.offsetY - (this.predefinedComponents[id].height/2) - this.svgOffsetY)
-        .attr('uuid', id)
+        .attr('uuid', uuid)
         .style('position', 'absolute')
         .style('transform', `translate(${e.pageX + this.predefinedComponents[id].width/2}px, ${e.offsetY - this.predefinedComponents[id].height/2}px)`)
         .call(d3.drag()
@@ -98,10 +120,17 @@ export default {
         );
       let node = div.node();
 
+      window.showSettings = (id, uuid) => {
+        console.log(event, id, uuid, this);
+        let me = this.individualComponents.filter(x => x.uuid === uuid)[0];
+        let createdEvent = new CustomEvent('settings');
+        me.node.dispatchEvent(createdEvent);
+      };
+
       let tb = div.append('div')
         .attr('class', 'title-bar')
         .html(`<span>${this.predefinedComponents[id].title}</span>
-                <span class="settings-icon material-icons">settings</span>`);
+                <span class="settings-icon material-icons" onclick="showSettings(${id}, '${uuid}')">settings</span>`);
 
       // tb.node().onclick = (e) => {
       //   console.log(e);
@@ -137,9 +166,10 @@ export default {
           resizer.addEventListener('mousedown', initResize, false);
 
       this.components.push(div);
-      eval(this.predefinedComponents[id].script);
-      let event = new CustomEvent('created', { detail: { width: this.predefinedComponents[id].width, height: this.predefinedComponents[id].height } });
-      node.dispatchEvent(event);
+      this.individualComponents.push({uuid, component: this.predefinedComponents[id], node: div.node()});
+      (() => { eval(this.predefinedComponents[id].script) }).call(this.predefinedComponents[id]);
+      let createdEvent = new CustomEvent('created', { detail: { uuid, width: this.predefinedComponents[id].width, height: this.predefinedComponents[id].height } });
+      node.dispatchEvent(createdEvent);
       this.$store.commit('addAlert', { msg: 'Hold shift to resize.', type: 'info'});
     },
   },
@@ -256,6 +286,7 @@ export default {
         styleStr = styleStr + ' scale(' + parseFloat(st[1]) + ')';
       }
       let meD3 = d3.select(elm);
+      // can do something here with a.attr('uuid');
       meD3.style('transform', styleStr);
       meD3.attr('offsetX', (x - self.svgOffsetX - self.clickOffsetX));
       meD3.attr('offsetY', (y - self.svgOffsetY - self.clickOffsetY));
