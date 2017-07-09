@@ -14,6 +14,10 @@ router.post('/dashboards/save/:what', (req, res, next) => {
       d.title = req.body.title;
       d.save().then(() => res.status(200).end());
     }
+    if (req.params.what === 'visibility') {
+      d.visibility = req.body.visibility;
+      d.save().then(() => res.status(200).end());
+    }
   });
 
 });

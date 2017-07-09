@@ -28,7 +28,7 @@
 <script>
 export default {
   name: 'modal_rename',
-  props: ['currentVisibility', 'setVisibilityFn'],
+  props: ['currentVisibility', 'saveFn'],
   data() {
     return {
       newVisibility: this.$props.currentVisibility,
@@ -37,12 +37,13 @@ export default {
   },
   methods: {
     setVisibility() {
-      this.$props.setVisibilityFn(this.visibilities.indexOf(this.newVisibility));
+      //this.$props.setVisibilityFn(this.visibilities.indexOf(this.newVisibility));
+      this.$props.saveFn();
       this.$emit('close');
     },
   },
   mounted() {
-    console.log(this.$props.currentVisibility);
+    this.newVisibility = this.visibilities[this.$props.currentVisibility];
   },
 }
 </script>

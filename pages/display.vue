@@ -5,7 +5,6 @@
     <ModalSettings v-if="showModal_settings" @close="showModal_settings = false" :component="selectedComponent"/>
     <my-header :username="username" :extended="dashboard.title"/>
     <div class="main-container">
-      <div id="canvasContainer"></div>
       <div v-once class="canvas-container" v-on:dragover="nothing($event)" v-on:drop="nothing($event)">
       </div>
       <div class="sidebar">
@@ -15,7 +14,7 @@
         <i class="material-icons toolicon" style="margin-bottom: 0.5rem; margin-right: 0.5rem;" title="Settings">settings</i>
         <i class="material-icons toolicon" style="margin-bottom: 0.5rem;" title="Delete">delete</i>
         <div class="sidebar-header">Components</div>
-        <div v-for="component, i in predefinedComponents" v-html="component().preview" class="component" draggable=true v-on:dragend="dropped($event, i)"></div>
+        <div v-for="component in predefinedComponents" v-html="component().preview" class="component" draggable=true v-on:dragend="dropped($event, 0)"></div>
       </div>
     </div>
   </section>
@@ -31,11 +30,11 @@ import ModalRename from '~components/modal_rename';
 import ModalSave from '~components/modal_save';
 import ModalSettings from '~components/modal_settings';
 
-import BasicChart from '../../predefined_components/BasicChart';
-import Tester from '../../predefined_components/Tester';
+import BasicChart from '../predefined_components/BasicChart';
+import {dash} from './asaveddash.js';
 
 export default {
-  name: 'dash',
+  name: 'displaydash',
   middleware: ['authentication', 'dashboards'],
   components: {
     MyHeader,
@@ -49,7 +48,6 @@ export default {
       components: [],
       predefinedComponents: [
         BasicChart,
-        Tester,
       ],
       individualComponents: [],
       dragged: null,
@@ -62,13 +60,10 @@ export default {
       showModal_save: false,
       showModal_settings: false,
       selectedComponent: null,
+      firstTransform: true,
+      lastMoveX: 0,
+      lastMoveY: 0,
     };
-  },
-  watch: {
-    // individualComponents(val) {
-    //   console.log(val);
-    //   this.$store._vm.$watch(() => this.individualComponents, console.log, { deep: true, immediate: true });
-    // },
   },
   computed: {
     username() {
@@ -106,10 +101,7 @@ export default {
     },
     saveAll(visibility) {
       let oldVisibility = this.dashboard.visibility;
-      console.log(this.individualComponents);
-      let j = JSON.stringify({ components: this.individualComponents, svgOffsetX: this.svgOffsetX, svgOffsetY: this.svgOffsetY});
-      console.log(j);
-      console.log(JSON.parse(j));
+      console.log(JSON.stringify({ components: this.individualComponents, svgOffsetX: this.svgOffsetX, svgOffsetY: this.svgOffsetY}));
       // this.dashboard.visibility = visibility;
       // let body = JSON.stringify({id: this.$route.params.id, visibility: visibility});
       // fetch(`/api/dashboards/save/visibility`, {headers: {'Content-Type': 'application/json'}, method: 'POST', body, credentials: 'include'})
@@ -130,6 +122,7 @@ export default {
       e.preventDefault();
       e.stopPropagation();
       let c = d3.select('.canvas-container');
+
       let comp = this.predefinedComponents[id]();
 
       let uuid = getUuid();
@@ -138,11 +131,11 @@ export default {
         .style('height', comp.height + 'px')
         .style('width', comp.width + 'px')
         .html(comp.content)
-        .attr('offsetX', e.pageX - this.svgOffsetX)
-        .attr('offsetY', e.pageY - (2*comp.height) - this.svgOffsetY)
+        .attr('offsetX', e.pageX - this.svgOffsetX + (comp.width/2))
+        .attr('offsetY', e.offsetY - (comp.height/2) - this.svgOffsetY)
         .attr('uuid', uuid)
         .style('position', 'absolute')
-        .style('transform', `translate(${e.pageX}px, ${e.pageY - (2*comp.height)}px)`)
+        .style('transform', `translate(${e.pageX + comp.width/2}px, ${e.offsetY - comp.height/2}px)`)
         .call(d3.drag()
           .on('drag', this.dragged)
           .on('end', () => {
@@ -163,8 +156,13 @@ export default {
 
       let tb = div.append('div')
         .attr('class', 'title-bar')
-        .html(`<span id="componentTitle-${uuid}">${comp.title}</span>
+        .html(`<span>${comp.title}</span>
                 <span class="settings-icon material-icons" onclick="showSettings(${id}, '${uuid}')">settings</span>`);
+
+      // tb.node().onclick = (e) => {
+      //   console.log(e);
+      //   e.stopPropagation();
+      // }
 
           let resizer = document.createElement('div');
           resizer.className = 'resizer';
@@ -203,7 +201,8 @@ export default {
     },
   },
   async asyncData(context) {
-    let dashboard = await axios.get(`/data/dashboard/${context.params.id}`);
+    //let dashboard = await axios.get(`/data/dashboard/${context.params.id}`);
+    let dashboard = { data: [], title: 'Made up saved dash', id: 3, definition: dash/*JSON.parse(dash)*/ };
     context.store.commit('setSelectedDashboard', dashboard.data);
     return {
        dashboard: dashboard.data,
@@ -214,7 +213,14 @@ export default {
       title: this.dashboard.title,
     };
   },
+  created() {
+    this.dashboard.definition = JSON.parse(dash);
+    this.svgOffsetX = this.dashboard.definition.svgOffsetX;
+    this.svgOffsetY = this.dashboard.definition.svgOffsetY;
+
+  },
   mounted() {
+    console.log(this.dash);
     let self = this;
     window.d3 = d3;
     window.onkeydown = e => {
@@ -272,6 +278,7 @@ export default {
           .attr("y1", function(d) { return d; })
           .attr("x2", width)
           .attr("y2", function(d) { return d; });
+    svg.attr("transform", "translate(" + this.svgOffsetX + ", " + this.svgOffsetY + ") scale(1)");
 
     let c = d3.select('.canvas-container');
     let c_node = c.node();
@@ -341,7 +348,10 @@ export default {
     let zoom = d3.zoom()
         .scaleExtent([1, 24])
         .translateExtent([[-c_node.clientWidth, -c_node.clientHeight], [c_node.clientWidth*2, c_node.clientHeight*2]])
-        .on("zoom", zoomed);
+        .on("zoom", zoomed)
+          .on("end", () => {
+
+          });
 
     c.call(zoom);
   },
@@ -349,7 +359,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@import "../../assets/css/main.scss";
+@import "../assets/css/main.scss";
 .title {
   margin: 30px 0;
   color: $primary-text;
@@ -392,7 +402,6 @@ export default {
     border: 1px solid black;
     width: 100%;
     height: 8rem;
-    margin-bottom: 0.5rem;
   }
 }
 .canvas-container {

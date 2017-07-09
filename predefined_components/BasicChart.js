@@ -1,13 +1,20 @@
-export default {
+export default () => {
+return {
   title: 'comp1',
   uuid: null,
   content: `<div style="position: absolute;"></div>`,
   preview: `<span>Basic Line Chart</span>`,
   defaultSettings: {},
   settings: {},
-  settingsDisplay: `<div>Settings go here</div>`,
+  settingsDisplay:
+    `<div>My settings for my component
+      <input id="title" type="text"></input>
+    </div>`,
   height: 100,
   width: 200,
+  transform: '',
+  offsetX: 0,
+  offsetY: 0,
   script: `
             console.log(this, node);
             const draw = e => {
@@ -56,7 +63,13 @@ export default {
               draw(e);
             });
             node.addEventListener('settings', (e) => {
-              console.log(e, this.height, this.width, this.uuid);
+              console.log(e, this.height, this.width, this.uuid, this.offsetX);
+            });
+            node.addEventListener('moved', (e) => {
+              this.transform = e.detail.transform;
+              this.offsetX = e.detail.offsetX;
+              this.offsetY = e.detail.offsetY;
             });
           `,
+}
 }
