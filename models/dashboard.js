@@ -17,6 +17,8 @@ const Dashboard = sql.define('dashboard', {
   timestamps: true,
 });
 
+Dashboard.sync();
+
 // Dashboard.sync(/*{force: true}*/).then(() => {
 //   return Dashboard.create({
 //     user: 4,

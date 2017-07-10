@@ -1,5 +1,6 @@
 module.exports = {
   title: 'Dash built with OpenIoTDash',
+  baseUrl: 'http://localhost:3000',
   headerOptions: {
     headerImage: '~assets/img/headerimg.png',
     headerText: 'My Dashboard',
@@ -7,5 +8,5 @@ module.exports = {
   },
   indexOptions: {
     title: 'Welcome to my Open IoT Dashboard',
-  }, 
+  },
 };

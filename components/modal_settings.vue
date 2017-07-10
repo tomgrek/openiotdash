@@ -7,10 +7,25 @@
           <div class="modal-header">Settings</div>
           <div class="tabs">
             <div class="tab" data-active @click="makeActive" id="settings_tab">Settings</div>
+            <div class="tab" @click="makeActive" id="dataSinks_tab">Data Sinks</div>
             <div class="tab" @click="makeActive" id="dataSources_tab">Data Sources</div>
           </div>
           <div v-if="activeComponent === 'settings_tab'">
             <form ref="activeSettings" v-html="component.component.settingsDisplay" />
+          </div>
+          <div v-if="activeComponent === 'dataSinks_tab'">
+            <div class="datasinks-toolbox">
+              <input type="checkbox"></input>
+              <i class="material-icons toolbox-icon">delete</i>
+              <i v-on:click="addDatasink" class="material-icons toolbox-icon">add</i>
+            </div>
+            <div class="datasink-listing" v-for="dataSink in component.component.dataSinks">
+              <span>
+                <input type="checkbox"></input>
+                <span class="listing-title">{{dataSink.title}}</span>
+                <span class="listing-url">{{dataSink.url}}</span>
+              </span>
+            </div>
           </div>
           <div v-if="activeComponent === 'dataSources_tab'">
             <div>Data sources</div>
@@ -36,6 +51,16 @@ export default {
     }
   },
   methods: {
+    addDatasink() {
+      fetch('/api/datasinks/add', {method: 'POST', credentials: 'include'})
+      .then(res => {
+        res.json().then(r => {
+          this.$props.component.component.dataSinks.push({ id: r.datasink.id, title: r.datasink.title, url: r.url});
+        }).catch(e => {
+          this.$store.commit('addAlert', { msg: 'Error creating sink.', type: 'error'});
+        });
+      });
+    },
     saveSettings(e) {
       for (let el of this.$refs.activeSettings) {
         if (el.id === 'title') {
@@ -90,7 +115,7 @@ export default {
   vertical-align: middle;
 }
 .modal-container {
-  width: 20rem;
+  width: 33vw;
   margin: 0px auto;
   padding: 1rem 1.5rem;
   background-color: #fff;
@@ -126,7 +151,7 @@ export default {
 }
 .tab {
   display: inline-block;
-  width: 50%;
+  width: 33%;
   color: $light-text;
   font-weight: 500;
   vertical-align: middle;
@@ -144,6 +169,35 @@ export default {
 .modal-default-button {
   float: right;
 }
+
+.datasinks-toolbox {
+  background-color: #eee;
+  padding: 0.2rem 0.5rem;
+  margin: 0.5rem 0;
+  position: relative;
+  display: inline-block;
+  width: 100%;
+  .toolbox-icon {
+    position: relative;
+    float: right;
+    color: $primary-text;
+    cursor: pointer;
+  }
+  .toolbox-icon:hover {
+    color: lightgray;
+  }
+}
+.datasink-listing {
+  padding: 0.2rem 0.5rem;
+}
+.listing-title {
+  margin-left: 0.5rem;
+}
+.listing-url {
+  font-size: 0.8rem;
+  margin-left: 1rem;
+}
+
 /*
  * The following styles are auto-applied to elements with
  * transition="modal" when their visibility is toggled

@@ -5,6 +5,7 @@ import express from 'express';
 import data from './data';
 import auth from './auth';
 import api from './api';
+import datapoints from './datapoints';
 
 import models from '../models';
 
@@ -51,6 +52,7 @@ async function start() {
 
   app.use('/data', localhostChecker.check, data);
   app.use('/api', passportConfig.isAuthenticated, api);
+  app.use('/d', datapoints);
   app.use('/auth', auth.router);
 
   await openUserDb();

@@ -9,6 +9,8 @@ return {
   </div>`,
   preview: `<span>Test component</span>`,
   data: {},
+  dataSources: [],
+  dataSinks: [],
   defaultSettings: {},
   settings: {},
   settingsDisplay:

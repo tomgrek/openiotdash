@@ -97,8 +97,11 @@ rect {
   padding-left: 0.5rem;
   font-size: 0.9rem;
   background-color: darkgray;
-  opacity: 0.9;
+  opacity: 0.3;
   top: 0; left: 0;
+}
+.title-bar:hover {
+  opacity: 0.9;
 }
 .settings-icon {
   right: 0.5rem;
