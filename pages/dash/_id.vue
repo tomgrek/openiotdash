@@ -195,6 +195,23 @@ export default {
           resizer.addEventListener('mousedown', initResize, false);
 
       this.components.push(div);
+
+      let keyQueries = [];
+      for (let sink of comp.dataSinks) {
+        keyQueries.push(fetch('/api/datasinks/getReadKey/'+sink, {credentials: 'include'}).then(r => r.json()));
+      }
+      Promise.all(keyQueries).then(keys => {
+        let dataQueries = [];
+        for (let key in keys) {
+          dataQueries.push(fetch(`/d/r/${keys[key].readKey}/${comp.dataSinks[key]}`, {credentials: 'include'}).then(r => r.json()));
+        }
+        Promise.all(dataQueries).then(data => {
+          console.log(data);
+          // TODO: NEXT: move the below component creation code in here,
+          // but after setting comp.data.[sinkName] to the returned arrays from each data query.
+        });
+      });
+
       this.individualComponents.push({uuid, component: comp, node: div.node()});
       (() => { eval(comp.script) }).call(comp);
       let createdEvent = new CustomEvent('created', { detail: { uuid, width: comp.width, height: comp.height } });

@@ -10,7 +10,9 @@ return {
   preview: `<span>Test component</span>`,
   data: {},
   dataSources: [],
-  dataSinks: [],
+  dataSinks: [
+    1
+  ],
   defaultSettings: {},
   settings: {},
   settingsDisplay:

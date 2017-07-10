@@ -22,4 +22,23 @@ router.post('/datasinks/add', (req, res, next) => {
   });
 });
 
+router.get('/datasinks/getReadKey/:id', (req, res, next) => {
+  if (!req.user) return res.status(401).end();
+  Datasink.findOne({
+    attributes: [
+      'readKey',
+      'title',
+    ],
+    where: {
+      user: req.user.id,
+      id: req.params.id,
+    },
+  }).then(ds => {
+    res.send(ds).end();
+  }).catch(e => {
+    console.log(e);
+    res.status(500).end();
+  });
+});
+
 export default router;
