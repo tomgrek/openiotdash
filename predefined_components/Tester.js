@@ -6,12 +6,14 @@ return {
   `<div style="position: absolute;">
     <button>Say hi</button>
     <input id="myfield" type="text"></input>
+    <span id="latestData">?</span>
   </div>`,
   preview: `<span>Test component</span>`,
   data: {},
   dataSources: [],
   dataSinks: [
-    1
+    { id: 1, title: 'j4xbpkli', url: '' },
+    { id: 5, title: 'j51rvm9y', url: '' },
   ],
   defaultSettings: {},
   settings: {},
@@ -24,17 +26,22 @@ return {
   transform: '',
   offsetX: 0,
   offsetY: 0,
-  script: `
+  script: ` 
             node.addEventListener('dblclick', e => {
               e.preventDefault();
               e.stopPropagation();
             });
             node.addEventListener('click', e => {
-              console.log(this.data.myfield);
+              console.log(this.settings.myfield);
+            });
+            node.addEventListener('data', e => {
+              console.log(this.data, e.detail);
+              Object.assign(this.data, e.detail);
+              node.querySelector('#latestData').innerText = JSON.parse(this.data.j4xbpkli[5].data).value;
             });
             node.addEventListener('input', e => {
               if (e.target.id === 'myfield') {
-                this.data.myfield = e.target.value;
+                this.settings.myfield = e.target.value;
               }
             });
             node.addEventListener('created', e => {

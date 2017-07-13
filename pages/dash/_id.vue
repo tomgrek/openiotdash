@@ -104,23 +104,24 @@ export default {
           }
         });
     },
-    saveAll(visibility) {
-      let oldVisibility = this.dashboard.visibility;
-      console.log(this.individualComponents);
-      let j = JSON.stringify({ components: this.individualComponents, svgOffsetX: this.svgOffsetX, svgOffsetY: this.svgOffsetY});
-      console.log(j);
-      console.log(JSON.parse(j));
-      // this.dashboard.visibility = visibility;
-      // let body = JSON.stringify({id: this.$route.params.id, visibility: visibility});
-      // fetch(`/api/dashboards/save/visibility`, {headers: {'Content-Type': 'application/json'}, method: 'POST', body, credentials: 'include'})
-      //   .then(resp => {
-      //     if (resp.status !== 200) {
-      //       this.dashboard.visibility = oldVisibility;
-      //       this.$store.commit('addAlert', { msg: 'Error setting visibility.', type: 'error'});
-      //     } else {
-      //       this.$store.commit('addAlert', { msg: 'Visibility saved successfully.', type: 'success'});
-      //     }
-      //   });
+    saveAll() {
+      let dashToSave = { components: this.individualComponents, svgOffsetX: this.svgOffsetX, svgOffsetY: this.svgOffsetY };
+      for (let comp of this.individualComponents) {
+        comp.component.offsetX = comp.node.attributes['offsetX'].value;
+        comp.component.offsetY = comp.node.attributes['offsetY'].value;
+      }
+      for (let comp of dashToSave.components) {
+        comp.component.data = {};
+      }
+      let body = JSON.stringify({ id: this.$route.params.id, definition: JSON.stringify(dashToSave) });
+      fetch(`/api/dashboards/save/all`, {headers: {'Content-Type': 'application/json'}, method: 'POST', body, credentials: 'include'})
+        .then(resp => {
+          if (resp.status !== 200) {
+            this.$store.commit('addAlert', { msg: 'Error saving dashboard.', type: 'error'});
+          } else {
+            this.$store.commit('addAlert', { msg: 'Dashboard saved successfully.', type: 'success'});
+          }
+        });
     },
     nothing(e) {
       e.preventDefault();
@@ -198,25 +199,33 @@ export default {
 
       let keyQueries = [];
       for (let sink of comp.dataSinks) {
-        keyQueries.push(fetch('/api/datasinks/getReadKey/'+sink, {credentials: 'include'}).then(r => r.json()));
+        keyQueries.push(fetch('/api/datasinks/getReadKey/'+sink.id, {credentials: 'include'}).then(r => r.json()));
       }
-      Promise.all(keyQueries).then(keys => {
-        let dataQueries = [];
-        for (let key in keys) {
-          dataQueries.push(fetch(`/d/r/${keys[key].readKey}/${comp.dataSinks[key]}`, {credentials: 'include'}).then(r => r.json()));
-        }
-        Promise.all(dataQueries).then(data => {
-          console.log(data);
-          // TODO: NEXT: move the below component creation code in here,
-          // but after setting comp.data.[sinkName] to the returned arrays from each data query.
-        });
-      });
 
       this.individualComponents.push({uuid, component: comp, node: div.node()});
       (() => { eval(comp.script) }).call(comp);
       let createdEvent = new CustomEvent('created', { detail: { uuid, width: comp.width, height: comp.height } });
       node.dispatchEvent(createdEvent);
-      this.$store.commit('addAlert', { msg: 'Hold shift to resize.', type: 'info'});
+
+      Promise.all(keyQueries).then(keys => {
+        let dataQueries = [];
+        for (let key in keys) {
+          dataQueries.push(fetch(`/d/r/${keys[key].readKey}/${comp.dataSinks[key].id}`, {credentials: 'include'}).then(r => r.json()));
+        }
+        Promise.all(dataQueries).then(data => {
+          let detail = {};
+          for (let key in keys) {
+            detail[keys[key].title] = data[key];
+          }
+          let dataEvent = new CustomEvent('data', { detail });
+          node.dispatchEvent(dataEvent);
+
+          this.$store.commit('addAlert', { msg: 'Hold shift to resize.', type: 'info'});
+
+        });
+      });
+
+
     },
   },
   async asyncData(context) {

@@ -18,6 +18,11 @@ router.post('/dashboards/save/:what', (req, res, next) => {
       d.visibility = req.body.visibility;
       d.save().then(() => res.status(200).end());
     }
+    if (req.params.what === 'all') {
+      console.log(req.body.definition);
+      d.definition = req.body.definition;
+      d.save().then(() => res.status(200).end());
+    }
   });
 
 });
