@@ -25,7 +25,6 @@
 import { title, indexOptions } from "~components/config/config";
 import * as d3 from "d3";
 import axios from '~plugins/axios';
-import { getUuid } from '~plugins/utils';
 import MyHeader from '~components/Header';
 import ModalRename from '~components/modal_rename';
 import ModalSave from '~components/modal_save';
@@ -33,6 +32,8 @@ import ModalSettings from '~components/modal_settings';
 
 import BasicChart from '../../predefined_components/BasicChart';
 import Tester from '../../predefined_components/Tester';
+
+import fakedrop from '../../clientutils/utils';
 
 export default {
   name: 'dash',
@@ -70,12 +71,23 @@ export default {
     //   this.$store._vm.$watch(() => this.individualComponents, console.log, { deep: true, immediate: true });
     // },
   },
+
+  // TODO: NEXT:
+  // make visibility work, may have to obfuscate the link so not show/1 but show/asdf234$$k1rr
+  // make a generic linechart component. now this isnt obvious since data sources come out in the component
+  // as data.j6123pc = [{value: 1} , {value: 2} ...] etc. so how would a generic component know what the
+  // names of its datasources are. Well, component could either mandate datasource names - e.g. "componentUuid_ds1", "componentUuid_ds2" etc
+  // or, this is probably better, just enumerate the datasources - Object.keys(this.data), for example
+
   computed: {
     username() {
       return this.$store.state.authUser;
     },
   },
   methods: {
+    fakeDrop(fullComponent) {
+      fakedrop(fullComponent, this, true);
+    },
     setTitle(title) {
       let oldTitle = this.dashboard.title;
       this.dashboard.title = title;
@@ -130,102 +142,13 @@ export default {
     dropped(e, id) {
       e.preventDefault();
       e.stopPropagation();
-      let c = d3.select('.canvas-container');
-      let comp = this.predefinedComponents[id]();
+      let newComp = { component: this.predefinedComponents[id]() };
 
-      let uuid = getUuid();
-      let div = c.append('div')
-        .attr('class', 'box')
-        .style('height', comp.height + 'px')
-        .style('width', comp.width + 'px')
-        .html(comp.content)
-        .attr('offsetX', e.pageX - this.svgOffsetX)
-        .attr('offsetY', e.pageY - (2*comp.height) - this.svgOffsetY)
-        .attr('uuid', uuid)
-        .style('position', 'absolute')
-        .style('transform', `translate(${e.pageX}px, ${e.pageY - (2*comp.height)}px)`)
-        .call(d3.drag()
-          .on('drag', this.dragged)
-          .on('end', () => {
-            //dragging = false;
-            this.clickOffsetX = false;
-            this.clickOffsetY = false;
-          })
-        );
-      let node = div.node();
+      newComp.component.offsetX = e.pageX;
+      newComp.component.offsetY = e.pageY - (2*newComp.component.height);
 
-      window.showSettings = (id, uuid) => {
-        let me = this.individualComponents.filter(x => x.uuid === uuid)[0];
-        this.selectedComponent = me;
-        this.showModal_settings = true;
-        let settingsEvent = new CustomEvent('settings');
-        me.node.dispatchEvent(settingsEvent);
-      };
-
-      let tb = div.append('div')
-        .attr('class', 'title-bar')
-        .html(`<span id="componentTitle-${uuid}">${comp.title}</span>
-                <span class="settings-icon material-icons" onclick="showSettings(${id}, '${uuid}')">settings</span>`);
-
-          let resizer = document.createElement('div');
-          resizer.className = 'resizer';
-          node.appendChild(resizer);
-          const resize = (e) => {
-            if (!e.shiftKey) { return stopResize(e); }
-            e.preventDefault();
-            e.stopPropagation();
-            let newWidth = parseInt(node.style.width) + e.movementX;
-            let newHeight = parseInt(node.style.height) + e.movementY;
-            let event = new CustomEvent('resized', { detail: { width: newWidth, height: newHeight } });
-            node.style.width = newWidth + 'px';
-            node.style.height = newHeight + 'px';
-            node.dispatchEvent(event);
-          }
-          const initResize = (e) => {
-            if (!e.shiftKey) return;
-            e.preventDefault();
-            e.stopPropagation();
-            document.addEventListener('mousemove', resize, false);
-            document.addEventListener('mouseup', stopResize, false);
-          }
-          const stopResize = (e) => {
-            document.removeEventListener('mousemove', resize, false);
-            document.removeEventListener('mouseup', stopResize, false);
-          }
-
-          resizer.addEventListener('mousedown', initResize, false);
-
-      this.components.push(div);
-
-      let keyQueries = [];
-      for (let sink of comp.dataSinks) {
-        keyQueries.push(fetch('/api/datasinks/getReadKey/'+sink.id, {credentials: 'include'}).then(r => r.json()));
-      }
-
-      this.individualComponents.push({uuid, component: comp, node: div.node()});
-      (() => { eval(comp.script) }).call(comp);
-      let createdEvent = new CustomEvent('created', { detail: { uuid, width: comp.width, height: comp.height } });
-      node.dispatchEvent(createdEvent);
-
-      Promise.all(keyQueries).then(keys => {
-        let dataQueries = [];
-        for (let key in keys) {
-          dataQueries.push(fetch(`/d/r/${keys[key].readKey}/${comp.dataSinks[key].id}`, {credentials: 'include'}).then(r => r.json()));
-        }
-        Promise.all(dataQueries).then(data => {
-          let detail = {};
-          for (let key in keys) {
-            detail[keys[key].title] = data[key];
-          }
-          let dataEvent = new CustomEvent('data', { detail });
-          node.dispatchEvent(dataEvent);
-
-          this.$store.commit('addAlert', { msg: 'Hold shift to resize.', type: 'info'});
-
-        });
-      });
-
-
+      let comp = fakedrop(newComp, this, true);
+      comp.uuid = comp.component.uuid;
     },
   },
   async asyncData(context) {
@@ -256,6 +179,13 @@ export default {
           node.style.visibility = 'visible';
         }
       }
+    };
+    window.showSettings = (uuid) => {
+      let me = this.individualComponents.filter(x => x.uuid === uuid)[0];
+      this.selectedComponent = me;
+      this.showModal_settings = true;
+      let settingsEvent = new CustomEvent('settings');
+      me.node.dispatchEvent(settingsEvent);
     };
 
     let bbox = document.getElementsByClassName('canvas-container')[0].getBoundingClientRect();
@@ -370,6 +300,14 @@ export default {
         .on("zoom", zoomed);
 
     c.call(zoom);
+
+    let def = JSON.parse(this.dashboard.definition);
+    this.svgOffsetX = def.svgOffsetX;
+    this.svgOffsetY = def.svgOffsetY;
+    for (let component of def.components) {
+      this.fakeDrop(component);
+    }
+
   },
 }
 </script>

@@ -19,6 +19,8 @@ import MyHeader from '~components/Header';
 import BasicChart from '../../predefined_components/BasicChart';
 import Tester from '../../predefined_components/Tester';
 
+import fakedrop from '../../clientutils/utils';
+
 export default {
   name: 'dash',
   middleware: ['authentication', 'dashboards'],
@@ -55,65 +57,7 @@ export default {
       e.stopPropagation();
     },
     fakeDrop(fullComponent) {
-      let comp = fullComponent.component;
-      let c = d3.select('.canvas-container');
-
-      let uuid = getUuid();
-      let div = c.append('div')
-        .attr('class', 'box')
-        .style('height', comp.height + 'px')
-        .style('width', comp.width + 'px')
-        .html(comp.content)
-        .attr('offsetX', comp.offsetX - this.svgOffsetX)
-        .attr('offsetY', comp.offsetY - this.svgOffsetY)
-        .attr('uuid', uuid)
-        .style('position', 'absolute')
-        .style('transform', `translate(${comp.offsetX}px, ${comp.offsetY}px)`)
-        .call(d3.drag()
-          .on('drag', this.dragged)
-          .on('end', () => {
-            //dragging = false;
-            this.clickOffsetX = false;
-            this.clickOffsetY = false;
-          })
-        );
-      fullComponent.node = div.node();
-
-      let tb = div.append('div')
-        .attr('class', 'title-bar')
-        .html(`<span id="componentTitle-${uuid}">${comp.title}</span>`);
-
-      this.components.push(div);
-
-      let keyQueries = [];
-      for (let sink of comp.dataSinks) {
-        keyQueries.push(fetch('/api/datasinks/getReadKey/'+sink.id, {credentials: 'include'}).then(r => r.json()));
-      }
-
-      this.individualComponents.push({uuid, component: comp, node: fullComponent.node});
-      let node = fullComponent.node;
-      (() => { eval(comp.script) }).call(comp);
-      let createdEvent = new CustomEvent('created', { detail: { uuid, width: comp.width, height: comp.height } });
-      fullComponent.node.dispatchEvent(createdEvent);
-
-      Promise.all(keyQueries).then(keys => {
-        let dataQueries = [];
-        for (let key in keys) {
-          dataQueries.push(fetch(`/d/r/${keys[key].readKey}/${comp.dataSinks[key].id}`, {credentials: 'include'}).then(r => r.json()));
-        }
-        Promise.all(dataQueries).then(data => {
-          let detail = {};
-          for (let key in keys) {
-            detail[keys[key].title] = data[key];
-          }
-          let dataEvent = new CustomEvent('data', { detail });
-          fullComponent.node.dispatchEvent(dataEvent);
-          this.$store.commit('addAlert', { msg: 'Hold shift to resize.', type: 'info'});
-
-        });
-      });
-
-
+      fakedrop(fullComponent, this);
     },
   },
   async asyncData(context) {
