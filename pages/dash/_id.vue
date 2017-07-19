@@ -117,10 +117,10 @@ export default {
         });
     },
     saveAll() {
-      let dashToSave = { components: this.individualComponents, svgOffsetX: this.svgOffsetX, svgOffsetY: this.svgOffsetY };
+      let dashToSave = { components: this.individualComponents, svgOffsetX: 0, svgOffsetY: 0 };
       for (let comp of this.individualComponents) {
-        comp.component.offsetX = comp.node.attributes['offsetX'].value;
-        comp.component.offsetY = comp.node.attributes['offsetY'].value;
+        comp.component.offsetX = comp.node.attributes['offsetX'].value || 0;
+        comp.component.offsetY = comp.node.attributes['offsetY'].value || 0;
       }
       for (let comp of dashToSave.components) {
         comp.component.data = {};
@@ -187,6 +187,14 @@ export default {
       let settingsEvent = new CustomEvent('settings');
       me.node.dispatchEvent(settingsEvent);
     };
+    window.deleteComponent = (uuid) => {
+      let me = this.individualComponents.filter(x => x.uuid === uuid)[0];
+      this.components = this.components.filter(x => x.node() !== me.node);
+      let deleteEvent = new CustomEvent('delete');
+      me.node.dispatchEvent(deleteEvent);
+      me.node.parentElement.removeChild(me.node);
+      this.individualComponents = this.individualComponents.filter(x => x.uuid !== uuid);
+    }
 
     let bbox = document.getElementsByClassName('canvas-container')[0].getBoundingClientRect();
     const width = parseInt(bbox.width);
@@ -304,10 +312,11 @@ export default {
     let def = JSON.parse(this.dashboard.definition);
     this.svgOffsetX = def.svgOffsetX;
     this.svgOffsetY = def.svgOffsetY;
-    for (let component of def.components) {
-      this.fakeDrop(component);
+    if (def.components && def.components.length) {
+      for (let component of def.components) {
+        this.fakeDrop(component);
+      }
     }
-
   },
 }
 </script>

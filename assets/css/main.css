@@ -114,3 +114,14 @@ rect {
 .settings-icon:hover {
   color: lightgray;
 }
+.trash-icon {
+  right: 1.5rem;
+  font-size: 0.92rem;
+  position: absolute;
+  top: 0.75rem;
+  transform: translateY(-50%);
+  cursor: pointer;
+}
+.trash-icon:hover {
+  color: lightgray;
+}

@@ -10,8 +10,8 @@ export default (fullComponent, self, editing = false) => {
       .style('height', comp.height + 'px')
       .style('width', comp.width + 'px')
       .html(comp.content)
-      .attr('offsetX', comp.offsetX - self.svgOffsetX)
-      .attr('offsetY', comp.offsetY - self.svgOffsetY)
+      .attr('offsetX', (parseInt(comp.offsetX) || 0))
+      .attr('offsetY', (parseInt(comp.offsetY) || 0))
       .attr('uuid', uuid)
       .style('position', 'absolute')
       .style('transform', `translate(${comp.offsetX}px, ${comp.offsetY}px)`)
@@ -37,7 +37,7 @@ export default (fullComponent, self, editing = false) => {
     self.individualComponents.push({uuid, component: comp, node: fullComponent.node});
     let node = fullComponent.node;
     (() => { eval(comp.script) }).call(comp);
-    let createdEvent = new CustomEvent('created', { detail: { uuid, width: comp.width, height: comp.height } });
+    let createdEvent = new CustomEvent('created', { detail: { uuid, width: parseInt(comp.width), height: parseInt(comp.height) } });
     fullComponent.node.dispatchEvent(createdEvent);
 
     Promise.all(keyQueries).then(keys => {
@@ -56,6 +56,11 @@ export default (fullComponent, self, editing = false) => {
     });
     if (editing) {
       let tb = node.querySelector(`.title-bar`);
+      let trashIcon = document.createElement('span');
+      trashIcon.className = 'trash-icon material-icons';
+      trashIcon.innerText = 'delete';
+      trashIcon.onclick = window.deleteComponent.bind(self, uuid);
+      tb.append(trashIcon);
       let settingsIcon = document.createElement('span');
       settingsIcon.className = 'settings-icon material-icons';
       settingsIcon.innerText = 'settings';

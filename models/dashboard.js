@@ -13,6 +13,9 @@ const Dashboard = sql.define('dashboard', {
   visibility: {
     type: Sequelize.INTEGER, // 0 = private, 1 = visible with link (ie public but unlisted)
   },
+  link: {
+    type: Sequelize.STRING,
+  },
 }, {
   timestamps: true,
 });
@@ -23,7 +26,7 @@ Dashboard.sync();
 //   return Dashboard.create({
 //     user: 4,
 //     definition: '{}',
-//     title: "Tom's Dashboard 1",
+//     title: "Tom's Dashboard 2",
 //   });
 // });
 

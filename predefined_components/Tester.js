@@ -26,13 +26,14 @@ return {
   transform: '',
   offsetX: 0,
   offsetY: 0,
-  script: ` 
+  script: `
             node.addEventListener('dblclick', e => {
               e.preventDefault();
               e.stopPropagation();
             });
             node.addEventListener('click', e => {
               console.log(this.settings.myfield);
+              console.log(this.offsetX);
             });
             node.addEventListener('data', e => {
               console.log(this.data, e.detail);
