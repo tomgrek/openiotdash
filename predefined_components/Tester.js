@@ -3,7 +3,7 @@ return {
   title: 'testcomp',
   uuid: null,
   content:
-  `<div style="position: absolute;">
+  `<div style="position: absolute; top:1.5rem;">
     <button>Say hi</button>
     <input id="myfield" type="text"></input>
     <span id="latestData">?</span>
@@ -21,7 +21,7 @@ return {
     `<div>My settings for my test component
       <input id="title" type="text"></input>
     </div>`,
-  height: 100,
+  height: 150,
   width: 200,
   transform: '',
   offsetX: 0,

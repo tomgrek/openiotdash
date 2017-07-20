@@ -2,7 +2,7 @@ export default () => {
 return {
   title: 'comp1',
   uuid: null,
-  content: `<div style="position: absolute;"></div>`,
+  content: `<div style="position: absolute; top:1.5rem;"></div>`,
   preview: `<span>Basic Line Chart</span>`,
   defaultSettings: {},
   settings: {},

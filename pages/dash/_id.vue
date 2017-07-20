@@ -32,6 +32,7 @@ import ModalSettings from '~components/modal_settings';
 
 import BasicChart from '../../predefined_components/BasicChart';
 import Tester from '../../predefined_components/Tester';
+import Chart from '../../predefined_components/Chart';
 
 import fakedrop from '../../clientutils/utils';
 
@@ -49,8 +50,11 @@ export default {
       indexOptions,
       components: [],
       predefinedComponents: [
+        Chart,
         BasicChart,
         Tester,
+        Chart,
+        Chart,
       ],
       individualComponents: [],
       dragged: null,
@@ -144,8 +148,8 @@ export default {
       e.preventDefault();
       e.stopPropagation();
       let newComp = { component: this.predefinedComponents[id]() };
-      newComp.component.offsetX = e.pageX;
-      newComp.component.offsetY = e.pageY - (2*newComp.component.height);
+      newComp.component.offsetX = e.pageX - (newComp.component.width/2);
+      newComp.component.offsetY = e.pageY - newComp.component.height;
       let comp = fakedrop(newComp, this, true);
       comp.uuid = comp.component.uuid;
       this.$store.commit('addAlert', { msg: 'Hold shift to resize', type: 'info'});
@@ -284,7 +288,6 @@ export default {
       let newOffsetY = (y - self.svgOffsetY - self.clickOffsetY);
       let createdEvent = new CustomEvent('moved', { detail: { transform: styleStr, offsetX: newOffsetX, offsetY: newOffsetY } });
       self.individualComponents.filter(x => x.uuid === meD3.attr('uuid'))[0].node.dispatchEvent(createdEvent);
-
       meD3.style('transform', styleStr);
       meD3.attr('offsetX', newOffsetX);
       meD3.attr('offsetY', newOffsetY);
