@@ -99,6 +99,7 @@ export default {
             this.$store.commit('addAlert', { msg: 'Error saving new name.', type: 'error'});
           } else {
             this.$store.commit('addAlert', { msg: 'New name saved successfully.', type: 'success'});
+            this.$store.commit('renameDashboard', {id: parseInt(this.$route.params.id), newTitle: title});
           }
         });
     },
@@ -143,12 +144,11 @@ export default {
       e.preventDefault();
       e.stopPropagation();
       let newComp = { component: this.predefinedComponents[id]() };
-
       newComp.component.offsetX = e.pageX;
       newComp.component.offsetY = e.pageY - (2*newComp.component.height);
-
       let comp = fakedrop(newComp, this, true);
       comp.uuid = comp.component.uuid;
+      this.$store.commit('addAlert', { msg: 'Hold shift to resize', type: 'info'});
     },
   },
   async asyncData(context) {

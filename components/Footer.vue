@@ -12,7 +12,8 @@ footer {
   bottom: 0;
   display: inline-block;
   width: 100vw;
-  padding: 1rem;
+  height: 3.2rem;
+  line-height: 3.2rem;
   text-align: center;
   border-top: 1px solid $border-color;
 }

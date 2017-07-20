@@ -22,12 +22,4 @@ const Dashboard = sql.define('dashboard', {
 
 Dashboard.sync();
 
-// Dashboard.sync(/*{force: true}*/).then(() => {
-//   return Dashboard.create({
-//     user: 4,
-//     definition: '{}',
-//     title: "Tom's Dashboard 2",
-//   });
-// });
-
 export default Dashboard;

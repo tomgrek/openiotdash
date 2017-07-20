@@ -71,28 +71,27 @@ export default {
   position: absolute;
   bottom: 0;
   width: 100%;
-  padding: 1rem;
   transition: all 0.4s ease;
   font-weight: 600;
+  line-height: 3.2rem;
 }
 .success {
   background-color: #76a96b;
-  height: 3rem;
+  max-height: 3.2rem;
   opacity: 1;
 }
 .error {
   background-color: #bb5252;
-  height: 3rem;
+  max-height: 3.2rem;
   opacity: 1;
 }
 .info {
   background-color: $background-color;
-  height: 3rem;
+  max-height: 3.2rem;
   opacity: 1;
 }
 .invisible {
   max-height:0;
-  height: 0;
   opacity: 0;
 }
 </style>

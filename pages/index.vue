@@ -8,13 +8,13 @@
       <div v-if="username !== null">
         <div class="dashboards-header">
           <span class="dashboards-title">My Dashboards</span>
-          <button class="small-button new-button">New</button>
-          <button class="small-button delete-button">Delete</button>
+          <button class="small-button new-button" v-on:click="newDashboard">New</button>
+          <button class="small-button delete-button" v-on:click="deleteDashboard">Delete</button>
         </div>
         <div class="dashboards-list">
           <ul>
-            <li v-for="dashboard in dashboards" class="dashboards-list-item">
-              <input type="checkbox"></input>
+            <li v-for="dashboard, i in dashboards" class="dashboards-list-item">
+              <input type="checkbox" v-model="listOfCheckboxes[i]"></input>
               <nuxt-link :to="`/dash/${dashboard.id}`">{{dashboard.title}}</nuxt-link>
             </li>
           </ul>
@@ -40,13 +40,13 @@ export default {
   },
   data() {
     return {
+      listOfCheckboxes: [],
       indexOptions,
     };
   },
   async asyncData(context) {
     return {
       username: context.username,
-      dashboards: context.dashboards,
     }
   },
   head() {
@@ -54,7 +54,46 @@ export default {
       title,
     };
   },
+  computed: {
+    dashboards() {
+      return this.$store.state.dashboards;
+    },
+  },
+  watch: {
+    dashboards(val) {
+      this.listOfCheckboxes = val.map(x => false);
+    },
+  },
   mounted() {
+    this.listOfCheckboxes = this.dashboards.map(x => false);
+  },
+  methods: {
+    newDashboard(e) {
+      fetch('/api/dashboards/new', {credentials: 'include'}).then(r => r.json())
+        .then(res => {
+          this.$store.commit('addAlert', { msg: 'New dashboard successfully created', type: 'success'});
+          this.$store.commit('addDashboard', res);
+        });
+    },
+    deleteDashboard(e) {
+      let toDelete = this.listOfCheckboxes.reduce((acc, x, i) => {
+        if (x) {
+          acc.push(this.dashboards[i].id);
+        }
+        return acc;
+      }, []);
+      let qs = '';
+      for (let item of toDelete) {
+        qs = qs + `id=${item}&`;
+      }
+      fetch(`/api/dashboards/delete?${qs}`, {credentials: 'include'})
+      .then(res => {
+        for (let dash of toDelete) {
+          this.$store.commit('deleteDashboard', dash);
+        }
+        this.$store.commit('addAlert', { msg: 'Dashboard(s) deleted', type: 'success'});
+      });
+    },
   },
 }
 </script>
