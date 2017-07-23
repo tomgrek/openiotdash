@@ -37,7 +37,6 @@ export default {
   },
   methods: {
     save() {
-      //this.$props.setVisibilityFn(this.visibilities.indexOf(this.newVisibility));
       this.$props.currentDashboard.visibility = this.visibilities.indexOf(this.newVisibility);
       this.$props.saveFn();
       this.$emit('close');

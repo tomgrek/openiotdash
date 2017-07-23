@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { Dashboard } from '../../models';
+import crypto from 'crypto';
 
 var router = Router();
 
@@ -22,7 +23,6 @@ router.post('/dashboards/save/:what', (req, res, next) => {
       d.definition = req.body.definition;
       d.visibility = req.body.visibility;
       d.title = req.body.title;
-      console.log(d);
       d.save().then(() => res.status(200).end());
     }
   });
@@ -57,6 +57,7 @@ router.get('/dashboards/new', (req, res, next) => {
         definition: '{}',
         title: `Untitled Dashboard ${d.length + 1}`,
         visibility: 0,
+        link: crypto.createHash('md5').update((new Date().getTime()).toString(36)).update(req.user.username).digest('hex').slice(2,22),
       }).then(newDash => {
         res.json(newDash);
       });
