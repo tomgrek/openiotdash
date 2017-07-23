@@ -16,7 +16,7 @@
 
           <div style="position: relative; display: inline-block; margin-top: 0.5rem; width:100%;">
             <button class="small-button" @click="$emit('close')" style="float: right;">Cancel</button>
-            <button class="small-button" @click="setVisibility()" style="margin-right: 0.5rem; float:right;">Save</button>
+            <button class="small-button" @click="save()" style="margin-right: 0.5rem; float:right;">Save</button>
           </div>
 
         </div>
@@ -27,23 +27,24 @@
 
 <script>
 export default {
-  name: 'modal_rename',
-  props: ['currentVisibility', 'saveFn'],
+  name: 'modal_save',
+  props: ['currentDashboard', 'saveFn'],
   data() {
     return {
-      newVisibility: this.$props.currentVisibility,
+      newVisibility: this.$props.currentDashboard.visibility,
       visibilities: ['Private', 'Visible with Link'],
     }
   },
   methods: {
-    setVisibility() {
+    save() {
       //this.$props.setVisibilityFn(this.visibilities.indexOf(this.newVisibility));
+      this.$props.currentDashboard.visibility = this.visibilities.indexOf(this.newVisibility);
       this.$props.saveFn();
       this.$emit('close');
     },
   },
   mounted() {
-    this.newVisibility = this.visibilities[this.$props.currentVisibility];
+    this.newVisibility = this.visibilities[this.$props.currentDashboard.visibility];
   },
 }
 </script>

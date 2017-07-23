@@ -20,6 +20,9 @@ router.post('/dashboards/save/:what', (req, res, next) => {
     }
     if (req.params.what === 'all') {
       d.definition = req.body.definition;
+      d.visibility = req.body.visibility;
+      d.title = req.body.title;
+      console.log(d);
       d.save().then(() => res.status(200).end());
     }
   });
@@ -53,6 +56,7 @@ router.get('/dashboards/new', (req, res, next) => {
         user: req.user.id,
         definition: '{}',
         title: `Untitled Dashboard ${d.length + 1}`,
+        visibility: 0,
       }).then(newDash => {
         res.json(newDash);
       });

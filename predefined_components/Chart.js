@@ -1,5 +1,4 @@
 export default () => {
-  // TODO: Should be able to define CSS in this file and inject it.
 return {
   title: 'Line Chart',
   uuid: null,
@@ -59,7 +58,6 @@ return {
             });
             node.addEventListener('click', e => {
               console.log(this.settings.myfield);
-              console.log(this.offsetX);
             });
             node.addEventListener('data', e => {
               console.log(this.data, e.detail);
@@ -74,6 +72,11 @@ return {
             });
             node.addEventListener('created', e => {
               this.uuid = e.detail.uuid;
+              // add css for the component
+              let styleNode = document.createElement('style');
+              styleNode.innerHTML = this.style(this.uuid);
+              styleNode.id = 'style-'+this.uuid;
+              document.body.appendChild(styleNode);
               // drawChart(e);
             });
             node.addEventListener('resized', (e) => {
@@ -89,5 +92,11 @@ return {
               this.offsetY = e.detail.offsetY;
             });
           `,
+  style: uuid => {
+    return `.${uuid} {
+            color: red;
+            stroke-width: 3px;
+          }`
+        },
   }
 }

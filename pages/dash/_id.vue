@@ -1,7 +1,7 @@
 <template>
   <section class="container">
     <ModalRename v-if="showModal_rename" @close="showModal_rename = false" :currentTitle="dashboard.title" :setTitleFn="setTitle"/>
-    <ModalSave v-if="showModal_save" @close="showModal_save = false" :currentVisibility="dashboard.visibility" :saveFn="saveAll"/>
+    <ModalSave v-if="showModal_save" @close="showModal_save = false" :currentDashboard="dashboard" :saveFn="saveAll"/>
     <ModalSettings v-if="showModal_settings" @close="showModal_settings = false" :component="selectedComponent"/>
     <my-header :username="username" :extended="dashboard.title"/>
     <div class="main-container">
@@ -130,7 +130,7 @@ export default {
       for (let comp of dashToSave.components) {
         comp.component.data = {};
       }
-      let body = JSON.stringify({ id: this.$route.params.id, definition: JSON.stringify(dashToSave) });
+      let body = JSON.stringify({ id: this.$route.params.id, definition: JSON.stringify(dashToSave), visibility: this.dashboard.visibility, title: this.dashboard.title });
       fetch(`/api/dashboards/save/all`, {headers: {'Content-Type': 'application/json'}, method: 'POST', body, credentials: 'include'})
         .then(resp => {
           if (resp.status !== 200) {

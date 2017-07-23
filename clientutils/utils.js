@@ -23,9 +23,10 @@ export default (fullComponent, self, editing = false) => {
           self.clickOffsetY = false;
         })
       );
+
     fullComponent.node = div.node();
     let tb = div.append('div')
-      .attr('class', 'title-bar')
+      .attr('class', `title-bar`)
       .html(`<span id="componentTitle-${uuid}">${comp.title}</span>`);
 
     self.components.push(div);
