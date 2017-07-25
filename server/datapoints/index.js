@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import { Datasink, Datapoint } from '../../models';
 
+import { sendMsg } from '../socketEndpoints';
+
 var router = Router();
 
 // Any form encoded or JSON post data can be written to a datapoint, however, if it's a regular
@@ -25,6 +27,7 @@ router.post('/w/:writekey/:id', (req, res, next) => {
       datasink: req.params.id,
       data,
     }).then(dp => {
+      sendMsg(req.params.id, data); // broadcast to socketio channel
       return res.status(201).end();
     }).catch(e => {
       return res.status(500).end();
@@ -36,22 +39,24 @@ router.post('/w/:writekey/:id', (req, res, next) => {
 
 // GET endpoint for very simple devices/code that can't post with POST
 // data is stored as JSON { value: [val] }
-router.get('/w/:writekey/:id/:value', (req, res, next) => {
+router.get('/w/:writekey/:title/:value', (req, res, next) => {
   Datasink.findOne({
     attributes: [
       'writeKey',
+      'id',
     ],
     where: {
-      id: req.params.id,
+      title: req.params.title,
     },
   }).then(sink => {
     if (!sink) return res.status(400).end();
     if (sink.dataValues.writeKey !== req.params.writekey) return res.status(401).end();
     let data = JSON.stringify({ value: req.params.value });
     Datapoint.create({
-      datasink: req.params.id,
+      datasink: sink.dataValues.id, // req.params.id,
       data,
-    }).then(dp => {
+    }).then(dp => { // LOOKS LIKE THIS SHOULD BE value: val ... no shortcuts
+      sendMsg(req.params.title, { data: dp.data, createdAt: dp.createdAt }); // broadcast to socketio channel
       return res.status(201).end();
     }).catch(e => {
       return res.status(500).end();

@@ -25,6 +25,8 @@
 import { title, indexOptions } from "~components/config/config";
 import * as d3 from "d3";
 import axios from '~plugins/axios';
+import socket from '~/plugins/socket.io.js'
+
 import MyHeader from '~components/Header';
 import ModalRename from '~components/modal_rename';
 import ModalSave from '~components/modal_save';
@@ -77,7 +79,6 @@ export default {
   },
 
   // TODO: NEXT:
-  // make visibility work, may have to obfuscate the link so not show/1 but show/asdf234$$k1rr
   // make a generic linechart component. now this isnt obvious since data sources come out in the component
   // as data.j6123pc = [{value: 1} , {value: 2} ...] etc. so how would a generic component know what the
   // names of its datasources are. Well, component could either mandate datasource names - e.g. "componentUuid_ds1", "componentUuid_ds2" etc
@@ -170,6 +171,9 @@ export default {
   mounted() {
     let self = this;
     window.d3 = d3;
+    delete window.socket;
+    window.socket = socket;
+
     window.onkeydown = e => {
       function stopShowingResizer(e) {
         for (var node of document.getElementsByClassName('resizer')) {

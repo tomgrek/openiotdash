@@ -9,7 +9,7 @@ module.exports = {
     link: [
       { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
       { rel: 'stylesheet', href: '//fonts.googleapis.com/icon?family=Material+Icons' },
-    ]
+    ],
   },
   /*
   ** Global CSS
@@ -39,5 +39,8 @@ module.exports = {
         // removed linter.
       }
     }
-  }
+  },
+  env: {
+    WS_URL: process.env.WS_URL || 'http://localhost:3000',
+  },
 }

@@ -25,6 +25,7 @@ return {
   offsetY: 0,
   script: `
             const drawChart = (e) => {
+              if (!e) e = { detail: {} };
               node.children[0].innerHTML = '';
               let svg = d3.select(node.children[0]).append("svg");
               let height = (e.detail.height || this.height) - 24; // 24=1.5rem=title bar
@@ -57,13 +58,16 @@ return {
               e.stopPropagation();
             });
             node.addEventListener('click', e => {
-              console.log(this.settings.myfield);
+              // console.log(this.settings.myfield);
             });
             node.addEventListener('data', e => {
-              console.log(this.data, e.detail);
               Object.assign(this.data, e.detail);
               drawChart(e);
               //node.querySelector('#latestData').innerText = JSON.parse(this.data.j4xbpkli[5].data).value;
+            });
+            node.addEventListener('newData', e => {
+              this.data[e.detail.dataSink.title].push(e.detail.newData);
+              drawChart();
             });
             node.addEventListener('input', e => {
               if (e.target.id === 'myfield') {
@@ -74,7 +78,9 @@ return {
               this.uuid = e.detail.uuid;
               // add css for the component
               let styleNode = document.createElement('style');
-              styleNode.innerHTML = this.style(this.uuid);
+              let styleFactory = new Function('uuid', this.style);
+              styleNode.innerHTML = styleFactory(this.uuid);
+              // console.log(styleNode.innerHTML);
               styleNode.id = 'style-'+this.uuid;
               document.body.appendChild(styleNode);
               // drawChart(e);
@@ -92,11 +98,7 @@ return {
               this.offsetY = e.detail.offsetY;
             });
           `,
-  style: uuid => {
-    return `.${uuid} {
-            color: red;
-            stroke-width: 3px;
-          }`
-        },
+  style: `return '.'+uuid+' { color: red; stroke-width: 3px; }' `,
+  // TODO: Styling is a bit broken, mainly due to the ordering of the '`"
   }
 }

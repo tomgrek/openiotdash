@@ -71,5 +71,6 @@ return {
               this.offsetY = e.detail.offsetY;
             });
           `,
+  style: () => ``,
 }
 }

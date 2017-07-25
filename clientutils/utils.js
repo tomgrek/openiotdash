@@ -34,6 +34,10 @@ export default (fullComponent, self, editing = false) => {
     let keyQueries = [];
     for (let sink of comp.dataSinks) {
       keyQueries.push(fetch('/api/datasinks/getReadKey/'+sink.id, {credentials: 'include'}).then(r => r.json()));
+      window.socket.on(sink.title, newData => {
+        let newDataEvent = new CustomEvent('newData', { detail: { dataSink: sink, newData } });
+        fullComponent.node.dispatchEvent(newDataEvent);
+      });
     }
     self.individualComponents.push({uuid, component: comp, node: fullComponent.node});
     let node = fullComponent.node;
@@ -44,6 +48,7 @@ export default (fullComponent, self, editing = false) => {
     Promise.all(keyQueries).then(keys => {
       let dataQueries = [];
       for (let key in keys) {
+        // TODO: Add filter here (e.g. get only last 10 datapoints)
         dataQueries.push(fetch(`/d/r/${keys[key].readKey}/${comp.dataSinks[key].id}`, {credentials: 'include'}).then(r => r.json()));
       }
       Promise.all(dataQueries).then(data => {
@@ -55,6 +60,7 @@ export default (fullComponent, self, editing = false) => {
         fullComponent.node.dispatchEvent(dataEvent);
       });
     });
+
     if (editing) {
       let tb = node.querySelector(`.title-bar`);
       let trashIcon = document.createElement('span');

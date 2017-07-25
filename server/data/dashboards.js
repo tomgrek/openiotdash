@@ -35,4 +35,21 @@ router.get('/dashboard/:id', (req, res, next) => {
   });
 });
 
+router.get('/dashboard_link/:link', (req, res, next) => {
+  Dashboard.findOne({
+    attributes: [
+      'updatedAt',
+      'createdAt',
+      'title',
+      'definition',
+    ],
+    where: {
+      link: req.params.link,
+      visibility: 1,
+    },
+  }).then(dashboard => {
+    res.json(dashboard);
+  });
+});
+
 export default router;

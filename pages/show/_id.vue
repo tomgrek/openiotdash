@@ -1,6 +1,6 @@
 <template>
   <section class="container">
-    <my-header :username="username" :extended="dashboard.title"/>
+    <my-header :username="username" :extended="dashTitle"/>
     <div class="main-container">
       <div id="canvasContainer"></div>
       <div v-once class="canvas-container" v-on:dragover="nothing($event)" v-on:drop="nothing($event)">
@@ -13,6 +13,8 @@
 import { title, indexOptions } from "~components/config/config";
 import * as d3 from "d3";
 import axios from '~plugins/axios';
+import socket from '~/plugins/socket.io.js'
+
 import { getUuid } from '~plugins/utils';
 import MyHeader from '~components/Header';
 
@@ -50,6 +52,10 @@ export default {
     username() {
       return this.$store.state.authUser;
     },
+    dashTitle() {
+      if (this.dashboard) return this.dashboard.title;
+      return null;
+    },
   },
   methods: {
     nothing(e) {
@@ -61,7 +67,10 @@ export default {
     },
   },
   async asyncData(context) {
-    let dashboard = await axios.get(`/data/dashboard/${context.params.id}`);
+    let dashboard = await axios.get(`/data/dashboard_link/${context.params.id}`);
+    if (!dashboard.data) {
+      context.redirect(`/404`);
+    }
     context.store.commit('setSelectedDashboard', dashboard.data);
     return {
        dashboard: dashboard.data,
@@ -69,13 +78,15 @@ export default {
   },
   head() {
     return {
-      title: this.dashboard.title,
+      title: this.dashboard ? this.dashboard.title : 'Not Found',
     };
   },
   mounted() {
     let self = this;
     window.d3 = d3;
-
+    delete window.socket;
+    window.socket = socket;
+    
     let bbox = document.getElementsByClassName('canvas-container')[0].getBoundingClientRect();
     const width = parseInt(bbox.width);
     const height = parseInt(bbox.height);
