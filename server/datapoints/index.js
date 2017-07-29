@@ -84,6 +84,8 @@ router.get('/r/:readkey/:id', (req, res, next) => {
     let key = req.query.key || undefined;
     let number = req.query.numeric || undefined;
     if (limit) order = [['createdAt', 'DESC']];
+    if (req.query.orderBy) order = [req.query.orderBy.split(' ')];
+    console.log(order);
     Datapoint.findAll({ attributes: [
         'data',
         'createdAt',

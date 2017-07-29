@@ -35,6 +35,7 @@ import ModalSettings from '~components/modal_settings';
 import BasicChart from '../../predefined_components/BasicChart';
 import Tester from '../../predefined_components/Tester';
 import Chart from '../../predefined_components/Chart';
+import Bubble from '../../predefined_components/Circle';
 
 import fakedrop from '../../clientutils/utils';
 
@@ -55,8 +56,7 @@ export default {
         Chart,
         BasicChart,
         Tester,
-        Chart,
-        Chart,
+        Bubble
       ],
       individualComponents: [],
       dragged: null,

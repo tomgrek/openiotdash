@@ -48,8 +48,14 @@ export default (fullComponent, self, editing = false) => {
     Promise.all(keyQueries).then(keys => {
       let dataQueries = [];
       for (let key in keys) {
-        // TODO: Add filter here (e.g. get only last 10 datapoints)
-        dataQueries.push(fetch(`/d/r/${keys[key].readKey}/${comp.dataSinks[key].id}`, {credentials: 'include'}).then(r => r.json()));
+        let orderBy = '', limit = '';
+        if (comp.dataSinks[key].orderBy) {
+          orderBy = `orderBy=${comp.dataSinks[key].orderBy}&`;
+        }
+        if (comp.dataSinks[key].limit) {
+          limit = `limit=${comp.dataSinks[key].limit}`;
+        }
+        dataQueries.push(fetch(`/d/r/${keys[key].readKey}/${comp.dataSinks[key].id}?${orderBy}${limit}`, {credentials: 'include'}).then(r => r.json()));
       }
       Promise.all(dataQueries).then(data => {
         let detail = {};

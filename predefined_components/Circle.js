@@ -1,57 +1,70 @@
 export default () => {
 return {
-  title: 'Line Chart',
+  title: 'Happy Bubble',
   uuid: null,
   content:
   `<div style="position: absolute; top: 1.5rem;">
 
   </div>`,
-  preview: `<img style="height:100%; width:100%;" src="https://upload.wikimedia.org/wikipedia/commons/6/6d/FTSE_100_index_chart_since_1984.png"></img>`,
+  preview: `<img style="height:100%; width:100%;" src="https://cdn.pixabay.com/photo/2015/06/22/10/10/soap-bubble-817421_1280.jpg"></img>`,
   data: {},
   dataSources: [],
   dataSinks: [
-    { id: 1, title: 'j4xbpkli', url: '', orderBy: 'createdAt DESC', limit: 10 },
+    { id: 1, title: 'j4xbpkli', url: '', orderBy: 'createdAt DESC', limit: 1 },
   ],
   defaultSettings: {},
   settings: {},
   settingsDisplay:
-    `<div>My settings for my chart component
+    `<div>My settings for my bubble component
       <input id="title" type="text"></input>
     </div>`,
   height: 100,
   width: 200,
   transform: '',
   offsetX: 0,
-  offsetY: 0,
+  offsetY: 0, //TODO: Next: Can animate, not redraw the SVG each time.
   script: `
             const drawChart = (e) => {
+              console.log('drawing chart');
               if (!e) e = { detail: {} };
-              node.children[0].innerHTML = '';
-              let svg = d3.select(node.children[0]).append("svg");
               let height = (e.detail.height || this.height) - 24; // 24=1.5rem=title bar
               let width = e.detail.width || this.width;
-              svg.attr("height", height);
-              svg.attr("width", width);
-              var x = d3.scaleLinear().range([0, width]);
-              var y = d3.scaleLinear().range([0, height]);
-              let g = svg.append("g");
-              var line = d3.line()
-                .x(function(d) { return x(d.index); })
-                .y(function(d) { return y(d.val); });
-              let data = this.data.j4xbpkli.map((x, index) => {
-                let val = JSON.parse(x.data)
-                return { index, val: parseFloat(val.value) || 0 };
-              });
-              x.domain(d3.extent(data, function(d) { return d.index; }));
-              y.domain([d3.max(data, function(d) { return d.val; }), 0]);
-              g.append("path")
-                  .datum(data)
-                  .attr("fill", "none")
-                  .attr("stroke", "darkorchid")
-                  .attr("stroke-linejoin", "round")
-                  .attr("stroke-linecap", "round")
-                  .attr("stroke-width", 1.5)
-                  .attr("d", line);
+              let svg;
+              if (!node.children[0].querySelector('svg')) {
+                node.children[0].innerHTML = '';
+                svg = d3.select(node.children[0]).append("svg");
+                svg.attr("height", height);
+                svg.attr("width", width);
+                this.settings.svg = svg;
+                this.settings.circle = svg.selectAll('circle').data(this.data.j4xbpkli).enter().append('circle')
+                  .attr("cx", width/2)
+                  .attr("cy", height/2)
+                  .attr("r", d => {
+                    return parseInt(JSON.parse(d.data).value);
+                  });
+              } else {
+                svg = this.settings.svg;
+                if (svg.attr('height') != height || svg.attr('width') != width) {
+                  node.children[0].innerHTML = '';
+                  svg = d3.select(node.children[0]).append("svg");
+                  svg.attr("height", height);
+                  svg.attr("width", width);
+                  this.settings.svg = svg;
+                  this.settings.circle = svg.selectAll('circle').data(this.data.j4xbpkli).enter().append('circle')
+                    .attr("cx", width/2)
+                    .attr("cy", height/2)
+                    .attr("r", d => {
+                      return parseInt(JSON.parse(d.data).value);
+                    });
+                }
+                // this is the same chart!
+                this.settings.circle = svg.selectAll('circle').data(this.data.j4xbpkli).transition()
+                  .attr("r", d => {
+                    console.log('wow');
+                    return parseInt(JSON.parse(d.data).value);
+                  });
+              }
+
             };
             node.addEventListener('dblclick', e => {
               e.preventDefault();
