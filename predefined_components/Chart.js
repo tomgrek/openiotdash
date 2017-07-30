@@ -13,10 +13,13 @@ return {
     { id: 1, title: 'j4xbpkli', url: '', orderBy: 'createdAt DESC', limit: 10 },
   ],
   defaultSettings: {},
-  settings: {},
+  settings: {
+    color: 'darkorchid',
+  },
   settingsDisplay:
     `<div>My settings for my chart component
       <input id="title" type="text"></input>
+      <div><span>Color: </span><input id="color" type="text"></input></div>
     </div>`,
   height: 100,
   width: 200,
@@ -47,7 +50,7 @@ return {
               g.append("path")
                   .datum(data)
                   .attr("fill", "none")
-                  .attr("stroke", "darkorchid")
+                  .attr("stroke", this.settings.color)
                   .attr("stroke-linejoin", "round")
                   .attr("stroke-linecap", "round")
                   .attr("stroke-width", 1.5)
@@ -91,7 +94,9 @@ return {
             node.addEventListener('resized', (e) => {
               drawChart(e);
             });
-            node.addEventListener('settings', (e) => {
+            node.addEventListener('settingsChanged', (e) => {
+              console.log('goto new set');
+              drawChart(e);
             });
             node.addEventListener('deleted', (e) => {
             });

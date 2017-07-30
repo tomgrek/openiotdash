@@ -6,7 +6,7 @@ return {
   `<div style="position: absolute; top: 1.5rem;">
 
   </div>`,
-  preview: `<img style="height:100%; width:100%;" src="https://cdn.pixabay.com/photo/2015/06/22/10/10/soap-bubble-817421_1280.jpg"></img>`,
+  preview: `<img style="height:100%; width:100%;" src="https://placehold.it/200x100"></img>`,
   data: {},
   dataSources: [],
   dataSinks: [
@@ -104,7 +104,7 @@ return {
             node.addEventListener('resized', (e) => {
               drawChart(e);
             });
-            node.addEventListener('settings', (e) => {
+            node.addEventListener('settingsChanged', (e) => {
             });
             node.addEventListener('deleted', (e) => {
             });

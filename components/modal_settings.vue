@@ -70,7 +70,7 @@ export default {
           this.$props.component.component.settings[el.id] = el.value;
         }
       }
-      let settingsEvent = new CustomEvent('settingsChanged');
+      let settingsEvent = new CustomEvent('settingsChanged', { detail: {} });
       this.$props.component.node.dispatchEvent(settingsEvent);
       this.$emit('close');
     },
