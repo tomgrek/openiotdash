@@ -27,7 +27,15 @@ return {
   offsetX: 0,
   offsetY: 0,
   script: `
+            // things to do next:
+            // delete dataSink
+            // make select all checkbox work in datasinks tab of settings
+            // add datasink that already exists (already created by user for sth else)
+            // add datasink from external url (e.g. alpha vantage)
+            // add ability to regularly fetch data from external url and add to datasink
+            // change logo/favicon/404
             const drawChart = (e) => {
+              console.log(this.data, this.dataSinks);
               if (!e) e = { detail: {} };
               node.children[0].innerHTML = '';
               let svg = d3.select(node.children[0]).append("svg");

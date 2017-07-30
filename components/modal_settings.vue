@@ -16,12 +16,12 @@
           <div v-if="activeComponent === 'dataSinks_tab'">
             <div class="datasinks-toolbox">
               <input type="checkbox"></input>
-              <i class="material-icons toolbox-icon">delete</i>
+              <i v-on:click="deleteDatasink" class="material-icons toolbox-icon">delete</i>
               <i v-on:click="addDatasink" class="material-icons toolbox-icon">add</i>
             </div>
             <div class="datasink-listing" v-for="dataSink in component.component.dataSinks">
               <span>
-                <input type="checkbox"></input>
+                <input type="checkbox" v-on:change="toggleSink(dataSink, $event)"></input>
                 <span class="listing-title">{{dataSink.title}}</span>
                 <span class="listing-url">{{dataSink.url}}</span>
               </span>
@@ -48,9 +48,22 @@ export default {
   data() {
     return {
       activeComponent: 'settings_tab',
+      selectedSinks: [],
     }
   },
   methods: {
+    toggleSink(sink, e) {
+      if (!e.target.checked && this.selectedSinks.map(x => x.id).includes(sink.id)) {
+        this.selectedSinks = this.selectedSinks.filter(x => x.id !== sink.id);
+      } else {
+        if (e.target.checked) {
+          this.selectedSinks.push(sink);
+        }
+      }
+    },
+    deleteDatasink() {
+      console.log(this.selectedSinks);
+    },
     addDatasink() {
       fetch('/api/datasinks/add', {method: 'POST', credentials: 'include'})
       .then(res => {
@@ -62,6 +75,12 @@ export default {
       });
     },
     saveSettings(e) {
+      if (!this.$refs.activeSettings) {
+        let settingsEvent = new CustomEvent('settingsChanged', { detail: {} });
+        this.$props.component.node.dispatchEvent(settingsEvent);
+        this.$emit('close');
+        return false;
+      }
       for (let el of this.$refs.activeSettings) {
         if (el.id === 'title') {
           this.$props.component.component.title = el.value;
@@ -116,6 +135,7 @@ export default {
 }
 .modal-container {
   width: 50vw;
+  height: 50vh;
   margin: 0px auto;
   padding: 1rem 1.5rem;
   background-color: #fff;
