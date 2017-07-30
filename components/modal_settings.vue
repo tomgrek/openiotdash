@@ -15,11 +15,11 @@
           </div>
           <div v-if="activeComponent === 'dataSinks_tab'">
             <div class="datasinks-toolbox">
-              <input type="checkbox"></input>
+              <input type="checkbox" v-on:change="toggleAllSinks"></input>
               <i v-on:click="deleteDatasink" class="material-icons toolbox-icon">delete</i>
               <i v-on:click="addDatasink" class="material-icons toolbox-icon">add</i>
             </div>
-            <div class="datasink-listing" v-for="dataSink in component.component.dataSinks">
+            <div id="sinkContainer" class="datasink-listing" v-for="dataSink in component.component.dataSinks">
               <span>
                 <input type="checkbox" v-on:change="toggleSink(dataSink, $event)"></input>
                 <span class="listing-title">{{dataSink.title}}</span>
@@ -42,6 +42,8 @@
 </template>
 
 <script>
+import { flashSave } from '~plugins/utils';
+
 export default {
   name: 'modal_settings',
   props: ['component'],
@@ -52,6 +54,19 @@ export default {
     }
   },
   methods: {
+    toggleAllSinks(e) {
+      if (e.target.checked) {
+        this.selectedSinks = [].concat(this.$props.component.component.dataSinks);
+        for (let el of document.getElementById('sinkContainer').querySelectorAll('input[type="checkbox"]')) {
+          el.checked = true;
+        }
+      } else {
+        this.selectedSinks = [];
+        for (let el of document.getElementById('sinkContainer').querySelectorAll('input[type="checkbox"]')) {
+          el.checked = false;
+        }
+      }
+    },
     toggleSink(sink, e) {
       if (!e.target.checked && this.selectedSinks.map(x => x.id).includes(sink.id)) {
         this.selectedSinks = this.selectedSinks.filter(x => x.id !== sink.id);
@@ -62,7 +77,7 @@ export default {
       }
     },
     deleteDatasink() {
-      console.log(this.selectedSinks);
+      this.$props.component.component.dataSinks = this.$props.component.component.dataSinks.filter(x => !this.selectedSinks.map(y => y.id).includes(x.id));
     },
     addDatasink() {
       fetch('/api/datasinks/add', {method: 'POST', credentials: 'include'})
@@ -79,6 +94,7 @@ export default {
         let settingsEvent = new CustomEvent('settingsChanged', { detail: {} });
         this.$props.component.node.dispatchEvent(settingsEvent);
         this.$emit('close');
+        flashSave();
         return false;
       }
       for (let el of this.$refs.activeSettings) {
@@ -92,6 +108,7 @@ export default {
       let settingsEvent = new CustomEvent('settingsChanged', { detail: {} });
       this.$props.component.node.dispatchEvent(settingsEvent);
       this.$emit('close');
+      flashSave();
     },
     makeActive(e) {
       const elements = document.getElementsByClassName('tab');
@@ -100,16 +117,21 @@ export default {
       };
       e.target.setAttribute('data-active', true);
       this.activeComponent = e.target.id;
-    }
+      setTimeout(() => this.populateForm(), 0);
+    },
+    populateForm() {
+      if (!this.$refs.activeSettings) return false;
+      for (let el of this.$refs.activeSettings) {
+        if (el.id === 'title') {
+          el.value = this.$props.component.component.title;
+        } else {
+          el.value = this.$props.component.component.settings[el.id];
+        }
+      }
+    },
   },
   mounted() {
-    for (let el of this.$refs.activeSettings) {
-      if (el.id === 'title') {
-        el.value = this.$props.component.component.title;
-      } else {
-        el.value = this.$props.component.component.settings[el.id];
-      }
-    }
+    this.populateForm();
   },
 }
 </script>

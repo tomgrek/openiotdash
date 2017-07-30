@@ -28,8 +28,6 @@ return {
   offsetY: 0,
   script: `
             // things to do next:
-            // delete dataSink
-            // make select all checkbox work in datasinks tab of settings
             // add datasink that already exists (already created by user for sth else)
             // add datasink from external url (e.g. alpha vantage)
             // add ability to regularly fetch data from external url and add to datasink

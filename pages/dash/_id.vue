@@ -10,7 +10,7 @@
       </div>
       <div class="sidebar">
         <div class="sidebar-header">Manage</div>
-        <i @click="showModal_save = true" class="material-icons toolicon" style="margin-bottom: 0.5rem; margin-right: 0.5rem;" title="Save">save</i>
+        <i id="save-dash-button" @click="showModal_save = true" class="material-icons toolicon" style="margin-bottom: 0.5rem; margin-right: 0.5rem; transition: filter 1s ease;" title="Save">save</i>
         <i @click="showModal_rename = true" class="material-icons toolicon" style="margin-bottom: 0.5rem; margin-right: 0.5rem;" title="Rename">title</i>
         <i class="material-icons toolicon" style="margin-bottom: 0.5rem; margin-right: 0.5rem;" title="Settings">settings</i>
         <i class="material-icons toolicon" style="margin-bottom: 0.5rem;" title="Delete">delete</i>
