@@ -16,5 +16,6 @@ footer {
   line-height: 3.2rem;
   text-align: center;
   border-top: 1px solid $border-color;
+  font-family: 'Roboto Slab', serif;
 }
 </style>

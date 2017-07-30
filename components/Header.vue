@@ -47,6 +47,7 @@ header {
   text-align: left;
   padding: 1rem;
   position: relative;
+  font-family: 'Roboto Slab', serif;
   .header-text {
     left: 0;
   }

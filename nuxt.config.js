@@ -8,7 +8,7 @@ module.exports = {
     ],
     link: [
       { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
-      { rel: 'stylesheet', href: '//fonts.googleapis.com/icon?family=Material+Icons' },
+      { rel: 'stylesheet', href: '//fonts.googleapis.com/icon?family=Material+Icons|Source+Sans+Pro|Roboto+Slab' },
     ],
   },
   /*

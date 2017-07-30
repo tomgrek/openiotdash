@@ -9,6 +9,8 @@ router.get('/dashboards/:user', (req, res, next) => {
       'id',
       'updatedAt',
       'title',
+      'link',
+      'visibility',
     ],
     where: {
       user: req.params.user,
@@ -26,6 +28,7 @@ router.get('/dashboard/:id', (req, res, next) => {
       'title',
       'definition',
       'visibility',
+      'link',
     ],
     where: {
       id: req.params.id,
@@ -42,6 +45,7 @@ router.get('/dashboard_link/:link', (req, res, next) => {
       'createdAt',
       'title',
       'definition',
+      'link',
     ],
     where: {
       link: req.params.link,
