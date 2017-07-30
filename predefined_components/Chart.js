@@ -95,7 +95,6 @@ return {
               drawChart(e);
             });
             node.addEventListener('settingsChanged', (e) => {
-              console.log('goto new set');
               drawChart(e);
             });
             node.addEventListener('deleted', (e) => {

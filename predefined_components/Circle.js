@@ -25,7 +25,6 @@ return {
   offsetY: 0, //TODO: Next: Can animate, not redraw the SVG each time.
   script: `
             const drawChart = (e) => {
-              console.log('drawing chart');
               if (!e) e = { detail: {} };
               let height = (e.detail.height || this.height) - 24; // 24=1.5rem=title bar
               let width = e.detail.width || this.width;
@@ -60,7 +59,6 @@ return {
                 // this is the same chart!
                 this.settings.circle = svg.selectAll('circle').data(this.data.j4xbpkli).transition()
                   .attr("r", d => {
-                    console.log('wow');
                     return parseInt(JSON.parse(d.data).value);
                   });
               }
