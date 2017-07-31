@@ -2,7 +2,7 @@
   <transition name="modal">
     <div class="modal-mask">
       <div class="modal-wrapper">
-        <div class="modal-container">
+        <div v-if="mainWindowVisible" class="modal-container">
           <span class="close-icon" @click="$emit('close')"><i class="material-icons">close</i></span>
           <div class="modal-header">Settings</div>
           <div class="tabs">
@@ -16,8 +16,9 @@
           <div v-if="activeComponent === 'dataSinks_tab'">
             <div class="datasinks-toolbox">
               <input type="checkbox" v-on:change="toggleAllSinks"></input>
-              <i v-on:click="deleteDatasink" class="material-icons toolbox-icon">delete</i>
-              <i v-on:click="addDatasink" class="material-icons toolbox-icon">add</i>
+              <i v-on:click="deleteDatasink" title="Remove selected data sinks from this component" class="material-icons toolbox-icon">delete</i>
+              <i v-on:click="reuseDatasink" title="Add an existing datasink" class="material-icons toolbox-icon">playlist_add</i>
+              <i v-on:click="addDatasink" title="Add a brand new data sink" class="material-icons toolbox-icon">add</i>
             </div>
             <div id="sinkContainer" class="datasink-listing" v-for="dataSink in component.component.dataSinks">
               <span>
@@ -30,12 +31,12 @@
           <div v-if="activeComponent === 'dataSources_tab'">
             <div>Data sources</div>
           </div>
-          <div style="position: relative; display: inline-block; margin-top: 0.5rem; width:100%;">
+          <div style="position: absolute; bottom: 1rem; right: 1rem; display: inline-block; width:100%;">
             <button class="small-button" @click="$emit('close')" style="float: right;">Cancel</button>
             <button class="small-button" @click="saveSettings()" style="margin-right: 0.5rem; float:right;">Save</button>
           </div>
-
         </div>
+        <ModalDatasinks v-if="reuseDatasinkWindowVisible" @close="dismissReuseDatasinksWindow" :add="addDatasink"/>
       </div>
     </div>
   </transition>
@@ -43,17 +44,27 @@
 
 <script>
 import { flashSave } from '~plugins/utils';
-
+import ModalDatasinks from '~components/modal_datasinks';
 export default {
   name: 'modal_settings',
   props: ['component'],
+  components: {
+    ModalDatasinks,
+  },
   data() {
     return {
       activeComponent: 'settings_tab',
       selectedSinks: [],
+      reuseDatasinkWindowVisible: false,
+      mainWindowVisible: true,
     }
   },
   methods: {
+    dismissReuseDatasinksWindow() {
+      this.reuseDatasinkWindowVisible = false;
+      this.mainWindowVisible = true;
+      setTimeout(() => this.makeActive(), 0);
+    },
     toggleAllSinks(e) {
       if (e.target.checked) {
         this.selectedSinks = [].concat(this.$props.component.component.dataSinks);
@@ -79,11 +90,46 @@ export default {
     deleteDatasink() {
       this.$props.component.component.dataSinks = this.$props.component.component.dataSinks.filter(x => !this.selectedSinks.map(y => y.id).includes(x.id));
     },
-    addDatasink() {
+    reuseDatasink() {
+      this.mainWindowVisible = false;
+      this.reuseDatasinkWindowVisible = true;
+    },
+    addDatasink(existingSinks) { // existingSink is optional, coming from the modal_datasinks
+      if (existingSinks) {
+        for (let sink of existingSinks) {
+          this.$props.component.component.dataSinks.push({ id: sink.id, title: sink.title, readKey: sink.readKey, url: 'NEEDTOSET'});
+        }
+        this.$store.commit('addAlert', { msg: 'Data sinks added to component.', type: 'success'});
+
+
+        let dataQueries = [];
+        for (let sink in this.$props.component.component.dataSinks) {
+          let orderBy = '', limit = '';
+          if (this.$props.component.component.dataSinks[sink].orderBy) {
+            orderBy = `orderBy=${comp.dataSinks[key].orderBy}&`;
+          }
+          if (this.$props.component.component.dataSinks[sink].limit) {
+            limit = `limit=${comp.dataSinks[key].limit}`;
+          }
+          dataQueries.push(fetch(`/d/r/${this.$props.component.component.dataSinks[sink].readKey}/${this.$props.component.component.dataSinks[sink].id}?${orderBy}${limit}`, {credentials: 'include'}).then(r => r.json()));
+        }
+        Promise.all(dataQueries).then(data => {
+          let detail = {};
+          for (let sink in this.$props.component.component.dataSinks) {
+            detail[this.$props.component.component.dataSinks[sink].title] = data[sink];
+          }
+          let dataEvent = new CustomEvent('data', { detail });
+          this.$props.component.node.dispatchEvent(dataEvent);
+        });
+
+        return true;
+      }
       fetch('/api/datasinks/add', {method: 'POST', credentials: 'include'})
       .then(res => {
         res.json().then(r => {
           this.$props.component.component.dataSinks.push({ id: r.datasink.id, title: r.datasink.title, url: r.url});
+          // TODO: ensure this query also returns the read/writekey, then commit to store here too.
+          this.$store.commit('addNewDatasink', {id: r.datasink.id, title: r.datasink.title, latestDataPoint: null});
         }).catch(e => {
           this.$store.commit('addAlert', { msg: 'Error creating sink.', type: 'error'});
         });
@@ -111,6 +157,8 @@ export default {
       flashSave();
     },
     makeActive(e) {
+      // if no event, it must be because we're returning from the existing datasinks dialog
+      if (!e) e = { target: document.getElementById('dataSinks_tab') };
       const elements = document.getElementsByClassName('tab');
       for (let tab = 0; tab < elements.length; tab += 1) {
         elements[tab].removeAttribute('data-active');
@@ -244,9 +292,6 @@ export default {
  * The following styles are auto-applied to elements with
  * transition="modal" when their visibility is toggled
  * by Vue.js.
- *
- * You can easily play with the modal transition by editing
- * these styles.
  */
 
 .modal-enter {

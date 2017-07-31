@@ -28,7 +28,6 @@ return {
   offsetY: 0,
   script: `
             // things to do next:
-            // add datasink that already exists (already created by user for sth else)
             // add datasink from external url (e.g. alpha vantage)
             // add ability to regularly fetch data from external url and add to datasink
             // change logo/favicon/404

@@ -41,7 +41,7 @@ import fakedrop from '../../clientutils/utils';
 
 export default {
   name: 'dash',
-  middleware: ['authentication', 'dashboards'],
+  middleware: ['authentication', 'dashboards', 'datasinks'],
   components: {
     MyHeader,
     ModalRename,

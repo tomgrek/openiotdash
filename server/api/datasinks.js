@@ -10,7 +10,7 @@ router.post('/datasinks/add', (req, res, next) => {
   let uuid = getUuid();
   Datasink.create({
     user: req.user.id,
-    readKey: getKey(req.user.apikey),
+    readKey: getKey(req.user.apikey), // readKey will be the same for all datasinks for a given user .. thats ok right now
     writeKey: getKey(req.user.apikey + uuid),
     title: uuid,
     definition: '',

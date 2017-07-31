@@ -3,6 +3,7 @@
 export const state = () => ({
   authUser: null,
   dashboards: null,
+  datasinks: null,
   selectedDashboard: null,
   alerts: [],
 });
@@ -25,6 +26,9 @@ export const mutations = {
   },
   setSelectedDashboard: (state, dashboard) => {
     state.selectedDashboard = dashboard;
+  },
+  addNewDatasink: (state, datasink) => {
+    state.datasinks.push(datasink);
   },
   clearAll: (state) => {
     // For logout
