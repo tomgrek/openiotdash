@@ -25,6 +25,8 @@
                 <input type="checkbox" v-on:change="toggleSink(dataSink, $event)"></input>
                 <span class="listing-title">{{dataSink.title}}</span>
                 <span class="listing-url">{{dataSink.url}}</span>
+                <select class="sink-order-select" v-html="getSinkOrder(dataSink)" v-on:change="changeSinkOrder(dataSink, $event)"></select>
+                <input type="text" v-if="showingN(dataSink)" :value="dataSink.limit" v-on:input="changeLimit(dataSink, $event)"></input>
               </span>
             </div>
           </div>
@@ -45,6 +47,7 @@
 <script>
 import { flashSave } from '~plugins/utils';
 import ModalDatasinks from '~components/modal_datasinks';
+
 export default {
   name: 'modal_settings',
   props: ['component'],
@@ -57,9 +60,47 @@ export default {
       selectedSinks: [],
       reuseDatasinkWindowVisible: false,
       mainWindowVisible: true,
+      showingLimitInput: (() => {let obj = {};
+      for (let sink of this.$props.component.component.dataSinks) {
+        if (sink.orderBy === 'createdAt DESC') {
+          obj[sink.title] = true;
+        } else {
+          obj[sink.title] = false;
+        }
+      }
+      return obj;})(),
+      needToFetchNewData: false,
     }
   },
   methods: {
+    changeLimit(sink, e) {
+      let val = parseInt(e.target.value);
+      if (!val) return;
+      sink.limit = e.target.value;
+      this.needToFetchNewData = true;
+    },
+    changeSinkOrder(sink, e) {
+      this.needToFetchNewData = true;
+      if (e.target.value === 'Most recent') {
+        sink.orderBy = 'createdAt DESC';
+        sink.limit = 100;
+        this.showingLimitInput[sink.title] = true;
+      } else {
+        sink.orderBy = undefined;
+        sink.limit = undefined;
+        this.showingLimitInput[sink.title] = false;
+      }
+    },
+    showingN(sink) {
+      if (this.showingLimitInput[sink.title]) return true;
+      return false;
+    },
+    getSinkOrder(sink) {
+      if (sink.orderBy === 'createdAt DESC') {
+        return `<option>All data points</option><option selected>Most recent</option>`;
+      }
+      return `<option selected>All data points</option><option>Most recent</option>`
+    },
     dismissReuseDatasinksWindow() {
       this.reuseDatasinkWindowVisible = false;
       this.mainWindowVisible = true;
@@ -99,41 +140,45 @@ export default {
       this.mainWindowVisible = false;
       this.reuseDatasinkWindowVisible = true;
     },
-    addDatasink(existingSinks) { // existingSink is optional, coming from the modal_datasinks
-      if (existingSinks) {
-        for (let sink of existingSinks) {
-          this.$props.component.component.dataSinks.push({ id: sink.id, title: sink.title, readKey: sink.readKey, url: 'NEEDTOSET'});
+    fetchNewData() {
+      let dataQueries = [];
+      for (let sink in this.$props.component.component.dataSinks) {
+        let orderBy = '', limit = '';
+        if (this.$props.component.component.dataSinks[sink].orderBy) {
+          orderBy = `orderBy=${this.$props.component.component.dataSinks[sink].orderBy}&`;
         }
-        this.$store.commit('addAlert', { msg: 'Data sinks added to component.', type: 'success'});
-
-        let dataQueries = [];
+        if (this.$props.component.component.dataSinks[sink].limit) {
+          limit = `limit=${this.$props.component.component.dataSinks[sink].limit}`;
+        }
+        dataQueries.push(fetch(`/d/r/${this.$props.component.component.dataSinks[sink].readKey}/${this.$props.component.component.dataSinks[sink].id}?${orderBy}${limit}`, {credentials: 'include'}).then(r => r.json()));
+      }
+      Promise.all(dataQueries).then(data => {
+        let detail = {};
         for (let sink in this.$props.component.component.dataSinks) {
-          let orderBy = '', limit = '';
-          if (this.$props.component.component.dataSinks[sink].orderBy) {
-            orderBy = `orderBy=${comp.dataSinks[key].orderBy}&`;
-          }
-          if (this.$props.component.component.dataSinks[sink].limit) {
-            limit = `limit=${comp.dataSinks[key].limit}`;
-          }
-          dataQueries.push(fetch(`/d/r/${this.$props.component.component.dataSinks[sink].readKey}/${this.$props.component.component.dataSinks[sink].id}?${orderBy}${limit}`, {credentials: 'include'}).then(r => r.json()));
+          detail[this.$props.component.component.dataSinks[sink].title] = data[sink];
         }
-        Promise.all(dataQueries).then(data => {
-          let detail = {};
-          for (let sink in this.$props.component.component.dataSinks) {
-            detail[this.$props.component.component.dataSinks[sink].title] = data[sink];
-          }
-          let dataEvent = new CustomEvent('data', { detail });
-          this.$props.component.node.dispatchEvent(dataEvent);
-        });
-
+        let dataEvent = new CustomEvent('data', { detail });
+        this.$props.component.node.dispatchEvent(dataEvent);
+      });
+    },
+    addDatasink(existingSinks) { // existingSink is optional, coming from the modal_datasinks
+      if (Array.isArray(existingSinks)) {
+        for (let sink of existingSinks) {
+          this.$props.component.component.dataSinks.push({ id: sink.id, title: sink.title, readKey: sink.readKey, url: 'NEEDTOSET', limit: sink.limit || undefined, orderBy: sink.orderBy || undefined});
+          this.showingLimitInput[sink.title] = sink.orderBy === 'createdAt DESC' ? true : false;
+        }
+        this.$store.commit('addAlert', { msg: 'Data sinks added to component, fetching new data...', type: 'success'});
+        this.fetchNewData();
         return true;
       }
+      // if its a pure new datasink, just do this. no need to fetch new data
       fetch('/api/datasinks/add', {method: 'POST', credentials: 'include'})
       .then(res => {
         res.json().then(r => {
-          this.$props.component.component.dataSinks.push({ id: r.datasink.id, title: r.datasink.title, url: r.url, readKey: r.datasink.readKey });
+          this.$props.component.component.dataSinks.push({ id: r.datasink.id, title: r.datasink.title, url: r.url, readKey: r.datasink.readKey, limit: undefined, orderBy: undefined });
           // TODO: ensure this query also returns the read/writekey, then commit to store here too.
           this.$store.commit('addNewDatasink', {id: r.datasink.id, title: r.datasink.title, latestDataPoint: null});
+          this.showingLimitInput[r.datasink.title] = false;
         }).catch(e => {
           this.$store.commit('addAlert', { msg: 'Error creating sink.', type: 'error'});
         });
@@ -145,6 +190,9 @@ export default {
         this.$props.component.node.dispatchEvent(settingsEvent);
         this.$emit('close');
         flashSave();
+        if (this.needToFetchNewData) {
+          this.fetchNewData();
+        }
         return false;
       }
       for (let el of this.$refs.activeSettings) {
@@ -157,6 +205,9 @@ export default {
       }
       let settingsEvent = new CustomEvent('settingsChanged', { detail: {} });
       this.$props.component.node.dispatchEvent(settingsEvent);
+      if (this.needToFetchNewData) {
+        this.fetchNewData();
+      }
       this.$emit('close');
       flashSave();
     },

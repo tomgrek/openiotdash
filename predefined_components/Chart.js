@@ -28,6 +28,8 @@ return {
   offsetY: 0,
   script: `
             // things to do next:
+            // add way in settings/datasinks to get ALL dps or only [mostrecent] [n]
+            // deal with overflow in settings/sinks
             // add datasink from external url (e.g. alpha vantage)
             // add ability to regularly fetch data from external url and add to datasink
             // change logo/favicon/404
