@@ -1,6 +1,6 @@
 {
-  "name": "dust",
-  "version": "1.0.0",
+  "name": "Open IoT Dashboard",
+  "version": "0.1.1",
   "description": "An open source, self hosted IoT dashboard",
   "author": "Tom Grek <tom.grek@gmail.com>",
   "private": true,
