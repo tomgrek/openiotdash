@@ -28,7 +28,7 @@ return {
   offsetY: 0,
   script: `
             // things to do next:
-            // add way in settings/datasinks to get ALL dps or only [mostrecent] [n]
+            // some css for the new form fields in the settings modal/sinks
             // deal with overflow in settings/sinks
             // add datasink from external url (e.g. alpha vantage)
             // add ability to regularly fetch data from external url and add to datasink

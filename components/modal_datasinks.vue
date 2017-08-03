@@ -6,15 +6,17 @@
       <input type="checkbox" v-on:change="toggleAllSinks"></input>
       <i v-on:click="addDatasinks" title="Add selected data sinks to component" class="material-icons toolbox-icon">add</i>
     </div>
-    <div id="sinkContainerAll">
-      <div class="datasink-listing" v-for="dataSink in dataSinks">
-        <span>
-          <input type="checkbox" v-on:change="toggleSink(dataSink, $event)"></input>
-          <span class="listing-title">{{dataSink.title}}</span>
-          <span class="listing-url">{{dataSink.readKey}}</span>
-          <span class="listing-url">{{dataSink.writeKey}}</span>
-          <span class="listing-url" v-html="formatTime(dataSink.latestDataPoint)"></span>
-        </span>
+    <div class="sink-outer" id="sinkContainerAll">
+      <div class="sink-inner-scroll">
+        <div class="datasink-listing" v-for="dataSink in dataSinks">
+          <span>
+            <input type="checkbox" v-on:change="toggleSink(dataSink, $event)"></input>
+            <span class="listing-title">{{dataSink.title}}</span>
+            <span class="listing-url">{{dataSink.readKey}}</span>
+            <span class="listing-url">{{dataSink.writeKey}}</span>
+            <span class="listing-url" v-html="formatTime(dataSink.latestDataPoint)"></span>
+          </span>
+        </div>
       </div>
     </div>
   </div>
@@ -76,6 +78,7 @@ export default {
 .modal-container {
   width: 50vw;
   height: 50vh;
+  overflow: hidden;
   margin: 0px auto;
   padding: 1rem 1.5rem;
   background-color: #fff;
@@ -115,6 +118,15 @@ export default {
   .toolbox-icon:hover {
     color: lightgray;
   }
+}
+.sink-outer {
+  overflow: hidden;
+  position: relative;
+  height: calc(100% - 5rem);
+}
+.sink-inner-scroll {
+  overflow: auto;
+  height: 100%;
 }
 .datasink-listing {
   padding: 0.2rem 0.5rem;

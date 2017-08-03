@@ -26,7 +26,7 @@
                 <span class="listing-title">{{dataSink.title}}</span>
                 <span class="listing-url">{{dataSink.url}}</span>
                 <select class="sink-order-select" v-html="getSinkOrder(dataSink)" v-on:change="changeSinkOrder(dataSink, $event)"></select>
-                <input type="text" v-if="showingN(dataSink)" :value="dataSink.limit" v-on:input="changeLimit(dataSink, $event)"></input>
+                <input class="limit-input" type="text" v-if="showingN(dataSink)" :value="dataSink.limit" v-on:input="changeLimit(dataSink, $event)"></input>
               </span>
             </div>
           </div>
@@ -342,13 +342,14 @@ export default {
   font-size: 0.8rem;
   margin-left: 1rem;
 }
-
-/*
- * The following styles are auto-applied to elements with
- * transition="modal" when their visibility is toggled
- * by Vue.js.
- */
-
+.sink-order-select {
+  margin-left: 1rem;
+}
+.limit-input {
+  line-height: 1rem;
+  width: 3rem;
+  text-align: right;
+}
 .modal-enter {
   opacity: 0;
 }
