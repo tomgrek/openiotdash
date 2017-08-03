@@ -28,8 +28,6 @@ return {
   offsetY: 0,
   script: `
             // things to do next:
-            // some css for the new form fields in the settings modal/sinks
-            // deal with overflow in settings/sinks
             // add datasink from external url (e.g. alpha vantage)
             // add ability to regularly fetch data from external url and add to datasink
             // change logo/favicon/404

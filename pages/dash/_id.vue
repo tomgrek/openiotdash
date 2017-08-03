@@ -36,6 +36,7 @@ import BasicChart from '../../predefined_components/BasicChart';
 import Tester from '../../predefined_components/Tester';
 import Chart from '../../predefined_components/Chart';
 import Bubble from '../../predefined_components/Circle';
+import Header from '../../predefined_components/Header';
 
 import fakedrop from '../../clientutils/utils';
 
@@ -56,7 +57,8 @@ export default {
         Chart,
         BasicChart,
         Tester,
-        Bubble
+        Bubble,
+        Header,
       ],
       individualComponents: [],
       dragged: null,
