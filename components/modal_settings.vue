@@ -89,6 +89,11 @@ export default {
     },
     deleteDatasink() {
       this.$props.component.component.dataSinks = this.$props.component.component.dataSinks.filter(x => !this.selectedSinks.map(y => y.id).includes(x.id));
+      for (let sink of this.selectedSinks) {
+        this.$props.component.component.data[sink.title] = [];
+      }
+      let dataEvent = new CustomEvent('data', { detail: {} });
+      this.$props.component.node.dispatchEvent(dataEvent);
     },
     reuseDatasink() {
       this.mainWindowVisible = false;
@@ -100,7 +105,6 @@ export default {
           this.$props.component.component.dataSinks.push({ id: sink.id, title: sink.title, readKey: sink.readKey, url: 'NEEDTOSET'});
         }
         this.$store.commit('addAlert', { msg: 'Data sinks added to component.', type: 'success'});
-
 
         let dataQueries = [];
         for (let sink in this.$props.component.component.dataSinks) {
@@ -127,7 +131,7 @@ export default {
       fetch('/api/datasinks/add', {method: 'POST', credentials: 'include'})
       .then(res => {
         res.json().then(r => {
-          this.$props.component.component.dataSinks.push({ id: r.datasink.id, title: r.datasink.title, url: r.url});
+          this.$props.component.component.dataSinks.push({ id: r.datasink.id, title: r.datasink.title, url: r.url, readKey: r.datasink.readKey });
           // TODO: ensure this query also returns the read/writekey, then commit to store here too.
           this.$store.commit('addNewDatasink', {id: r.datasink.id, title: r.datasink.title, latestDataPoint: null});
         }).catch(e => {
