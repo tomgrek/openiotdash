@@ -25,24 +25,60 @@ return {
   width: 200,
   transform: '',
   offsetX: 0,
-  offsetY: 0, //TODO: Next: Can animate, not redraw the SVG each time.
+  offsetY: 0,
   script: `
+            const drawChart = (e) => {
+              if (!e) e = { detail: {} };
+              let height = (e.detail.height || this.height) - 24; // 24=1.5rem=title bar
+              let width = e.detail.width || this.width;
+              let svg;
+              if (!node.children[0].querySelector('svg')) {
+                node.children[0].innerHTML = '';
+                svg = d3.select(node.children[0]).append("svg");
+                svg.attr("height", height);
+                svg.attr("width", width);
+                this.settings.svg = svg;
+              } else {
+                svg = this.settings.svg;
+
+                if (svg.attr('height') != height || svg.attr('width') != width) {
+                  node.children[0].innerHTML = '';
+                  svg = d3.select(node.children[0]).append("svg");
+                  svg.attr("height", height);
+                  svg.attr("width", width);
+                  this.settings.svg = svg;
+                }
+              }
+              svg.selectAll('text').remove();
+              svg.selectAll('text')
+                .data([this.settings.texttodisplay])
+                .enter().append('text')
+                .attr("x", width/2)
+                .attr("y", height/2)
+                .text(d => d)
+                .attr('font-family', 'Roboto Slab, sans-serif')
+                .attr('dominant-baseline', 'middle')
+                .attr('text-anchor', 'middle')
+                .attr("font-size", (1.5*width/this.settings.texttodisplay.length)+'px');
+            };
             node.addEventListener('dblclick', e => {
               e.preventDefault();
               e.stopPropagation();
             });
             node.addEventListener('created', e => {
               this.uuid = e.detail.uuid;
-              // add css for the component
               let styleNode = document.createElement('style');
               let styleFactory = new Function('uuid', this.style);
               styleNode.innerHTML = styleFactory(this.uuid);
               styleNode.id = 'style-'+this.uuid;
               document.body.appendChild(styleNode);
-              e.target.querySelector('#texttodisplay').innerText = this.settings.texttodisplay;
+              drawChart(e);
+            });
+            node.addEventListener('resized', (e) => {
+              drawChart(e);
             });
             node.addEventListener('settingsChanged', (e) => {
-              e.target.querySelector('#texttodisplay').innerText = this.settings.texttodisplay;
+              drawChart(e);
             });
             node.addEventListener('moved', (e) => {
               this.transform = e.detail.transform;
