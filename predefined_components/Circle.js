@@ -8,7 +8,9 @@ return {
   </div>`,
   preview: `<img style="height:100%; width:100%;" src="https://placehold.it/200x100"></img>`,
   data: {},
-  dataSources: [],
+  dataSources: [
+    { id: 1, title: 'bloab', url: 'alphavantage.com', connectedSink: 'j4zsth1' },
+  ],
   dataSinks: [
     { id: 1, title: 'j4xbpkli', url: '', orderBy: 'createdAt DESC', limit: 1 },
   ],
@@ -22,7 +24,7 @@ return {
   width: 200,
   transform: '',
   offsetX: 0,
-  offsetY: 0, //TODO: Next: Can animate, not redraw the SVG each time.
+  offsetY: 0,
   script: `
             const drawChart = (e) => {
               if (!e) e = { detail: {} };

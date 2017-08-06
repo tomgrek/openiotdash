@@ -17,7 +17,7 @@
             <div class="datasinks-toolbox">
               <input type="checkbox" v-on:change="toggleAllSinks"></input>
               <i v-on:click="deleteDatasink" title="Remove selected data sinks from this component" class="material-icons toolbox-icon">delete</i>
-              <i v-on:click="reuseDatasink" title="Add an existing datasink" class="material-icons toolbox-icon">playlist_add</i>
+              <i v-on:click="reuseDatasink" title="Add an existing data sink" class="material-icons toolbox-icon">playlist_add</i>
               <i v-on:click="addDatasink" title="Add a brand new data sink" class="material-icons toolbox-icon">add</i>
             </div>
             <div id="sinkContainer" class="datasink-listing" v-for="dataSink in component.component.dataSinks">
@@ -31,14 +31,30 @@
             </div>
           </div>
           <div v-if="activeComponent === 'dataSources_tab'">
-            <div>Data sources</div>
+            <div class="datasources-toolbox">
+              <input type="checkbox" v-on:change="toggleAllSources"></input>
+              <i v-on:click="deleteDatasource" title="Remove selected data sources from this component" class="material-icons toolbox-icon">delete</i>
+              <!-- TODO: Needs a method -->
+              <i title="Add an existing data source" class="material-icons toolbox-icon">playlist_add</i>
+              <i v-on:click="addDatasource" title="Add a brand new data source" class="material-icons toolbox-icon">add</i>
+            </div>
+            <div id="sourceContainer" class="datasource-listing" v-for="dataSource in component.component.dataSources">
+              <span>
+                <input type="checkbox" :id="'check-' + dataSource.id" v-on:change="toggleSource(dataSource, $event)"></input>
+                <span class="listing-title">{{dataSource.title}}</span>
+                <span class="listing-url" v-if="dataSource.url">{{dataSource.url}}</span>
+                <span class="listing-url" v-if="dataSource.connectedSink">{{dataSource.connectedSink}}</span>
+                <!-- it's called reuseDatasink but really its just showing the datasinks list -->
+                <span class="listing-settings-icon" v-on:click="reuseDatasink(dataSource)"><i class="material-icons">view_list</i></span>
+              </span>
+            </div>
           </div>
           <div style="position: absolute; bottom: 1rem; right: 1rem; display: inline-block; width:100%;">
             <button class="small-button" @click="$emit('close')" style="float: right;">Cancel</button>
             <button class="small-button" @click="saveSettings()" style="margin-right: 0.5rem; float:right;">Save</button>
           </div>
         </div>
-        <ModalDatasinks v-if="reuseDatasinkWindowVisible" @close="dismissReuseDatasinksWindow" :add="addDatasink"/>
+        <ModalDatasinks v-if="reuseDatasinkWindowVisible" @close="dismissReuseDatasinksWindow" :add="addDatasink" :forSource="activeComponent === 'dataSources_tab'"/>
       </div>
     </div>
   </transition>
@@ -58,6 +74,7 @@ export default {
     return {
       activeComponent: 'settings_tab',
       selectedSinks: [],
+      selectedSources: [],
       reuseDatasinkWindowVisible: false,
       mainWindowVisible: true,
       showingLimitInput: (() => {let obj = {};
@@ -119,12 +136,34 @@ export default {
         }
       }
     },
+    toggleAllSources(e) {
+      if (e.target.checked) {
+        this.selectedSources = [].concat(this.$props.component.component.dataSources);
+        for (let el of document.getElementById('sourceContainer').querySelectorAll('input[type="checkbox"]')) {
+          el.checked = true;
+        }
+      } else {
+        this.selectedSources = [];
+        for (let el of document.getElementById('sourceContainer').querySelectorAll('input[type="checkbox"]')) {
+          el.checked = false;
+        }
+      }
+    },
     toggleSink(sink, e) {
       if (!e.target.checked && this.selectedSinks.map(x => x.id).includes(sink.id)) {
         this.selectedSinks = this.selectedSinks.filter(x => x.id !== sink.id);
       } else {
         if (e.target.checked) {
           this.selectedSinks.push(sink);
+        }
+      }
+    },
+    toggleSource(source, e) {
+      if (!e.target.checked && this.selectedSources.map(x => x.id).includes(source.id)) {
+        this.selectedSources = this.selectedSources.filter(x => x.id !== source.id);
+      } else {
+        if (e.target.checked) {
+          this.selectedSources.push(source);
         }
       }
     },
@@ -136,7 +175,14 @@ export default {
       let dataEvent = new CustomEvent('data', { detail: {} });
       this.$props.component.node.dispatchEvent(dataEvent);
     },
-    reuseDatasink() {
+    deleteDatasource() {
+      this.$props.component.component.dataSources = this.$props.component.component.dataSources.filter(x => !this.selectedSources.map(y => y.id).includes(x.id));
+    },
+    reuseDatasink(dataSource) {
+      // dataSource is undefined unless we're inside datasources tab, again, repurposing this fn.
+      if (dataSource) {
+        this.selectedSources = [dataSource];
+      }
       this.mainWindowVisible = false;
       this.reuseDatasinkWindowVisible = true;
     },
@@ -161,7 +207,18 @@ export default {
         this.$props.component.node.dispatchEvent(dataEvent);
       });
     },
-    addDatasink(existingSinks) { // existingSink is optional, coming from the modal_datasinks
+    addDatasink(existingSinks, connectingToSource) { // existingSink is optional, coming from the modal_datasinks
+      if (connectingToSource) {
+        // do something completely different - reusing the component for sth it wasnt meant for
+        setTimeout(() => {
+          for (let el of document.getElementById('sourceContainer').querySelectorAll('input[type="checkbox"]')) {
+            el.checked = false;
+          }
+          document.getElementById('check-' + this.selectedSources[0].id).checked = true;
+        }, 0);
+        this.selectedSources[0].connectedSink = existingSinks[0].title;
+        return;
+      }
       if (Array.isArray(existingSinks)) {
         for (let sink of existingSinks) {
           this.$props.component.component.dataSinks.push({ id: sink.id, title: sink.title, readKey: sink.readKey, url: 'NEEDTOSET', limit: sink.limit || undefined, orderBy: sink.orderBy || undefined});
@@ -213,7 +270,7 @@ export default {
     },
     makeActive(e) {
       // if no event, it must be because we're returning from the existing datasinks dialog
-      if (!e) e = { target: document.getElementById('dataSinks_tab') };
+      if (!e) e = { target: document.getElementById(this.activeComponent) };
       const elements = document.getElementsByClassName('tab');
       for (let tab = 0; tab < elements.length; tab += 1) {
         elements[tab].removeAttribute('data-active');
@@ -315,7 +372,7 @@ export default {
   float: right;
 }
 
-.datasinks-toolbox {
+.datasinks-toolbox, .datasources-toolbox {
   background-color: #eee;
   padding: 0.2rem 0.5rem;
   margin: 0.5rem 0;
@@ -332,7 +389,7 @@ export default {
     color: lightgray;
   }
 }
-.datasink-listing {
+.datasink-listing, .datasource-listing {
   padding: 0.2rem 0.5rem;
 }
 .listing-title {
@@ -341,6 +398,14 @@ export default {
 .listing-url {
   font-size: 0.8rem;
   margin-left: 1rem;
+}
+.listing-settings-icon {
+  cursor: pointer;
+  color: gray;
+  i {
+    position: relative;
+    top: 0.4rem;
+  }
 }
 .sink-order-select {
   margin-left: 1rem;

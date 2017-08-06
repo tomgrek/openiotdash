@@ -25,7 +25,7 @@
 <script>
 export default {
   name: 'datasinksmodal',
-  props: ['add'],
+  props: ['add', 'forSource'], // if forSource is true we're connecting a sink to a source, not just adding it to a component
   data() {
     return {
       selectedSinks: [],
@@ -38,7 +38,7 @@ export default {
   },
   methods: {
     addDatasinks() {
-      this.$props.add(this.selectedSinks);
+      this.$props.add(this.selectedSinks, this.$props.forSource);
       this.$emit('close');
     },
     toggleAllSinks(e) {
