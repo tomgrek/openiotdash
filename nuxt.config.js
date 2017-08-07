@@ -38,6 +38,8 @@ module.exports = {
       if (ctx.isClient) {
         // removed linter.
       }
+      if (ctx.isServer) {
+      }
     }
   },
   env: {

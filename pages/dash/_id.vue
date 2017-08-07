@@ -79,13 +79,6 @@ export default {
     //   this.$store._vm.$watch(() => this.individualComponents, console.log, { deep: true, immediate: true });
     // },
   },
-
-  // TODO: NEXT:
-  // make a generic linechart component. now this isnt obvious since data sources come out in the component
-  // as data.j6123pc = [{value: 1} , {value: 2} ...] etc. so how would a generic component know what the
-  // names of its datasources are. Well, component could either mandate datasource names - e.g. "componentUuid_ds1", "componentUuid_ds2" etc
-  // or, this is probably better, just enumerate the datasources - Object.keys(this.data), for example
-
   computed: {
     username() {
       return this.$store.state.authUser;

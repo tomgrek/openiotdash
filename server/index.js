@@ -24,6 +24,9 @@ async function start() {
   const passportConfig = require('../config/passport');
   const passportSocketIo = require('passport.socketio');
 
+  // mqtt settings (including MQ, persistence) are in this file.
+  const mqtt = require('../plugins/mqtt');
+
   passportConfig.init(db);
   auth.init(db);
 
