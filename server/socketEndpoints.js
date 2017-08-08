@@ -18,11 +18,6 @@ const subscribeUser = (socket, userId) => {
 };
 
 const sendMsg = (toChannel, msg) => {
-  // console.log(_io.sockets.sockets);
-  // for (var sock of Object.keys(_io.sockets.sockets)) {
-  //   console.log(_io.sockets.sockets[sock].request.user);
-  // }
-  console.log(toChannel, msg);
   _io.to(toChannel).emit(toChannel, msg);
 };
 

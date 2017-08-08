@@ -32,11 +32,7 @@ router.post('/w/:writekey/:title', (req, res, next) => {
       datasink: sink.dataValues.id,
       data,
     }).then(dp => {
-      if (data.mqtt) {
-        sendMsg(req.params.title, JSON.stringify({data, createdAt: dp.createdAt}));
-      } else {
-        sendMsg(req.params.title, data); // broadcast to socketio channel
-      }
+      sendMsg(req.params.title, { data: dp.data, createdAt: dp.createdAt }); // broadcast to socketio channel
       return res.status(201).end();
     }).catch(e => {
       return res.status(500).end();
@@ -64,7 +60,7 @@ router.get('/w/:writekey/:title/:value', (req, res, next) => {
     Datapoint.create({
       datasink: sink.dataValues.id, // req.params.id,
       data,
-    }).then(dp => { // LOOKS LIKE THIS SHOULD BE value: val ... no shortcuts
+    }).then(dp => { 
       sendMsg(req.params.title, { data: dp.data, createdAt: dp.createdAt }); // broadcast to socketio channel
       return res.status(201).end();
     }).catch(e => {
