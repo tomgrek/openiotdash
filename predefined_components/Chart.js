@@ -29,6 +29,9 @@ return {
   script: `
             // things to do next:
             // add datasink from external url (e.g. alpha vantage)
+            // add MQTT publish
+            // add, in settings, ability to directly edit the whole code of the component
+            // add permissions for other users to edit dashboards owned by a user
             // add ability to regularly fetch data from external url and add to datasink
             // change logo/favicon/404
             const drawChart = (e) => {

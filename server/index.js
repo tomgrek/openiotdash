@@ -24,9 +24,6 @@ async function start() {
   const passportConfig = require('../config/passport');
   const passportSocketIo = require('passport.socketio');
 
-  // mqtt settings (including MQ, persistence) are in this file.
-  const mqtt = require('../plugins/mqtt');
-
   passportConfig.init(db);
   auth.init(db);
 
@@ -70,6 +67,7 @@ async function start() {
   const nuxt = new Nuxt(config);
 
   var server = require('http').createServer(app); //require('http').Server(app);
+
   io = require('socket.io')(server);
   io.use(passportSocketIo.authorize({
     key: 'connect.sid',
@@ -83,6 +81,9 @@ async function start() {
   io.on('connection', (socket) => {
     socketFns.subscribeUser(socket, socket.request.user.id);
   });
+
+  // mqtt settings (including MQ, persistence) are in this file.
+  require('../plugins/mqtt')(server);
 
   app.use(nuxt.render);
   //app.listen(port, host);

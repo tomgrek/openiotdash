@@ -22,10 +22,12 @@
 </template>
 
 <script>
-import { title, indexOptions } from "~components/config/config";
+import { title, indexOptions, host, port } from "~components/config/config";
 import * as d3 from "d3";
 import axios from '~plugins/axios';
 import socket from '~/plugins/socket.io.js'
+
+import mqtt from '../../node_modules/mqtt/dist/mqtt.min.js';
 
 import MyHeader from '~components/Header';
 import ModalRename from '~components/modal_rename';
@@ -166,6 +168,8 @@ export default {
   mounted() {
     let self = this;
     window.d3 = d3;
+    window.Mqtt = mqtt; // a global object, can connect to any MQTT broker
+    window.mqtt = mqtt.connect({ host, port }); // An mqtt instance already connected to the host server
     delete window.socket;
     window.socket = socket;
 
