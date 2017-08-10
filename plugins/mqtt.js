@@ -10,11 +10,20 @@ let createMqttStuff = (server) => {
   const mqttServer = new mosca.Server({ host: 'localhost', port: 1883 });
   mqttServer.attachHttpServer(server);
   mqttServer.on('published', function(packet, client) {
-    console.log(packet);
-    return false;
     if (packet.qos === undefined) return false; // it's a client connect/disconnect msg
-    const sinkTitle = packet.topic.split('/')[1];
-    const writeKey = packet.topic.split('/')[0];
+    const command = packet.topic.split('/')[0];
+    if (command === 'publish') {
+      // a message to just publish immediately, don't create a data point
+      mqttServer.publish({
+        topic: packet.topic.split('/')[1],
+        payload: packet.payload.toString(),
+        qos: 0,
+        retain: false,
+      });
+      return;
+    }
+    const sinkTitle = packet.topic.split('/')[2];
+    const writeKey = packet.topic.split('/')[1];
     const value = packet.payload.toString();
     fetch(`${baseUrl}/d/w/${writeKey}/${sinkTitle}`, { headers: { 'Content-Type' : 'application/x-www-form-urlencoded' }, method: 'POST', body: `mqtt=true&val=${value}`})
       .then(r => {

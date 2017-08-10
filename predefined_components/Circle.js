@@ -91,6 +91,13 @@ return {
               }
             });
             node.addEventListener('created', e => {
+              mqtt.subscribe('MYCHANNEL');
+              mqtt.on('message', (topic, payload) => {
+                if (topic === 'MYCHANNEL') {
+                  console.log(payload.toString());
+                }
+              });
+
               this.uuid = e.detail.uuid;
               // add css for the component
               let styleNode = document.createElement('style');
