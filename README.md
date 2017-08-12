@@ -17,6 +17,9 @@ $ npm start
 ```
 ## Things to do next:
 
+* Add the data for a component to the execution context of the component's offlineCode. Should be able to do console.log(this.dataSinks['j4xpli'].data)
+inside the offlineCode. (Needed because we want to be able to do offline fetch's and then store the results, also do actions based on the results)
+
 * Add datasink from external url (e.g. alpha vantage)
 ^^ probably taken care of by just defining offlineCode for a component, letting that fetch the data
 ^^^^ actually not quite true, we don't always want to save data. dataSources should be a thing, even with offline code now,

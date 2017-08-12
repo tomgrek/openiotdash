@@ -9,6 +9,7 @@ const vm = require('vm');
 
 let offlineScriptContexts = {};
 let parsedDashboards = {};
+let runningScripts = {};
 
 // TODO: need to populate the component's data before passing it in to the context.
 // and ensure that is updated as new data comes in (can update a variable outside of sandbox)
@@ -22,8 +23,9 @@ const doOffline = () => {
         for (let component of parsedDashboards[dash.id].components) {
           if (component.component.offlineCode) {
             if (!offlineScriptContexts[component.component.uuid]) {
+              // TODO: dont pass in console to the context, once debugging complete
               offlineScriptContexts[component.component.uuid] = new vm.createContext({fetch, component, setInterval, console});
-              new vm.Script(component.component.offlineCode).runInContext(offlineScriptContexts[component.component.uuid]);
+              runningScripts[component.component.uuid] = new vm.Script(component.component.offlineCode).runInContext(offlineScriptContexts[component.component.uuid]);
             }
           }
         }
@@ -31,4 +33,10 @@ const doOffline = () => {
     });
   }, 10000);
 };
-module.exports = doOffline;
+
+module.exports = {
+  doOffline,
+  offlineScriptContexts,
+  parsedDashboards,
+  runningScripts,
+};

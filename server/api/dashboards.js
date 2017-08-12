@@ -2,6 +2,8 @@ import { Router } from 'express';
 import { Dashboard } from '../../models';
 import crypto from 'crypto';
 
+import { runningScripts, offlineScriptContexts, parsedDashboards } from '../offlineProcessing';
+
 var router = Router();
 
 router.post('/dashboards/save/:what', (req, res, next) => {
@@ -23,6 +25,13 @@ router.post('/dashboards/save/:what', (req, res, next) => {
       d.definition = req.body.definition;
       d.visibility = req.body.visibility;
       d.title = req.body.title;
+      for (let component of JSON.parse(d.definition).components) {
+        if (runningScripts[component.uuid]) {
+          delete offlineScriptContexts[component.uuid];
+          delete parsedDashboards[d.id];
+          runningScripts[component.uuid].close();
+        }
+      }
       d.save().then(() => res.status(200).end());
     }
   });
