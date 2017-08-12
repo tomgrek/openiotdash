@@ -8,7 +8,18 @@
           <div class="tabs">
             <div class="tab" data-active @click="makeActive" id="settings_tab">Settings</div>
             <div class="tab" @click="makeActive" id="dataSinks_tab">Data Sinks</div>
-            <div class="tab" @click="makeActive" id="dataSources_tab">Data Sources</div>
+            <div class="tab" @click="makeActive" id="dataSources_tab">Data Sources</div> <!-- should just be data that's fetched when component mounts -->
+            <div class="tab" @click="makeActive" id="offlineCode_tab">Offline Code</div>
+          </div>
+          <div v-if="activeComponent === 'offlineCode_tab'" style="height: calc(100% - 14rem); position: relative;">
+            <div class="offlinecode-toolbox">
+              <i v-on:click="saveCode" title="Save code for offline execution" class="material-icons toolbox-icon">save</i>
+            </div>
+            <p style="margin-before: 0;">Any code you add here will be run on the server every 10s. You have access to the component and its live data,
+              and the <i>fetch</i> method.</p>
+            <textarea style="width: 100%; height: 100%;" placeholder="setInterval(() => {
+              console.log(component.dataSinks);
+            }, 1000);" v-model="componentsOfflineCode"/>
           </div>
           <div v-if="activeComponent === 'settings_tab'">
             <form ref="activeSettings" v-html="component.component.settingsDisplay" />
@@ -36,8 +47,9 @@
               <i v-on:click="deleteDatasource" title="Remove selected data sources from this component" class="material-icons toolbox-icon">delete</i>
               <!-- TODO: Needs a method -->
               <i title="Add an existing data source" class="material-icons toolbox-icon">playlist_add</i>
-              <i v-on:click="addDatasource" title="Add a brand new data source" class="material-icons toolbox-icon">add</i>
+              <i v-on:click="console.log('this was sposed to call addDatasource')" title="Add a brand new data source" class="material-icons toolbox-icon">add</i>
             </div>
+            <p>This will become just data that's fetched from elsewhere when component is displayed.</p>
             <div id="sourceContainer" class="datasource-listing" v-for="dataSource in component.component.dataSources">
               <span>
                 <input type="checkbox" :id="'check-' + dataSource.id" v-on:change="toggleSource(dataSource, $event)"></input>
@@ -77,19 +89,28 @@ export default {
       selectedSources: [],
       reuseDatasinkWindowVisible: false,
       mainWindowVisible: true,
-      showingLimitInput: (() => {let obj = {};
-      for (let sink of this.$props.component.component.dataSinks) {
-        if (sink.orderBy === 'createdAt DESC') {
-          obj[sink.title] = true;
-        } else {
-          obj[sink.title] = false;
+      showingLimitInput: (() => {
+        let obj = {};
+        for (let sink of this.$props.component.component.dataSinks) {
+          if (sink.orderBy === 'createdAt DESC') {
+            obj[sink.title] = true;
+          } else {
+            obj[sink.title] = false;
+          }
         }
-      }
-      return obj;})(),
+        return obj;
+      })(),
+      componentsOfflineCode: (() => {
+        if (this.$props.component.component.offlineCode) return this.$props.component.component.offlineCode;
+        return '';
+      })(),
       needToFetchNewData: false,
     }
   },
   methods: {
+    saveCode(e) {
+      this.$props.component.component.offlineCode = this.componentsOfflineCode;
+    },
     changeLimit(sink, e) {
       let val = parseInt(e.target.value);
       if (!val) return;
@@ -353,7 +374,7 @@ export default {
 }
 .tab {
   display: inline-block;
-  width: 33%;
+  width: 25%;
   color: $light-text;
   font-weight: 500;
   vertical-align: middle;
@@ -372,7 +393,7 @@ export default {
   float: right;
 }
 
-.datasinks-toolbox, .datasources-toolbox {
+.datasinks-toolbox, .datasources-toolbox, .offlinecode-toolbox {
   background-color: #eee;
   padding: 0.2rem 0.5rem;
   margin: 0.5rem 0;

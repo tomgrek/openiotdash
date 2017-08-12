@@ -85,6 +85,8 @@ async function start() {
   // mqtt settings (including MQ, persistence) are in this file.
   require('../plugins/mqtt')(server);
 
+  require('./offlineProcessing')();
+
   app.use(nuxt.render);
   //app.listen(port, host);
   server.listen(port, host);

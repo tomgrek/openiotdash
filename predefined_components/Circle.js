@@ -23,6 +23,9 @@ return {
   height: 100,
   width: 200,
   transform: '',
+  offlineCode: `
+    setInterval(() => console.log('HI!!!'), 2000);
+    `,
   offsetX: 0,
   offsetY: 0,
   script: `
