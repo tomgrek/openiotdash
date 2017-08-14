@@ -331,7 +331,6 @@ export default {
   display: table;
   transition: opacity .3s ease;
 }
-
 .modal-wrapper {
   display: table-cell;
   vertical-align: middle;

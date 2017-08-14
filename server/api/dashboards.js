@@ -27,6 +27,7 @@ router.post('/dashboards/save/:what', (req, res, next) => {
       d.title = req.body.title;
       for (let component of JSON.parse(d.definition).components) {
         if (runningScripts[component.uuid]) {
+          // TODO: check how this interacts with cluster.isMaster/pm2
           delete offlineScriptContexts[component.uuid];
           delete parsedDashboards[d.id];
           runningScripts[component.uuid].close();

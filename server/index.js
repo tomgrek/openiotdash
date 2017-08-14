@@ -21,6 +21,7 @@ async function openUserDb() {
 async function start() {
 
   const passport = require('passport');
+  const cluster = require('cluster');
   const passportConfig = require('../config/passport');
   const passportSocketIo = require('passport.socketio');
 
@@ -68,24 +69,24 @@ async function start() {
 
   var server = require('http').createServer(app); //require('http').Server(app);
 
-  io = require('socket.io')(server);
-  io.use(passportSocketIo.authorize({
-    key: 'connect.sid',
-    secret: 'openiotdash',
-    store: sessionStore,
-    passport: passport,
-    cookieParser: cookieParser
-  }));
-  const socketFns = require('./socketEndpoints');
-  socketFns.init(io);
-  io.on('connection', (socket) => {
-    socketFns.subscribeUser(socket, socket.request.user.id);
-  });
-
-  // mqtt settings (including MQ, persistence) are in this file.
-  require('../plugins/mqtt')(server);
-
-  require('./offlineProcessing').doOffline();
+  if (cluster.isMaster) {
+    io = require('socket.io')(server);
+    io.use(passportSocketIo.authorize({
+      key: 'connect.sid',
+      secret: 'openiotdash',
+      store: sessionStore,
+      passport: passport,
+      cookieParser: cookieParser
+    }));
+    const socketFns = require('./socketEndpoints');
+    socketFns.init(io);
+    io.on('connection', (socket) => {
+      socketFns.subscribeUser(socket, socket.request.user.id);
+    });
+    // mqtt settings (including MQ, persistence) are in this file.
+    require('../plugins/mqtt')(server);
+    require('./offlineProcessing').doOffline();
+  }
 
   app.use(nuxt.render);
   //app.listen(port, host);

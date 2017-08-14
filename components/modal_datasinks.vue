@@ -1,34 +1,53 @@
 <template>
-  <div class="modal-container">
-    <span class="close-icon" @click="$emit('close')"><i class="material-icons">close</i></span>
-    <div class="modal-header">Existing Datasinks</div>
-    <div class="datasinks-toolbox">
-      <input type="checkbox" v-on:change="toggleAllSinks"></input>
-      <i v-on:click="addDatasinks" title="Add selected data sinks to component" class="material-icons toolbox-icon">add</i>
-    </div>
-    <div class="sink-outer" id="sinkContainerAll">
-      <div class="sink-inner-scroll">
-        <div class="datasink-listing" v-for="dataSink in dataSinks">
-          <span>
-            <input type="checkbox" v-on:change="toggleSink(dataSink, $event)"></input>
-            <span class="listing-title">{{dataSink.title}}</span>
-            <span class="listing-url">{{dataSink.readKey}}</span>
-            <span class="listing-url">{{dataSink.writeKey}}</span>
-            <span class="listing-url" v-html="formatTime(dataSink.latestDataPoint)"></span>
-          </span>
+  <div class="modal-wrapper">
+    <div v-if="mainWindowVisible" class="modal-container">
+      <span class="close-icon" @click="$emit('close')"><i class="material-icons">close</i></span>
+      <div class="modal-header">Existing Datasinks</div>
+      <div class="datasinks-toolbox">
+        <input type="checkbox" v-on:change="toggleAllSinks"></input>
+        <i v-on:click="addDatasinks" title="Add selected data sinks to component" class="material-icons toolbox-icon">add</i>
+      </div>
+      <div class="sink-outer" id="sinkContainerAll">
+        <div class="sink-inner-scroll">
+          <table class="datasink-table">
+            <!-- <th> -->
+              <th></th>
+              <th>Title</th>
+              <th>Code</th>
+              <th>Read Key</th>
+              <th>Write Key</th>
+              <th>Last Written</th>
+            <!-- </th> -->
+            <tr class="datasink-listing" v-for="dataSink in dataSinks">
+              <td><input type="checkbox" v-on:change="toggleSink(dataSink, $event)"></input></td>
+              <td><span class="listing-title">{{dataSink.title}}</span></td>
+              <td><span v-on:click="showCodeEditWindow" class="inline-icon"><i class="material-icons">settings_input_antenna</i></span></td>
+              <td><span class="listing-url">{{dataSink.readKey}}</span></td>
+              <td><span class="listing-url">{{dataSink.writeKey}}</span></td>
+              <td><span class="listing-url" v-html="formatTime(dataSink.latestDataPoint)"></span></td>
+            </tr>
+          </table>
         </div>
       </div>
     </div>
+    <ModalCodeEdit v-if="codeEditWindowVisible" @close="dismissCodeEditWindow"/>
   </div>
 </template>
 
 <script>
+import ModalCodeEdit from './modal_codeedit.vue';
+
 export default {
   name: 'datasinksmodal',
   props: ['add', 'forSource'], // if forSource is true we're connecting a sink to a source, not just adding it to a component
+  components: {
+    ModalCodeEdit,
+  },
   data() {
     return {
       selectedSinks: [],
+      mainWindowVisible: true,
+      codeEditWindowVisible: false,
     }
   },
   computed: {
@@ -37,6 +56,14 @@ export default {
     },
   },
   methods: {
+    showCodeEditWindow() {
+      this.mainWindowVisible = false;
+      this.codeEditWindowVisible = true;
+    },
+    dismissCodeEditWindow() {
+      this.codeEditWindowVisible = false;
+      this.mainWindowVisible = true;
+    },
     addDatasinks() {
       this.$props.add(this.selectedSinks, this.$props.forSource);
       this.$emit('close');
@@ -74,9 +101,15 @@ export default {
 
 <style lang="scss" scoped>
 @import "~assets/css/main.scss";
-
+.modal-wrapper {
+  display: block;
+  vertical-align: middle;
+  width: 66vw;
+  margin-left: auto;
+  margin-right: auto;
+}
 .modal-container {
-  width: 50vw;
+  width: 66vw;
   height: 50vh;
   overflow: hidden;
   margin: 0px auto;
@@ -85,7 +118,7 @@ export default {
   border-radius: 2px;
   border: 2px solid black;
   transition: all .3s ease;
-  font-family: Helvetica, Arial, sans-serif;
+  font-family: Roboto Slab, serif;
   text-align: left;
   position: relative;
 }
@@ -100,7 +133,7 @@ export default {
   margin-top: 0;
   margin-bottom: 0.5rem;
   color: $primary-text;
-  font-weight: 600;
+  font-weight: 900;
 }
 .datasinks-toolbox {
   background-color: #eee;
@@ -123,19 +156,30 @@ export default {
   overflow: hidden;
   position: relative;
   height: calc(100% - 5rem);
+  white-space: nowrap;
 }
 .sink-inner-scroll {
   overflow: auto;
   height: 100%;
 }
-.datasink-listing {
-  padding: 0.2rem 0.5rem;
+.datasink-table {
+  padding-left: 0.5rem;
+  width: 100%;
+  font-family: "Source Sans Pro", sans-serif;
 }
-.listing-title {
-  margin-left: 0.5rem;
+.inline-icon {
+  i {
+    font-size: 1rem;
+    top: 2px;
+    position: relative;
+    cursor: pointer;
+    color: gray;
+  }
+  i:hover {
+    color: black;
+  }
 }
 .listing-url {
   font-size: 0.8rem;
-  margin-left: 1rem;
 }
 </style>
