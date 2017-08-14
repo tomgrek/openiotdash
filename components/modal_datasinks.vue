@@ -21,7 +21,7 @@
             <tr class="datasink-listing" v-for="dataSink in dataSinks">
               <td><input type="checkbox" v-on:change="toggleSink(dataSink, $event)"></input></td>
               <td><span class="listing-title">{{dataSink.title}}</span></td>
-              <td><span v-on:click="showCodeEditWindow" class="inline-icon"><i class="material-icons">settings_input_antenna</i></span></td>
+              <td><span v-on:click="showCodeEditWindow(dataSink)" class="inline-icon"><i class="material-icons">settings_input_antenna</i></span></td>
               <td><span class="listing-url">{{dataSink.readKey}}</span></td>
               <td><span class="listing-url">{{dataSink.writeKey}}</span></td>
               <td><span class="listing-url" v-html="formatTime(dataSink.latestDataPoint)"></span></td>
@@ -30,7 +30,7 @@
         </div>
       </div>
     </div>
-    <ModalCodeEdit v-if="codeEditWindowVisible" @close="dismissCodeEditWindow"/>
+    <ModalCodeEdit v-if="codeEditWindowVisible" :sink="selectedSink" @close="dismissCodeEditWindow"/>
   </div>
 </template>
 
@@ -48,6 +48,7 @@ export default {
       selectedSinks: [],
       mainWindowVisible: true,
       codeEditWindowVisible: false,
+      selectedSink: null,
     }
   },
   computed: {
@@ -56,7 +57,8 @@ export default {
     },
   },
   methods: {
-    showCodeEditWindow() {
+    showCodeEditWindow(sink) {
+      this.selectedSink = sink;
       this.mainWindowVisible = false;
       this.codeEditWindowVisible = true;
     },

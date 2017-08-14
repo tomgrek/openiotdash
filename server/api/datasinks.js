@@ -5,6 +5,12 @@ import { baseUrl } from '../../components/config/config';
 
 var router = Router();
 
+router.post('/datasinks/saveCode', (req, res, next) => {
+  Datasink.update({ definition: req.body.definition }, { where: { id: req.body.id }}).then(() => {
+    return res.status(200).end();
+  }).catch(() => res.status(500).end());
+});
+
 router.post('/datasinks/add', (req, res, next) => {
   if (!req.user) return res.status(401).end();
   let uuid = getUuid();

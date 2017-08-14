@@ -12,7 +12,7 @@
         <textarea style="width: 100%; height: calc(100% - 7rem);" placeholder="console.log(data);" v-model="sinkCode"/>
       </div>
       <div style="position: absolute; bottom: 1rem; right: 1.5rem; display: inline-block; width:100%;">
-        <button class="small-button" @click="$emit('close')" style="float: right;">Cancel</button>
+        <button class="small-button" @click="$emit('close')" style="float: right;">{{buttonText}}</button>
       </div>
     </div>
   </div>
@@ -21,16 +21,31 @@
 <script>
 export default {
   name: 'codeeditormodal',
-  props: [],
+  props: ['sink'],
   data() {
     return {
+      sinkCode: '',
+      buttonText: 'Cancel',
     }
   },
   computed: {
   },
+  mounted() {
+    this.sinkCode = this.$props.sink.definition;
+  },
   methods: {
     saveCode() {
-      // stub
+      this.$props.sink.definition = this.sinkCode;
+      this.buttonText = 'Close';
+      const body = JSON.stringify({
+        id: this.$props.sink.id,
+        definition: this.sinkCode,
+      });
+      fetch(`/api/datasinks/saveCode/`, { credentials: 'include', method: 'POST', body, headers: {'Content-Type': 'application/json'} }).then(() => {
+        this.$store.commit('addAlert', { msg: 'Code saved for execution each time data point received.', type: 'success'});
+      }).catch(() => {
+        this.$store.commit('addAlert', { msg: 'Problem saving that code', type: 'error'});
+      });
     },
   },
 }

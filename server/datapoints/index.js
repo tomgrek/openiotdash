@@ -1,7 +1,14 @@
+import fetch from 'node-fetch';
+
 import { Router } from 'express';
 import { Datasink, Datapoint } from '../../models';
 
 import { sendMsg } from '../socketEndpoints';
+
+const vm = require('vm');
+let datasinkScriptContexts = {};
+let parsedDatasinkScripts = {};
+let runningDatasinkScripts = {};
 
 var router = Router();
 
@@ -14,7 +21,9 @@ router.post('/w/:writekey/:title', (req, res, next) => {
   Datasink.findOne({
     attributes: [
       'writeKey',
+      'readKey',
       'id',
+      'definition',
     ],
     where: {
       title: req.params.title,
@@ -33,6 +42,15 @@ router.post('/w/:writekey/:title', (req, res, next) => {
       data,
     }).then(dp => {
       sendMsg(req.params.title, { data: dp.data, createdAt: dp.createdAt }); // broadcast to socketio channel
+      if (sink.definition) {
+        if (!datasinkScriptContexts[sink.id]) {
+          // TODO: dont pass in console to the context, once debugging complete
+          datasinkScriptContexts[sink.id] = new vm.createContext({fetch, sink, console});
+        }
+        let script = new vm.Script(sink.definition);
+        if (!script) return res.status(400).end();
+        runningDatasinkScripts[sink.id] = script.runInContext(datasinkScriptContexts[sink.id]);
+      }
       return res.status(201).end();
     }).catch(e => {
       return res.status(500).end();
@@ -60,7 +78,7 @@ router.get('/w/:writekey/:title/:value', (req, res, next) => {
     Datapoint.create({
       datasink: sink.dataValues.id, // req.params.id,
       data,
-    }).then(dp => { 
+    }).then(dp => {
       sendMsg(req.params.title, { data: dp.data, createdAt: dp.createdAt }); // broadcast to socketio channel
       return res.status(201).end();
     }).catch(e => {

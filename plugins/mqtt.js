@@ -4,7 +4,6 @@ import { baseUrl } from '../components/config/config';
 
 const fetch = require('node-fetch');
 const mosca = require('mosca');
-const FormData = require('form-data');
 
 let createMqttStuff = (server) => {
   const mqttServer = new mosca.Server({ host: 'localhost', port: 1883 });
