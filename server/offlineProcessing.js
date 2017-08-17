@@ -12,9 +12,6 @@ let offlineScriptContexts = {};
 let parsedDashboards = {};
 let runningScripts = {};
 
-// TODO: need to populate the component's data before passing it in to the context.
-// and ensure that is updated as new data comes in (can update a variable outside of sandbox)
-
 const getDataForComponent = sinkList => {
   return new Promise((resolve, reject) => {
     let queries = [];
@@ -29,7 +26,7 @@ const getDataForComponent = sinkList => {
             datasink: sink.id,
           },
           limit: sink.limit,
-          order: sink.order,
+          order: [sink.orderBy.split(' ')],
         })
       );
     }
@@ -61,14 +58,18 @@ const doOffline = () => {
         for (let component of parsedDashboards[dash.id].components) {
           // TODO: extend each of the component datasinks with their read/write keys
           if (component.component.offlineCode) {
-            if (!offlineScriptContexts[component.component.uuid] || !runningScripts[component.component.uuid]) {
-              // TODO: Need to check for calling code's ownership of dataSink and related dataPoints?
-              getDataForComponent(component.component.dataSinks).then(data => {
-                // TODO: dont pass in console to the context, once debugging complete
+            // TODO: Need to check for calling code's ownership of dataSink and related dataPoints?
+            getDataForComponent(component.component.dataSinks).then(data => {
+              // TODO: dont pass in console to the context, once debugging complete
+              if (!offlineScriptContexts[component.component.uuid]) {
                 offlineScriptContexts[component.component.uuid] = new vm.createContext({fetch, component, setInterval, console, data});
+              } else {
+                Object.assign(offlineScriptContexts[component.component.uuid], { data });
+              }
+              if (!runningScripts[component.component.uuid]) {
                 runningScripts[component.component.uuid] = new vm.Script(component.component.offlineCode).runInContext(offlineScriptContexts[component.component.uuid]);
-              });
-            }
+              }
+            });
           }
         }
       }
@@ -81,4 +82,10 @@ module.exports = {
   offlineScriptContexts,
   parsedDashboards,
   runningScripts,
+  stopScript: id => {
+    if (runningScripts[id]) {
+      runningScripts[id].close();
+    }
+    delete runningScripts[id];
+  },
 };

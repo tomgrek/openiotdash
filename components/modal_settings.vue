@@ -17,7 +17,7 @@
             </div>
             <p style="margin-before: 0;">Any code you add here will be run on the server every 10s. You have access to the component and its live data,
               and the <i>fetch</i> method. If your logic needs the component data updated more frequently than every 10s, use setInterval and fetch.</p>
-            <textarea style="width: 100%; height: 100%;" placeholder="setInterval(() => {
+            <textarea style="width: 100%; height: calc(100% - 2rem);" placeholder="setInterval(() => {
               console.log(component.dataSinks);
             }, 1000);" v-model="componentsOfflineCode"/>
           </div>

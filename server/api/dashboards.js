@@ -2,11 +2,12 @@ import { Router } from 'express';
 import { Dashboard } from '../../models';
 import crypto from 'crypto';
 
-import { runningScripts, offlineScriptContexts, parsedDashboards } from '../offlineProcessing';
+import { runningScripts, offlineScriptContexts, parsedDashboards, stopScript } from '../offlineProcessing';
 
 var router = Router();
 
 router.post('/dashboards/save/:what', (req, res, next) => {
+  console.log('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$', req.params.what, '########################');
   Dashboard.findOne({
     where: {
       user: req.user.id,
@@ -25,16 +26,17 @@ router.post('/dashboards/save/:what', (req, res, next) => {
       d.definition = req.body.definition;
       d.visibility = req.body.visibility;
       d.title = req.body.title;
-      for (let component of JSON.parse(d.definition).components) {
-        if (runningScripts[component.uuid]) {
-          // TODO: check how this interacts with cluster.isMaster/pm2
-          delete offlineScriptContexts[component.uuid];
-          delete parsedDashboards[d.id];
-          runningScripts[component.uuid].close();
-          delete runningScripts[component.uuid];
+      d.save().then(() => {
+        for (let component of JSON.parse(req.body.definition).components) {
+          if (Object.keys(runningScripts).includes(component.uuid)) {
+            // TODO: check how this interacts with cluster.isMaster/pm2
+            delete offlineScriptContexts[component.uuid];
+            delete parsedDashboards[d.id];
+            stopScript(component.uuid);
+          }
         }
-      }
-      d.save().then(() => res.status(200).end());
+        res.status(200).end();
+      });
     }
   });
 
