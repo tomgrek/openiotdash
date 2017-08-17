@@ -6,9 +6,7 @@ import { Datasink, Datapoint } from '../../models';
 import { sendMsg } from '../socketEndpoints';
 
 const vm = require('vm');
-let datasinkScriptContexts = {};
 let parsedDatasinkScripts = {};
-let runningDatasinkScripts = {};
 
 var router = Router();
 
@@ -43,13 +41,12 @@ router.post('/w/:writekey/:title', (req, res, next) => {
     }).then(dp => {
       sendMsg(req.params.title, { data: dp.data, createdAt: dp.createdAt }); // broadcast to socketio channel
       if (sink.definition) {
-        if (!datasinkScriptContexts[sink.id]) {
-          // TODO: dont pass in console to the context, once debugging complete
-          datasinkScriptContexts[sink.id] = new vm.createContext({fetch, sink, console});
-        }
+        // TODO: dont pass in console to the context, once debugging complete
+        let dataPoint = { data: dp.data, createdAt: dp.createdAt };
+        let context = new vm.createContext({fetch, sink, console, dataPoint});
         let script = new vm.Script(sink.definition);
         if (!script) return res.status(400).end();
-        runningDatasinkScripts[sink.id] = script.runInContext(datasinkScriptContexts[sink.id]);
+        script.runInContext(context);
       }
       return res.status(201).end();
     }).catch(e => {

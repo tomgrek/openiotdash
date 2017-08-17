@@ -68,6 +68,10 @@ export default {
   },
   async asyncData(context) {
     let dashboard = await axios.get(`/data/dashboard_link/${context.params.id}`);
+    // are we in mobile
+    if (!!context.req.headers['user-agent'].match(/Mobile|iP(hone|od|ad)|Android|BlackBerry|IEMobile/g)) {
+      context.store.commit('weAreMobile', true);
+    }
     if (!dashboard.data) {
       context.redirect(`/404`);
     }
@@ -82,11 +86,12 @@ export default {
     };
   },
   mounted() {
+    console.log(this.$store.state.weAreMobile,'/////////////');
     let self = this;
     window.d3 = d3;
     delete window.socket;
     window.socket = socket;
-    
+
     let bbox = document.getElementsByClassName('canvas-container')[0].getBoundingClientRect();
     const width = parseInt(bbox.width);
     const height = parseInt(bbox.height);

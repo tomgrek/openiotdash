@@ -29,10 +29,10 @@ that just fetches data from a URL when the component is actually displayed.
 
 * add permissions for other users to edit dashboards owned by a user
 
-* for each datasink, add ability to edit some code that's executed when the datasink receives a new datapoint (ie for anomaly detection and alerting)
-
 * change logo/favicon/404
 
 * make dashboard display linearly on mobile
 
-* add (couchDB & postgres) connector, then use pm2 (pm2 start build/main.js -i 0 --name "openiotproject"
+* add ability to set how often the offlineCode runs
+
+* add (couchDB & postgres) connector, then use pm2 (pm2 start build/main.js -i 0 --name "openiotproject")

@@ -9,6 +9,9 @@ export const state = () => ({
 });
 
 export const mutations = {
+  weAreMobile: (state, areWe) => {
+    state.weAreMobile = areWe;
+  },
   setUsername: (state, username) => {
     state.authUser = username;
   },

@@ -31,6 +31,7 @@ router.post('/dashboards/save/:what', (req, res, next) => {
           delete offlineScriptContexts[component.uuid];
           delete parsedDashboards[d.id];
           runningScripts[component.uuid].close();
+          delete runningScripts[component.uuid];
         }
       }
       d.save().then(() => res.status(200).end());
