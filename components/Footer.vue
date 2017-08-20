@@ -17,5 +17,9 @@ footer {
   text-align: center;
   border-top: 1px solid $border-color;
   font-family: 'Roboto Slab', serif;
+
+  @include phone {
+    display: none;
+  }
 }
 </style>

@@ -18,7 +18,6 @@ import socket from '~/plugins/socket.io.js'
 import { getUuid } from '~plugins/utils';
 import MyHeader from '~components/Header';
 
-// TODO: Don't think this needs to be here.
 import BasicChart from '../../predefined_components/BasicChart';
 import Tester from '../../predefined_components/Tester';
 
@@ -26,7 +25,7 @@ import fakedrop from '../../clientutils/utils';
 
 export default {
   name: 'dash',
-  middleware: [],
+  middleware: ['authentication', 'dashboards'],
   components: {
     MyHeader,
   },
@@ -63,15 +62,14 @@ export default {
       e.preventDefault();
       e.stopPropagation();
     },
-    fakeDrop(fullComponent, isMobile) {
-      fakedrop(fullComponent, this, false, isMobile);
+    fakeDrop(fullComponent) {
+      fakedrop(fullComponent, this);
     },
   },
   async asyncData(context) {
     let dashboard = await axios.get(`/data/dashboard_link/${context.params.id}`);
-
     // are we in mobile
-    if (context.isServer && !!context.req.headers['user-agent'].match(/iPhone|Android|BlackBerry|IEMobile/g)) {
+    if (!!context.req.headers['user-agent'].match(/Mobile|iP(hone|od|ad)|Android|BlackBerry|IEMobile/g)) {
       context.store.commit('weAreMobile', true);
     }
     if (!dashboard.data) {
@@ -88,23 +86,15 @@ export default {
     };
   },
   mounted() {
+    console.log(this.$store.state.weAreMobile,'/////////////');
     let self = this;
-    let def = JSON.parse(this.dashboard.definition);
     window.d3 = d3;
     delete window.socket;
     window.socket = socket;
 
     let bbox = document.getElementsByClassName('canvas-container')[0].getBoundingClientRect();
-    const width = parseInt(this.$store.state.weAreMobile ? bbox.width - 2 : bbox.width);
-
-    let height = parseInt(this.$store.state.weAreMobile ? bbox.height - 14 : bbox.height);
-    if (this.$store.state.weAreMobile) {
-      height = 0;
-      for (let component of def.components) {
-        height = height + component.component.height;
-      }
-      height = height + 80;
-    }
+    const width = parseInt(bbox.width);
+    const height = parseInt(bbox.height);
     let svg = d3.select(".canvas-container").append("svg")
         .attr("width", width)
         .attr("height", height)
@@ -113,7 +103,7 @@ export default {
         .style("left", "0")
         .style("z-index", "-1")
         .style("transform", "translateZ(0)")
-      .append("g");
+      .append("g")
     let rect = svg.append("rect")
       .attr("width", width)
       .attr("height", height)
@@ -157,19 +147,18 @@ export default {
       self.svgOffsetY = transform.y;
       self.svgOffsetX = transform.x;
     }
+    let zoom = d3.zoom()
+        .scaleExtent([1, 24])
+        .translateExtent([[-c_node.clientWidth, -c_node.clientHeight], [c_node.clientWidth*2, c_node.clientHeight*2]])
+        .on("zoom", zoomed);
 
-    if (!this.$store.state.weAreMobile) {
-      let zoom = d3.zoom()
-          .scaleExtent([1, 24])
-          .translateExtent([[-c_node.clientWidth, -c_node.clientHeight], [c_node.clientWidth*2, c_node.clientHeight*2]])
-          .on("zoom", zoomed);
-      c.call(zoom);
-    }
+    c.call(zoom);
 
+    let def = JSON.parse(this.dashboard.definition);
     this.svgOffsetX = def.svgOffsetX;
     this.svgOffsetY = def.svgOffsetY;
-    for (let component of def.components.sort((a,b) => a.component.offsetY - b.component.offsetY)) {
-      this.fakeDrop(component, this.$store.state.weAreMobile);
+    for (let component of def.components) {
+      this.fakeDrop(component);
     }
   },
 }
@@ -197,9 +186,6 @@ export default {
   position: relative;
   height: 90%;
   transform: translateZ(0);
-  @include phone {
-    overflow: scroll;
-  }
 }
 .canvas-container {
   overflow: hidden;
@@ -209,9 +195,5 @@ export default {
   width: calc(100%);
   text-align: left;
   display: inline-block;
-  @include phone {
-    overflow: scroll;
-    height: auto;
-  }
 }
 </style>

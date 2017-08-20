@@ -60,10 +60,14 @@ header {
     transform: translateY(-0.3rem);
     background-color: white;
     cursor: pointer;
+    &:hover {
+      filter: brightness(0.9);
+    }
+    @include phone {
+      display: none;
+    }
   }
-  .header-userbutton:hover {
-    filter: brightness(0.9);
-  }
+
   ul {
     list-style: none;
     text-decoration: underline;

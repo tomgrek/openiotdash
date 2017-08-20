@@ -36,3 +36,7 @@ that just fetches data from a URL when the component is actually displayed.
 * add ability to set how often the offlineCode runs
 
 * add (couchDB & postgres) connector, then use pm2 (pm2 start build/main.js -i 0 --name "openiotproject")
+
+* i think it's possible to just set the id of the displayed component to its uuid, that'll display styles
+
+* dashboard in 'show' isnt visible to non-logged in user... or it is now but doesnt show data.

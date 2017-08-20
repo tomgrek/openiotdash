@@ -1,21 +1,23 @@
 import { getUuid } from '~plugins/utils';
 
-export default (fullComponent, self, editing = false) => {
+export default (fullComponent, self, editing = false, isMobile = false) => {
 
     let comp = fullComponent.component;
     let c = d3.select('.canvas-container');
     let uuid = getUuid();
     let div = c.append('div')
-      .attr('class', 'box')
+      .attr('class', isMobile ? 'box-mobile' : 'box')
       .style('height', comp.height + 'px')
-      .style('width', comp.width + 'px')
+      .style('width', isMobile ? 'calc(100% - 4px)' : comp.width + 'px')
       .html(comp.content)
-      .attr('offsetX', (parseInt(comp.offsetX) || 0))
-      .attr('offsetY', (parseInt(comp.offsetY) || 0))
+      .attr('offsetX', isMobile ? 0 : (parseInt(comp.offsetX) || 0))
+      .attr('offsetY', isMobile ? 0 : (parseInt(comp.offsetY) || 0))
       .attr('uuid', uuid)
-      .style('position', 'absolute')
-      .style('transform', `translate(${comp.offsetX}px, ${comp.offsetY}px)`)
-      .call(d3.drag()
+      .attr('id', uuid)
+      .style('position', isMobile ? 'relative' : 'absolute')
+      .style('transform', `translate(${isMobile ? 0 : comp.offsetX}px, ${isMobile ? 0 : comp.offsetY}px)`);
+    if (!isMobile) {
+      div.call(d3.drag()
         .on('drag', self.dragged)
         .on('end', () => {
           //dragging = false;
@@ -23,6 +25,7 @@ export default (fullComponent, self, editing = false) => {
           self.clickOffsetY = false;
         })
       );
+    }
 
     fullComponent.node = div.node();
     let tb = div.append('div')
@@ -41,8 +44,8 @@ export default (fullComponent, self, editing = false) => {
     }
     self.individualComponents.push({uuid, component: comp, node: fullComponent.node});
     let node = fullComponent.node;
-    (() => { eval(comp.script) }).call(comp);
-    let createdEvent = new CustomEvent('created', { detail: { uuid, width: parseInt(comp.width), height: parseInt(comp.height) } });
+    (() => { eval(comp.script) }).call(isMobile ? Object.assign(comp, { width: node.clientWidth }) : comp);
+    let createdEvent = new CustomEvent('created', { detail: { uuid, width: parseInt(isMobile ? node.clientWidth : comp.width), height: parseInt(comp.height) } });
     fullComponent.node.dispatchEvent(createdEvent);
 
     Promise.all(keyQueries).then(keys => {
@@ -67,7 +70,7 @@ export default (fullComponent, self, editing = false) => {
       });
     });
 
-    if (editing) {
+    if (editing && !isMobile) {
       let tb = node.querySelector(`.title-bar`);
       let trashIcon = document.createElement('span');
       trashIcon.className = 'trash-icon material-icons';

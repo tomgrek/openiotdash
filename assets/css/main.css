@@ -80,6 +80,16 @@ rect {
   /*mix-blend-mode: difference;*/
   /*transition: transform 0.1s ease;*/
 }
+.box-mobile {
+  display: block;
+  position: relative;
+  border: 1px solid gray;
+  background-color: #fefeff;
+  opacity: 0.8;
+  transform-origin :center;
+  box-sizing: content-box;
+  margin-bottom: 0.5rem;
+}
 .resizer {
   position: absolute;
   height: 10px;
