@@ -18,10 +18,6 @@ import socket from '~/plugins/socket.io.js'
 import { getUuid } from '~plugins/utils';
 import MyHeader from '~components/Header';
 
-// TODO: Don't think this needs to be here.
-import BasicChart from '../../predefined_components/BasicChart';
-import Tester from '../../predefined_components/Tester';
-
 import fakedrop from '../../clientutils/utils';
 
 export default {
@@ -34,10 +30,6 @@ export default {
     return {
       indexOptions,
       components: [],
-      predefinedComponents: [
-        BasicChart,
-        Tester,
-      ],
       individualComponents: [],
       zoomed: null,
       svgOffsetX: 0,

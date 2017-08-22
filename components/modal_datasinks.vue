@@ -6,6 +6,7 @@
       <div class="datasinks-toolbox">
         <input type="checkbox" v-on:change="toggleAllSinks"></input>
         <i v-on:click="addDatasinks" title="Add selected data sinks to component" class="material-icons toolbox-icon">add</i>
+        <i v-on:click="changeVisibility" title="Set whether selected datasinks are publicly readable" class="material-icons toolbox-icon">visibility</i>
       </div>
       <div class="sink-outer" id="sinkContainerAll">
         <div class="sink-inner-scroll">
@@ -15,6 +16,7 @@
               <th>Title</th>
               <th>Code</th>
               <th>Read Key</th>
+              <th title="Whether sink can be publicly read">Visibility</th>
               <th>Write Key</th>
               <th>Last Written</th>
             <!-- </th> -->
@@ -23,6 +25,7 @@
               <td><span class="listing-title">{{dataSink.title}}</span></td>
               <td><span v-on:click="showCodeEditWindow(dataSink)" class="inline-icon"><i class="material-icons">settings_input_antenna</i></span></td>
               <td><span class="listing-url">{{dataSink.readKey}}</span></td>
+              <td><i class="material-icons">{{visibilityIcon(dataSink)}}</i></td>
               <td><span class="listing-url">{{dataSink.writeKey}}</span></td>
               <td><span class="listing-url" v-html="formatTime(dataSink.latestDataPoint)"></span></td>
             </tr>
@@ -30,18 +33,21 @@
         </div>
       </div>
     </div>
-    <ModalCodeEdit v-if="codeEditWindowVisible" :sink="selectedSink" @close="dismissCodeEditWindow"/>
+    <ModalCodeEdit v-if="codeEditWindowVisible" :sink="selectedSink" @close="dismissModals"/>
+    <ModalSinkVisibility v-if="visibilityWindowVisible" :sinks="selectedSinks" @close="dismissModals" />
   </div>
 </template>
 
 <script>
 import ModalCodeEdit from './modal_codeedit.vue';
+import ModalSinkVisibility from './modal_sinkvisibility';
 
 export default {
   name: 'datasinksmodal',
   props: ['add', 'forSource'], // if forSource is true we're connecting a sink to a source, not just adding it to a component
   components: {
     ModalCodeEdit,
+    ModalSinkVisibility,
   },
   data() {
     return {
@@ -49,6 +55,7 @@ export default {
       mainWindowVisible: true,
       codeEditWindowVisible: false,
       selectedSink: null,
+      visibilityWindowVisible: false,
     }
   },
   computed: {
@@ -57,14 +64,23 @@ export default {
     },
   },
   methods: {
+    visibilityIcon(sink) {
+      if (sink.visibility === 1) return 'visibility';
+      return 'visibility_off';
+    },
     showCodeEditWindow(sink) {
       this.selectedSink = sink;
       this.mainWindowVisible = false;
       this.codeEditWindowVisible = true;
     },
-    dismissCodeEditWindow() {
+    dismissModals() {
       this.codeEditWindowVisible = false;
+      this.visibilityWindowVisible = false;
       this.mainWindowVisible = true;
+    },
+    changeVisibility() {
+      this.mainWindowVisible = false;
+      this.visibilityWindowVisible = true;
     },
     addDatasinks() {
       this.$props.add(this.selectedSinks, this.$props.forSource);

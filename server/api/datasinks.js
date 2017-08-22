@@ -1,12 +1,12 @@
 import { Router } from 'express';
-import { Datasink, Datapoint } from '../../models';
+import { Datasink } from '../../models';
 import { getKey, getUuid } from '../../config/utils_server';
 import { baseUrl } from '../../components/config/config';
 
 var router = Router();
 
 router.post('/datasinks/saveCode', (req, res, next) => {
-  Datasink.update({ definition: req.body.definition }, { where: { id: req.body.id }}).then(() => {
+  Datasink.update({ definition: req.body.definition }, { where: { id: req.body.id, user: req.user.id, }}).then(() => {
     return res.status(200).end();
   }).catch(() => res.status(500).end());
 });
@@ -28,19 +28,16 @@ router.post('/datasinks/add', (req, res, next) => {
   });
 });
 
-router.get('/datasinks/getReadKey/:id', (req, res, next) => {
+router.post('/datasinks/changeVisibility', (req, res, next) => {
   if (!req.user) return res.status(401).end();
-  Datasink.findOne({
-    attributes: [
-      'readKey',
-      'title',
-    ],
-    where: {
-      user: req.user.id,
-      id: req.params.id,
-    },
-  }).then(ds => {
-    res.send(ds).end();
+  Datasink.update({
+    visibility: parseInt(req.body.visibility),
+  }, { where: {
+    id: parseInt(req.body.id),
+    user: req.user.id,
+    }
+  }).then(() => {
+    return res.status(200).end();
   }).catch(e => {
     console.log(e);
     res.status(500).end();

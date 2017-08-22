@@ -5,6 +5,7 @@ import express from 'express';
 import data from './data';
 import auth from './auth';
 import api from './api';
+import authNotNeed from './auth_not_need';
 import datapoints from './datapoints';
 
 import models from '../models';
@@ -61,6 +62,7 @@ async function start() {
   app.use('/api', passportConfig.isAuthenticated, api);
   app.use('/d', datapoints);
   app.use('/auth', auth.router);
+  app.use('/apina', authNotNeed);
 
   await openUserDb();
   let config = require('../nuxt.config.js');

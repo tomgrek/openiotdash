@@ -33,10 +33,9 @@ export default (fullComponent, self, editing = false, isMobile = false) => {
       .html(`<span id="componentTitle-${uuid}">${comp.title}</span>`);
 
     self.components.push(div);
-
     let keyQueries = [];
     for (let sink of comp.dataSinks) {
-      keyQueries.push(fetch('/api/datasinks/getReadKey/'+sink.id, {credentials: 'include'}).then(r => r.json()));
+      keyQueries.push(fetch('/apina/datasinks/getReadKey/'+sink.id, {credentials: 'include'}).then(r => r.json()));
       window.socket.on(sink.title, newData => {
         let newDataEvent = new CustomEvent('newData', { detail: { dataSink: sink, newData } });
         fullComponent.node.dispatchEvent(newDataEvent);

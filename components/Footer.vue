@@ -1,6 +1,6 @@
 <template>
   <footer>
-    Powered by Open IoT Dash
+    Powered by <img src="~assets/img/logo.png" class="tiny-logo" />Open IoT Dash
   </footer>
 </template>
 
@@ -17,7 +17,13 @@ footer {
   text-align: center;
   border-top: 1px solid $border-color;
   font-family: 'Roboto Slab', serif;
-
+  .tiny-logo {
+    display: inline-block;
+    position: relative;
+    top: 0.1rem;
+    width: 1.5rem;
+    margin: 0 0.5rem;
+  }
   @include phone {
     display: none;
   }

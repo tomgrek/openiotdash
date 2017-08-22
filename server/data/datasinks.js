@@ -11,6 +11,7 @@ router.get('/datasinks/:user', (req, res, next) => {
       'writeKey',
       'title',
       'definition', // not so much a definition than code to run when dp received
+      'visibility',
     ],
     where: {
       user: req.params.user,
