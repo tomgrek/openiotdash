@@ -41,6 +41,20 @@ export default (fullComponent, self, editing = false, isMobile = false) => {
         fullComponent.node.dispatchEvent(newDataEvent);
       });
     }
+    for (let source of comp.dataSources) {
+      fetch(source.url).then(r => r.json()).then(resp => {
+        let newDataEvent = new CustomEvent('newData', { detail: { dataSource: source, newData: resp } });
+        fullComponent.node.dispatchEvent(newDataEvent);
+      });
+      if (source.interval) {
+        setInterval(() => {
+          fetch(source.url).then(r => r.json()).then(resp => {
+            let newDataEvent = new CustomEvent('newData', { detail: { dataSource: source, newData: resp } });
+            fullComponent.node.dispatchEvent(newDataEvent);
+          });
+        }, source.interval);
+      }
+    }
     self.individualComponents.push({uuid, component: comp, node: fullComponent.node});
     let node = fullComponent.node;
     (() => { eval(comp.script) }).call(isMobile ? Object.assign(comp, { width: node.clientWidth }) : comp);

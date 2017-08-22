@@ -128,6 +128,7 @@ export default {
       for (let comp of dashToSave.components) {
         comp.component.data = {};
       }
+      // TODO: No, dont set it to zero. Create a new copy of it, with the data set to zero, and save that.
       let body = JSON.stringify({ id: this.$route.params.id, definition: JSON.stringify(dashToSave), visibility: this.dashboard.visibility, title: this.dashboard.title });
       fetch(`/api/dashboards/save/all`, {headers: {'Content-Type': 'application/json'}, method: 'POST', body, credentials: 'include'})
         .then(resp => {

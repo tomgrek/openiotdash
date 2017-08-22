@@ -36,3 +36,7 @@ that just fetches data from a URL when the component is actually displayed.
 * add (couchDB & postgres) connector, then use pm2 (pm2 start build/main.js -i 0 --name "openiotproject")
 
 * i think it's possible to just set the id of the displayed component to its uuid, that'll display styles
+
+* see comment of line 131 of dash id. After saving dash, component data is lost on saving, which is great for saving without unnecessary data, but makes charts disappear if you are continuing to view it.
+
+* Almost done adding dataSources, but needs UI.

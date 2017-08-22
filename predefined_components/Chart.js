@@ -8,7 +8,9 @@ return {
   </div>`,
   preview: `<img style="height:100%; width:100%;" src="https://upload.wikimedia.org/wikipedia/commons/6/6d/FTSE_100_index_chart_since_1984.png"></img>`,
   data: {},
-  dataSources: [],
+  dataSources: [
+    { title: 'tom1', url: 'http://localhost:3000/d/r/90ef6eb8c1766a/1\?limit\=20', interval: 2000 },
+  ],
   dataSinks: [
     { id: 1, title: 'j4xbpkli', url: '', orderBy: 'createdAt DESC', limit: 10 },
   ],
@@ -41,20 +43,22 @@ return {
               var line = d3.line()
                 .x(function(d) { return x(d.index); })
                 .y(function(d) { return y(d.val); });
-              let data = this.data.j4xbpkli.map((x, index) => {
-                let val = JSON.parse(x.data)
-                return { index, val: parseFloat(val.value) || 0 };
-              });
-              x.domain(d3.extent(data, function(d) { return d.index; }));
-              y.domain([d3.max(data, function(d) { return d.val; }), 0]);
-              g.append("path")
-                  .datum(data)
-                  .attr("fill", "none")
-                  .attr("stroke", this.settings.color)
-                  .attr("stroke-linejoin", "round")
-                  .attr("stroke-linecap", "round")
-                  .attr("stroke-width", 1.5)
-                  .attr("d", line);
+              for (let key of Object.keys(this.data)) {
+                let data = this.data[key].map((x, index) => {
+                  let val = JSON.parse(x.data)
+                  return { index, val: parseFloat(val.value) || 0 };
+                });
+                x.domain(d3.extent(data, function(d) { return d.index; }));
+                y.domain([d3.max(data, function(d) { return d.val; }), 0]);
+                g.append("path")
+                    .datum(data)
+                    .attr("fill", "none")
+                    .attr("stroke", this.settings.color)
+                    .attr("stroke-linejoin", "round")
+                    .attr("stroke-linecap", "round")
+                    .attr("stroke-width", 1.5)
+                    .attr("d", line);
+              }
             };
             node.addEventListener('dblclick', e => {
               e.preventDefault();
@@ -69,10 +73,14 @@ return {
               //node.querySelector('#latestData').innerText = JSON.parse(this.data.j4xbpkli[5].data).value;
             });
             node.addEventListener('newData', e => {
-              if (this.data[e.detail.dataSink.title].length >= e.detail.dataSink.limit) {
-                this.data[e.detail.dataSink.title].shift();
+              if (e.detail.dataSink) {
+                if (this.data[e.detail.dataSink.title].length >= e.detail.dataSink.limit) {
+                  this.data[e.detail.dataSink.title].shift();
+                }
+                this.data[e.detail.dataSink.title].push(e.detail.newData);
+              } else {
+                Object.assign(this.data, { e.detail.dataSource.title : e.detail.newData });
               }
-              this.data[e.detail.dataSink.title].push(e.detail.newData);
               drawChart();
             });
             node.addEventListener('input', e => {
