@@ -120,11 +120,11 @@ export default {
         });
     },
     saveAll() {
-      let dashToSave = { components: this.individualComponents, svgOffsetX: 0, svgOffsetY: 0 };
       for (let comp of this.individualComponents) {
         comp.component.offsetX = comp.node.attributes['offsetX'].value || 0;
         comp.component.offsetY = comp.node.attributes['offsetY'].value || 0;
       }
+      let dashToSave = JSON.parse(JSON.stringify({ components: this.individualComponents, svgOffsetX: 0, svgOffsetY: 0 }));
       for (let comp of dashToSave.components) {
         comp.component.data = {};
       }

@@ -1,6 +1,6 @@
 <template>
   <section class="container">
-    <img src="~assets/img/iot_cog_full.svg" alt="Open IoT Project Logo" class="logo" />
+    <img style="margin-top: 30vh;" src="~assets/img/iot_cog_full.png" alt="Open IoT Project Logo" class="logo" />
     <h1 class="title">
       {{ error.statusCode }}
     </h1>
@@ -8,7 +8,7 @@
       {{ error.message }}
     </h2>
     <nuxt-link class="button" to="/" v-if="error.statusCode === 404">
-      Homepage
+      OK, take me to the index then.
     </nuxt-link>
   </section>
 </template>

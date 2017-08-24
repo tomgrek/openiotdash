@@ -79,7 +79,9 @@ return {
                 }
                 this.data[e.detail.dataSink.title].push(e.detail.newData);
               } else {
-                Object.assign(this.data, { e.detail.dataSource.title : e.detail.newData });
+                let assignObj = {};
+                assignObj[e.detail.dataSource.title] = e.detail.newData;
+                Object.assign(this.data, assignObj);
               }
               drawChart();
             });
