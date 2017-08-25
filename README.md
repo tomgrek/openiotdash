@@ -29,12 +29,8 @@ that just fetches data from a URL when the component is actually displayed.
 
 * add permissions for other users to edit dashboards owned by a user
 
-* make dashboard display linearly on mobile
-
 * add ability to set how often the offlineCode runs
 
 * add (couchDB & postgres) connector, then use pm2 (pm2 start build/main.js -i 0 --name "openiotproject")
-
-* i think it's possible to just set the id of the displayed component to its uuid, that'll display styles
 
 * Almost done adding dataSources, but needs UI.

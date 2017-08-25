@@ -124,7 +124,7 @@ return {
               this.offsetY = e.detail.offsetY;
             });
           `,
-  style: `return '.'+uuid+' { color: red; stroke-width: 3px; }' `,
+  style: `return '#'+uuid+' { color: red; stroke-width: 3px; }' `,
   // TODO: Styling is a bit broken, mainly due to the ordering of the '`"
   }
 }

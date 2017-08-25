@@ -45,21 +45,17 @@
             <div class="datasources-toolbox">
               <input type="checkbox" v-on:change="toggleAllSources"></input>
               <i v-on:click="deleteDatasource" title="Remove selected data sources from this component" class="material-icons toolbox-icon">delete</i>
-              <!-- TODO: Needs a method -->
-              <i title="Add an existing data source" class="material-icons toolbox-icon">playlist_add</i>
-              <i v-on:click="console.log('this was sposed to call addDatasource')" title="Add a brand new data source" class="material-icons toolbox-icon">add</i>
+              <i v-on:click="addDatasource" title="Add a brand new data source" class="material-icons toolbox-icon">add</i>
             </div>
-            <p>This will become just data that's fetched from elsewhere when component is displayed.</p>
-            <div id="sourceContainer" class="datasource-listing" v-for="dataSource in component.component.dataSources">
-              <span>
-                <input type="checkbox" :id="'check-' + dataSource.id" v-on:change="toggleSource(dataSource, $event)"></input>
-                <span class="listing-title">{{dataSource.title}}</span>
-                <span class="listing-url" v-if="dataSource.url">{{dataSource.url}}</span>
-                <span class="listing-url" v-if="dataSource.connectedSink">{{dataSource.connectedSink}}</span>
-                <!-- it's called reuseDatasink but really its just showing the datasinks list -->
-                <span class="listing-settings-icon" v-on:click="reuseDatasink(dataSource)"><i class="material-icons">view_list</i></span>
-              </span>
-            </div>
+            <p>Datasources are (external) URLs that data is fetched from when the component is displayed. If you need data fetched and processed
+              when nobody is looking, take a look in Offline Code.</p>
+            <table style="width: 100%; padding: 0 1rem 0 0.5rem;">
+              <tr v-for="dataSource in component.component.dataSources">
+                <td><input type="checkbox" :id="'check-' + dataSource.id" v-on:change="toggleSource(dataSource, $event)"></input></td>
+                <td><span class="listing-title">{{dataSource.title}}</span></td>
+                <td><input type="text" class="datasourcelisting-url" v-if="dataSource.url" :value="dataSource.url"></input></td>
+              </tr>
+            </table>
           </div>
           <div style="position: absolute; bottom: 1rem; right: 1rem; display: inline-block; width:100%;">
             <button class="small-button" @click="$emit('close')" style="float: right;">Cancel</button>
@@ -199,11 +195,10 @@ export default {
     deleteDatasource() {
       this.$props.component.component.dataSources = this.$props.component.component.dataSources.filter(x => !this.selectedSources.map(y => y.id).includes(x.id));
     },
+    addDatasource() {
+      this.$props.component.component.dataSources.push({title: 'new', url: 'z', interval: 100000});
+    },
     reuseDatasink(dataSource) {
-      // dataSource is undefined unless we're inside datasources tab, again, repurposing this fn.
-      if (dataSource) {
-        this.selectedSources = [dataSource];
-      }
       this.mainWindowVisible = false;
       this.reuseDatasinkWindowVisible = true;
     },
@@ -418,6 +413,11 @@ export default {
 .listing-url {
   font-size: 0.8rem;
   margin-left: 1rem;
+}
+.datasourcelisting-url {
+  font-size: 0.8rem;
+  margin-left: 1rem;
+  width: 100%;
 }
 .listing-settings-icon {
   cursor: pointer;
