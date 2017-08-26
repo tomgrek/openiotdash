@@ -136,6 +136,9 @@ export default {
             this.$store.commit('addAlert', { msg: 'Error saving dashboard.', type: 'error'});
           } else {
             this.$store.commit('addAlert', { msg: 'Dashboard saved successfully.', type: 'success'});
+            for (let interval of window.intervals) {
+              window.clearInterval(window.intervals);
+            }
           }
         });
     },

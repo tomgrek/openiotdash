@@ -34,3 +34,7 @@ that just fetches data from a URL when the component is actually displayed.
 * add (couchDB & postgres) connector, then use pm2 (pm2 start build/main.js -i 0 --name "openiotproject")
 
 * Almost done adding dataSources, but needs UI.
+
+* TODO: Next: Line 228, modal_settings -> ensure borken urls don't bork the app by wrapping the fetch in promisewrapper. Need to return (resolve)
+some kind of error in the promise wrapper though, otherwise, fetchNewData doesn't know that something borked and will overwrite the component's
+valid data with crap data.

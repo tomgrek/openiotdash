@@ -47,12 +47,13 @@ export default (fullComponent, self, editing = false, isMobile = false) => {
         fullComponent.node.dispatchEvent(newDataEvent);
       });
       if (source.interval) {
-        setInterval(() => {
+        if (!window.intervals) window.intervals = [];
+        window.intervals.push(setInterval(() => {
           fetch(source.url).then(r => r.json()).then(resp => {
             let newDataEvent = new CustomEvent('newData', { detail: { dataSource: source, newData: resp } });
             fullComponent.node.dispatchEvent(newDataEvent);
           });
-        }, source.interval);
+        }, source.interval));
       }
     }
     self.individualComponents.push({uuid, component: comp, node: fullComponent.node});

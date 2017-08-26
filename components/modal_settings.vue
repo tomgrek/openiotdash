@@ -47,13 +47,18 @@
               <i v-on:click="deleteDatasource" title="Remove selected data sources from this component" class="material-icons toolbox-icon">delete</i>
               <i v-on:click="addDatasource" title="Add a brand new data source" class="material-icons toolbox-icon">add</i>
             </div>
-            <p>Datasources are (external) URLs that data is fetched from when the component is displayed. If you need data fetched and processed
+            <p>Datasources are (external) URLs that data is fetched from when the component is displayed and at intervals thereafter. If you need data fetched and processed
               when nobody is looking, take a look in Offline Code.</p>
             <table style="width: 100%; padding: 0 1rem 0 0.5rem;">
+              <th></th>
+              <th>Name</th>
+              <th>URL To Call</th>
+              <th>Interval (ms)</th>
               <tr v-for="dataSource in component.component.dataSources">
-                <td><input type="checkbox" :id="'check-' + dataSource.id" v-on:change="toggleSource(dataSource, $event)"></input></td>
-                <td><span class="listing-title">{{dataSource.title}}</span></td>
-                <td><input type="text" class="datasourcelisting-url" v-if="dataSource.url" :value="dataSource.url"></input></td>
+                <td><input style="margin-left:0;" type="checkbox" :id="'check-' + dataSource.id" v-on:change="toggleSource(dataSource, $event)"></input></td>
+                <td class="datasourcelisting-title"><input type="text" class="datasourcelisting-title" v-model="dataSource.title"></input></td>
+                <td class="datasourcelisting-url" ><input type="text" class="datasourcelisting-url" v-model="dataSource.url"></input></td>
+                <td class="datasourcelisting-interval-td"><input type="text" class="datasourcelisting-interval" v-model="dataSource.interval"></input></td>
               </tr>
             </table>
           </div>
@@ -70,6 +75,7 @@
 
 <script>
 import { flashSave } from '~plugins/utils';
+import wrapPromise from '../clientutils/promisewrapper';
 import ModalDatasinks from '~components/modal_datasinks';
 
 export default {
@@ -102,6 +108,8 @@ export default {
       })(),
       needToFetchNewData: false,
     }
+  },
+  computed: {
   },
   methods: {
     saveCode(e) {
@@ -196,7 +204,8 @@ export default {
       this.$props.component.component.dataSources = this.$props.component.component.dataSources.filter(x => !this.selectedSources.map(y => y.id).includes(x.id));
     },
     addDatasource() {
-      this.$props.component.component.dataSources.push({title: 'new', url: 'z', interval: 100000});
+      let idAndTitle = (new Date().getTime()).toString(36);
+      this.$props.component.component.dataSources.push({title: idAndTitle, url: '', interval: 10000, id: idAndTitle});
     },
     reuseDatasink(dataSource) {
       this.mainWindowVisible = false;
@@ -214,14 +223,23 @@ export default {
         }
         dataQueries.push(fetch(`/d/r/${this.$props.component.component.dataSinks[sink].readKey}/${this.$props.component.component.dataSinks[sink].id}?${orderBy}${limit}`, {credentials: 'include'}).then(r => r.json()));
       }
+      for (let source of this.$props.component.component.dataSources) {
+        dataQueries.push(wrapPromise(fetch(source.url)).then(r => {
+          console.log(r);
+          r.json();
+        }));
+      }
       Promise.all(dataQueries).then(data => {
         let detail = {};
         for (let sink in this.$props.component.component.dataSinks) {
           detail[this.$props.component.component.dataSinks[sink].title] = data[sink];
         }
+        for (let source in this.$props.component.component.dataSources) {
+          detail[this.$props.component.component.dataSources[source].title] = data[source];
+        }
         let dataEvent = new CustomEvent('data', { detail });
         this.$props.component.node.dispatchEvent(dataEvent);
-      });
+      }).catch(e => console.log(e));
     },
     addDatasink(existingSinks, connectingToSource) { // existingSink is optional, coming from the modal_datasinks
       if (connectingToSource) {
@@ -263,9 +281,9 @@ export default {
         this.$props.component.node.dispatchEvent(settingsEvent);
         this.$emit('close');
         flashSave();
-        if (this.needToFetchNewData) {
+        //if (this.needToFetchNewData) {
           this.fetchNewData();
-        }
+        //}
         return false;
       }
       for (let el of this.$refs.activeSettings) {
@@ -278,9 +296,9 @@ export default {
       }
       let settingsEvent = new CustomEvent('settingsChanged', { detail: {} });
       this.$props.component.node.dispatchEvent(settingsEvent);
-      if (this.needToFetchNewData) {
+      //if (this.needToFetchNewData) {
         this.fetchNewData();
-      }
+      //}
       this.$emit('close');
       flashSave();
     },
@@ -414,10 +432,22 @@ export default {
   font-size: 0.8rem;
   margin-left: 1rem;
 }
+.datasourcelisting {
+  margin-left: 0;
+}
+.datasourcelisting-title {
+  width: 6rem;
+}
 .datasourcelisting-url {
   font-size: 0.8rem;
-  margin-left: 1rem;
+  margin-left: 0;
   width: 100%;
+}
+.datasourcelisting-interval {
+  width: 6rem;
+}
+.datasourcelisting-interval-td {
+  width: 6rem;
 }
 .listing-settings-icon {
   cursor: pointer;
@@ -442,7 +472,6 @@ export default {
 .modal-leave-active {
   opacity: 0;
 }
-
 .modal-enter .modal-container,
 .modal-leave-active .modal-container {
   -webkit-transform: scale(1.1);
