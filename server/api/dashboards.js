@@ -7,7 +7,7 @@ import { runningScripts, offlineScriptContexts, parsedDashboards, stopScript } f
 var router = Router();
 
 router.post('/dashboards/save/:what', (req, res, next) => {
-  console.log('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$', req.params.what, '########################');
+  console.log('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$', req.user.id, req.body.id, '########################');
   Dashboard.findOne({
     where: {
       user: req.user.id,

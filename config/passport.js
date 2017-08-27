@@ -17,6 +17,7 @@ passport.deserializeUser((id, done) => {
       'username',
       'email',
       'apikey',
+      'id',
     ],
     where: {
       id,
@@ -33,6 +34,7 @@ passport.use(new LocalStrategy({ usernameField: 'email', passwordField: 'passwor
       'password',
       'id',
       'apikey',
+      'email',
     ],
     where: {
       email,
