@@ -9,7 +9,7 @@ return {
   preview: `<img style="height:100%; width:100%;" src="https://upload.wikimedia.org/wikipedia/commons/6/6d/FTSE_100_index_chart_since_1984.png"></img>`,
   data: {},
   dataSources: [
-    { title: 'tom1', url: 'http://localhost:3000/d/r/90ef6eb8c1766a/1\?limit\=20', interval: 2000 },
+    { title: 'test1', url: 'http://localhost:3000/d/r/90ef6eb8c1766a/1/?limit=20', interval: 10000 },
   ],
   dataSinks: [
     { id: 1, title: 'j4xbpkli', url: '', orderBy: 'createdAt DESC', limit: 10 },
@@ -115,7 +115,7 @@ return {
               this.offsetY = e.detail.offsetY;
             });
           `,
-  style: `return '#'+uuid+' { color: red; stroke-width: 23px; font-size: 100px; }' `,
+  style: `return '#'+uuid+' { color: red; stroke-width: 23px;  }' `,
   // TODO: Styling is a bit broken, mainly due to the ordering of the '`"
   }
 }

@@ -54,7 +54,7 @@
               <th>Name</th>
               <th>URL To Call</th>
               <th>Interval (ms)</th>
-              <tr v-for="dataSource in component.component.dataSources">
+              <tr v-for="dataSource in copyOfDatasources">
                 <td><input style="margin-left:0;" type="checkbox" :id="'check-' + dataSource.id" v-on:change="toggleSource(dataSource, $event)"></input></td>
                 <td class="datasourcelisting-title"><input type="text" class="datasourcelisting-title" v-model="dataSource.title"></input></td>
                 <td class="datasourcelisting-url" ><input type="text" class="datasourcelisting-url" v-model="dataSource.url"></input></td>
@@ -74,7 +74,7 @@
 </template>
 
 <script>
-import { flashSave } from '~plugins/utils';
+import { flashSave, getUuid } from '~plugins/utils';
 import wrapPromise from '../clientutils/promisewrapper';
 import ModalDatasinks from '~components/modal_datasinks';
 
@@ -107,6 +107,7 @@ export default {
         return '';
       })(),
       needToFetchNewData: false,
+      copyOfDatasources: JSON.parse(JSON.stringify(this.$props.component.component.dataSources)),
     }
   },
   computed: {
@@ -201,11 +202,11 @@ export default {
       this.$props.component.node.dispatchEvent(dataEvent);
     },
     deleteDatasource() {
-      this.$props.component.component.dataSources = this.$props.component.component.dataSources.filter(x => !this.selectedSources.map(y => y.id).includes(x.id));
+      this.copyOfDatasources = this.copyOfDatasources.filter(x => !this.selectedSources.map(y => y.id).includes(x.id));
     },
     addDatasource() {
-      let idAndTitle = (new Date().getTime()).toString(36);
-      this.$props.component.component.dataSources.push({title: idAndTitle, url: '', interval: 10000, id: idAndTitle});
+      let idAndTitle = getUuid();
+      this.copyOfDatasources.push({title: idAndTitle, url: '', interval: 10000, id: idAndTitle});
     },
     reuseDatasink(dataSource) {
       this.mainWindowVisible = false;
@@ -224,18 +225,36 @@ export default {
         dataQueries.push(fetch(`/d/r/${this.$props.component.component.dataSinks[sink].readKey}/${this.$props.component.component.dataSinks[sink].id}?${orderBy}${limit}`, {credentials: 'include'}).then(r => r.json()));
       }
       for (let source of this.$props.component.component.dataSources) {
-        dataQueries.push(wrapPromise(fetch(source.url)).then(r => {
-          console.log(r);
-          r.json();
-        }));
+        dataQueries.push(wrapPromise(fetch(source.url)));
       }
       Promise.all(dataQueries).then(data => {
         let detail = {};
         for (let sink in this.$props.component.component.dataSinks) {
           detail[this.$props.component.component.dataSinks[sink].title] = data[sink];
         }
+        let sinksLength = this.$props.component.component.dataSinks.length;
         for (let source in this.$props.component.component.dataSources) {
-          detail[this.$props.component.component.dataSources[source].title] = data[source];
+          if (typeof data[source + sinksLength] !== 'string') {
+            // TODO: not sure if this will correctly detect json vs text response, maybe try json first and in catch do text.
+            if (data[parseInt(source) + sinksLength].json) {
+              data[parseInt(source) + sinksLength].json().then(r => {
+                let detail = {};
+                detail[this.$props.component.component.dataSources[source].title] = r;
+                let dataEvent = new CustomEvent('data', { detail });
+                this.$props.component.node.dispatchEvent(dataEvent);
+              });
+            } else if (data[parseInt(source) + sinksLength].text) {
+              data[parseInt(source) + sinksLength].text().then(r => {
+                let detail = {};
+                detail[this.$props.component.component.dataSources[source].title] = r;
+                let dataEvent = new CustomEvent('data', { detail });
+                this.$props.component.node.dispatchEvent(dataEvent);
+              });
+            }
+          } else {
+            // it was a caught exception
+            detail[this.$props.component.component.dataSources[source].title] = [];
+          }
         }
         let dataEvent = new CustomEvent('data', { detail });
         this.$props.component.node.dispatchEvent(dataEvent);
@@ -276,6 +295,23 @@ export default {
       });
     },
     saveSettings(e) {
+      for (let interval of this.$props.component.intervals) {
+        window.clearInterval(interval.timer);
+      }
+      for (let source of this.$props.component.component.dataSources) {
+        delete this.$props.component.component.data[source.title];
+        let newDataEvent = new CustomEvent('newData', { detail: { dataSource: source, newData: [] } });
+        this.$props.component.node.dispatchEvent(newDataEvent);
+      }
+      this.$props.component.component.dataSources = this.copyOfDatasources;
+      for (let source of this.$props.component.component.dataSources) {
+        this.$props.component.intervals.push({sourceTitle: source.title, timer: setInterval(() => {
+          fetch(source.url).then(r => r.json()).then(resp => {
+            let newDataEvent = new CustomEvent('newData', { detail: { dataSource: source, newData: resp } });
+            this.$props.component.node.dispatchEvent(newDataEvent);
+          });
+        }, source.interval) });
+      }
       if (!this.$refs.activeSettings) {
         let settingsEvent = new CustomEvent('settingsChanged', { detail: {} });
         this.$props.component.node.dispatchEvent(settingsEvent);

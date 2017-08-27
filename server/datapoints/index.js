@@ -105,7 +105,6 @@ router.get('/r/:readkey/:id', (req, res, next) => {
     let number = req.query.numeric || undefined;
     if (limit) order = [['createdAt', 'DESC']];
     if (req.query.orderBy) order = [req.query.orderBy.split(' ')];
-    console.log(order);
     Datapoint.findAll({ attributes: [
         'data',
         'createdAt',
@@ -135,9 +134,5 @@ router.get('/r/:readkey/:id', (req, res, next) => {
     return res.status(500).end();
   });
 });
-
-// TODO: NEXT: Endpoint for reading data with a ?qs to specify range
-// Make this data appear on a component (using asyncData) as component.data.[datasinkTitle]. It'll have to be manually specced
-// on a predefined component for now, until save/load dashboard is working.
 
 export default router;

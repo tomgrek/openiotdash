@@ -28,6 +28,7 @@ export default (fullComponent, self, editing = false, isMobile = false) => {
     }
 
     fullComponent.node = div.node();
+    fullComponent.intervals = [];
     let tb = div.append('div')
       .attr('class', `title-bar`)
       .html(`<span id="componentTitle-${uuid}">${comp.title}</span>`);
@@ -47,16 +48,15 @@ export default (fullComponent, self, editing = false, isMobile = false) => {
         fullComponent.node.dispatchEvent(newDataEvent);
       });
       if (source.interval) {
-        if (!window.intervals) window.intervals = [];
-        window.intervals.push(setInterval(() => {
+        fullComponent.intervals.push({sourceTitle: source.title, timer: setInterval(() => {
           fetch(source.url).then(r => r.json()).then(resp => {
             let newDataEvent = new CustomEvent('newData', { detail: { dataSource: source, newData: resp } });
             fullComponent.node.dispatchEvent(newDataEvent);
           });
-        }, source.interval));
+        }, source.interval) });
       }
     }
-    self.individualComponents.push({uuid, component: comp, node: fullComponent.node});
+    self.individualComponents.push({uuid, component: comp, node: fullComponent.node, intervals: fullComponent.intervals });
     let node = fullComponent.node;
     (() => { eval(comp.script) }).call(isMobile ? Object.assign(comp, { width: node.clientWidth }) : comp);
     let createdEvent = new CustomEvent('created', { detail: { uuid, width: parseInt(isMobile ? node.clientWidth : comp.width), height: parseInt(comp.height) } });
@@ -65,6 +65,7 @@ export default (fullComponent, self, editing = false, isMobile = false) => {
     Promise.all(keyQueries).then(keys => {
       let dataQueries = [];
       for (let key in keys) {
+        comp.dataSinks[key].readKey = keys[key].readKey;
         let orderBy = '', limit = '';
         if (comp.dataSinks[key].orderBy) {
           orderBy = `orderBy=${comp.dataSinks[key].orderBy}&`;
