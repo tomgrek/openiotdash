@@ -16,6 +16,7 @@
     "bcrypt": "^1.0.3",
     "body-parser": "^1.17.2",
     "cluster": "^0.7.7",
+    "connect-session-sequelize": "^4.1.0",
     "connect-sqlite3": "^0.9.10",
     "cookie-parser": "^1.4.3",
     "cross-env": "^5.0.5",

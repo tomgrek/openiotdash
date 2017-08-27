@@ -9,15 +9,11 @@ import authNotNeed from './auth_not_need';
 import datapoints from './datapoints';
 
 import models from '../models';
+import User from '../models/user';
 
-const db = require('sqlite');
+const sql = require('../models/db').sql;
+
 let io = null;
-
-async function openUserDb() {
-  db.open('./openiotdash.db').then(() => {
-    db.exec('create table if not exists users(id integer primary key, username varchar, password varchar, email varchar, apikey varchar)');
-  });
-}
 
 async function start() {
 
@@ -26,11 +22,12 @@ async function start() {
   const passportConfig = require('../config/passport');
   const passportSocketIo = require('passport.socketio');
 
-  passportConfig.init(db);
-  auth.init(db);
-
   const session = require('express-session');
-  const SQLiteStore = require('connect-sqlite3')(session);
+  const SequelizeStore = require('connect-session-sequelize')(session.Store);
+  const sessionStore = new SequelizeStore({
+    db: sql,
+  });
+  sessionStore.sync();
   const bodyParser = require('body-parser');
   const cookieParser = require('cookie-parser');
 
@@ -42,11 +39,6 @@ async function start() {
   const port = process.env.PORT || 3000;
   app.set('port', port);
 
-  // TODO: Store session secret in config file.
-  const sessionStore = new SQLiteStore({
-    table: 'sessions',
-    db: 'openiotdash_session',
-  });
   app.use(session({
     secret: 'openiotdash',
     resave: true,
@@ -64,7 +56,6 @@ async function start() {
   app.use('/auth', auth.router);
   app.use('/apina', authNotNeed);
 
-  await openUserDb();
   let config = require('../nuxt.config.js');
   config.dev = !(process.env.NODE_ENV === 'production');
   const nuxt = new Nuxt(config);
@@ -102,5 +93,5 @@ async function start() {
 
 start();
 module.exports = {
-  db,
+  sql,
 };
