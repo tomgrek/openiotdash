@@ -28,9 +28,6 @@ module.exports = {
   ** Global CSS
   */
   css: ['~assets/css/main.css'],
-  /*
-  ** Add axios globally
-  */
   build: {
     loaders: [
       {
@@ -46,7 +43,6 @@ module.exports = {
         loader: 'sass-loader',
       }
     ],
-    vendor: ['axios'],
     extend (config, ctx) {
       if (ctx.isClient) {
         // removed linter.

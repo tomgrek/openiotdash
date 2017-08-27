@@ -13,7 +13,7 @@
 </template>
 
 <script>
-import { headerOptions } from "~components/config/config";
+import { headerOptions } from "~/components/config/config";
 
 export default {
   name: 'header',

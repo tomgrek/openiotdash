@@ -1,4 +1,4 @@
-import axios from '~plugins/axios';
+import axios from '~/plugins/axios';
 
 // With current version of Nuxt asyncData isn't called on navigating back after a reload.
 export default async function (context) {

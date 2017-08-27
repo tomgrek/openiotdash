@@ -21,10 +21,10 @@
 </template>
 
 <script>
-import MyHeader from '~components/Header.vue';
+import MyHeader from '~/components/Header.vue';
 
-import { title } from '~components/config/config';
-import axios from '~plugins/axios';
+import { title } from '~/components/config/config';
+import axios from '~/plugins/axios';
 
 export default {
   name: 'login',

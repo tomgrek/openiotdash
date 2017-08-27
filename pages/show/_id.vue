@@ -10,13 +10,13 @@
 </template>
 
 <script>
-import { title, indexOptions } from "~components/config/config";
+import { title, indexOptions } from "~/components/config/config";
 import * as d3 from "d3";
-import axios from '~plugins/axios';
+import axios from '~/plugins/axios';
 import socket from '~/plugins/socket.io.js'
 
-import { getUuid } from '~plugins/utils';
-import MyHeader from '~components/Header';
+import { getUuid } from '~/plugins/utils';
+import MyHeader from '~/components/Header';
 
 import fakedrop from '../../clientutils/utils';
 

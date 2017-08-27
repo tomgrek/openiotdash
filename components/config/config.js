@@ -11,4 +11,8 @@ module.exports = {
   indexOptions: {
     title: 'Welcome to my Open IoT Dashboard',
   },
+  dbms: 'sqlite3', // sqlite3 | postgres
+  dbhost: 'localhost',
+  dbuser: 'openiotdash',
+  dbpassword: 'openiotdash',
 };

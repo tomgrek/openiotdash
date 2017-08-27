@@ -74,9 +74,9 @@
 </template>
 
 <script>
-import { flashSave, getUuid } from '~plugins/utils';
+import { flashSave, getUuid } from '~/plugins/utils';
 import wrapPromise from '../clientutils/promisewrapper';
-import ModalDatasinks from '~components/modal_datasinks';
+import ModalDatasinks from '~/components/modal_datasinks';
 
 export default {
   name: 'modal_settings',

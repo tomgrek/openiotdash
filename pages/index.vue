@@ -28,10 +28,10 @@
 </template>
 
 <script>
-import { title, indexOptions, baseUrl } from "~components/config/config";
+import { title, indexOptions, baseUrl } from "~/components/config/config";
 
-import axios from '~plugins/axios';
-import MyHeader from '~components/Header.vue';
+import axios from '~/plugins/axios';
+import MyHeader from '~/components/Header.vue';
 
 export default {
   name: 'index',

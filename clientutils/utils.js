@@ -1,4 +1,4 @@
-import { getUuid } from '~plugins/utils';
+import { getUuid } from '~/plugins/utils';
 
 export default (fullComponent, self, editing = false, isMobile = false) => {
 

@@ -1,6 +1,6 @@
 'use strict';
 
-import Nuxt from 'nuxt';
+import { Nuxt, Builder } from 'nuxt';
 import express from 'express';
 import data from './data';
 import auth from './auth';
@@ -69,6 +69,10 @@ async function start() {
   config.dev = !(process.env.NODE_ENV === 'production');
   const nuxt = new Nuxt(config);
 
+  if (config.dev) {
+    const builder = new Builder(nuxt);
+    builder.build();
+  }
   var server = require('http').createServer(app); //require('http').Server(app);
 
   if (cluster.isMaster) {

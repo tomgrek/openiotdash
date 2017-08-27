@@ -22,17 +22,17 @@
 </template>
 
 <script>
-import { title, indexOptions, host, port } from "~components/config/config";
+import { title, indexOptions, host, port } from "~/components/config/config";
 import * as d3 from "d3";
-import axios from '~plugins/axios';
+import axios from '~/plugins/axios';
 import socket from '~/plugins/socket.io.js'
 
 import mqtt from '../../node_modules/mqtt/dist/mqtt.min.js';
 
-import MyHeader from '~components/Header';
-import ModalRename from '~components/modal_rename';
-import ModalSave from '~components/modal_save';
-import ModalSettings from '~components/modal_settings';
+import MyHeader from '~/components/Header';
+import ModalRename from '~/components/modal_rename';
+import ModalSave from '~/components/modal_save';
+import ModalSettings from '~/components/modal_settings';
 
 import BasicChart from '../../predefined_components/BasicChart';
 import Tester from '../../predefined_components/Tester';
