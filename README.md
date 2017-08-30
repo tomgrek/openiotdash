@@ -33,8 +33,10 @@ that just fetches data from a URL when the component is actually displayed.
 
 * add (couchDB & postgres) connector, then use pm2 (pm2 start build/main.js -i 0 --name "openiotproject")
 
-* Almost done adding dataSources, but needs UI.
-
 * TODO: Next: Line 228, modal_settings -> ensure borken urls don't bork the app by wrapping the fetch in promisewrapper. Need to return (resolve)
 some kind of error in the promise wrapper though, otherwise, fetchNewData doesn't know that something borked and will overwrite the component's
 valid data with crap data.
+
+* TODO: Next: It's kind of working to fetch predefined components from Github! But reload seems to be borken... maybe because of the JSON.parse
+error??? Also -> List the directory of the github repo, then import every single JS (json) file in that as a component
+* (NB does it work with a blank dashboard???????????????????)

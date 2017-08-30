@@ -1,6 +1,6 @@
 {
   "name": "open_iot_dashboard",
-  "version": "0.1.1",
+  "version": "0.1.7",
   "description": "An open source, self hosted IoT dashboard",
   "author": "Tom Grek <tom.grek@gmail.com>",
   "private": true,
@@ -8,6 +8,7 @@
     "dev": "backpack dev",
     "build": "nuxt build && backpack build",
     "start": "cross-env NODE_ENV=production node build/main.js",
+    "startAsCluster": "pm2 kill && NODE_ENV=production pm2 start build/main.js -i 0 --name 'iot'",
     "precommit": "npm run lint",
     "lint": "eslint --ext .js,.vue --ignore-path .gitignore ."
   },
@@ -17,7 +18,6 @@
     "body-parser": "^1.17.2",
     "cluster": "^0.7.7",
     "connect-session-sequelize": "^4.1.0",
-    "connect-sqlite3": "^0.9.10",
     "cookie-parser": "^1.4.3",
     "cross-env": "^5.0.5",
     "d3": "^4.10.0",

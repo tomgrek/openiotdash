@@ -66,6 +66,7 @@ async function start() {
   }
   var server = require('http').createServer(app); //require('http').Server(app);
 
+  // TODO: Handle socket clustering better -- see indutny/sticky-session
   if (cluster.isMaster) {
     io = require('socket.io')(server);
     io.use(passportSocketIo.authorize({
@@ -82,6 +83,8 @@ async function start() {
     });
     // mqtt settings (including MQ, persistence) are in this file.
     require('../plugins/mqtt')(server);
+
+    // offline stuff
     require('./offlineProcessing').doOffline();
   }
 

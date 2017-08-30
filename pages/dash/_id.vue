@@ -73,6 +73,8 @@ export default {
       showModal_save: false,
       showModal_settings: false,
       selectedComponent: null,
+      title: null,
+      dashboard: null,
     };
   },
   watch: {
@@ -206,7 +208,6 @@ export default {
       me.node.parentElement.removeChild(me.node);
       this.individualComponents = this.individualComponents.filter(x => x.uuid !== uuid);
     }
-
     let bbox = document.getElementsByClassName('canvas-container')[0].getBoundingClientRect();
     const width = parseInt(bbox.width);
     const height = parseInt(bbox.height);
@@ -322,11 +323,14 @@ export default {
     let def = JSON.parse(this.dashboard.definition);
     this.svgOffsetX = def.svgOffsetX;
     this.svgOffsetY = def.svgOffsetY;
-    if (def.components && def.components.length) {
-      for (let component of def.components) {
-        this.fakeDrop(component);
+    fetch('https://raw.githubusercontent.com/tomgrek/test-repoforcomponents/master/comp.js').then(r => r.json()).then(r => {
+      this.predefinedComponents.push(() => r);
+      if (def.components && def.components.length) {
+        for (let component of def.components) {
+          this.fakeDrop(component);
+        }
       }
-    }
+    });
   },
 }
 </script>

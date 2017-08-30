@@ -6,6 +6,7 @@ import { Dashboard, Datapoint } from '../models';
 import fetch from 'node-fetch';
 
 const vm = require('vm');
+const cluster = require('cluster');
 
 // TODO: Need to make this threadsafe, ie these in-memory objects won't do for concurrency
 let offlineScriptContexts = {};
