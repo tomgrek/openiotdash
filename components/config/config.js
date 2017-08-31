@@ -15,4 +15,5 @@ module.exports = {
   dbhost: 'localhost',
   dbuser: 'openiotdash',
   dbpassword: 'openiotdash',
+  gitUrl: 'https://api.github.com/repos/tomgrek/test-repoforcomponents/contents', // e.g. https://api.github.com/repos/[user]/[repo]/contents
 };

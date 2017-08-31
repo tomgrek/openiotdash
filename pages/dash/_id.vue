@@ -22,7 +22,7 @@
 </template>
 
 <script>
-import { title, indexOptions, host, port } from "~/components/config/config";
+import { title, indexOptions, host, port, gitUrl } from "~/components/config/config";
 import * as d3 from "d3";
 import axios from '~/plugins/axios';
 import socket from '~/plugins/socket.io.js'
@@ -55,14 +55,14 @@ export default {
     return {
       indexOptions,
       components: [],
-      predefinedComponents: [
-        Chart,
-        BasicChart,
-        Tester,
-        Bubble,
-        Header,
-      ],
       individualComponents: [],
+      predefinedComponents: [
+         Chart,
+         BasicChart,
+         Tester,
+         Bubble,
+         Header,
+      ],
       dragged: null,
       zoomed: null,
       svgOffsetX: 0,
@@ -160,10 +160,12 @@ export default {
     },
   },
   async asyncData(context) {
-    let dashboard = await axios.get(`/data/dashboard/${context.params.id}`);
-    context.store.commit('setSelectedDashboard', dashboard.data);
+    let queries = [];
+    queries.push(axios.get(`/data/dashboard/${context.params.id}`));
+    let results = await Promise.all(queries);
+    context.store.commit('setSelectedDashboard', results[0].data);
     return {
-       dashboard: dashboard.data,
+       dashboard: results[0].data,
     };
   },
   head() {
@@ -323,12 +325,19 @@ export default {
     let def = JSON.parse(this.dashboard.definition);
     this.svgOffsetX = def.svgOffsetX;
     this.svgOffsetY = def.svgOffsetY;
-    fetch('https://raw.githubusercontent.com/tomgrek/test-repoforcomponents/master/comp.js').then(r => r.json()).then(r => {
-      this.predefinedComponents.push(() => r);
-      if (def.components && def.components.length) {
-        for (let component of def.components) {
-          this.fakeDrop(component);
-        }
+
+    if (def.components && def.components.length) {
+      for (let component of def.components) {
+        this.fakeDrop(component);
+      }
+    }
+    fetch(gitUrl).then(r => r.json()).then(r => {
+      for (let file of r) {
+        fetch(file.download_url).then(r => {
+            r.json().then(r => {
+              this.predefinedComponents.push(() => r);
+          }).catch(()=>{}); // if it's not a JSON file, e.g. README.md
+        });
       }
     });
   },
