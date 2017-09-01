@@ -39,6 +39,7 @@ import Tester from '../../predefined_components/Tester';
 import Chart from '../../predefined_components/Chart';
 import Bubble from '../../predefined_components/Circle';
 import Header from '../../predefined_components/Header';
+import Map from '../../predefined_components/Map';
 
 import fakedrop from '../../clientutils/utils';
 
@@ -57,6 +58,7 @@ export default {
       components: [],
       individualComponents: [],
       predefinedComponents: [
+          Map,
          Chart,
          BasicChart,
          Tester,
@@ -335,8 +337,9 @@ export default {
       for (let file of r) {
         fetch(file.download_url).then(r => {
             r.json().then(r => {
+              // use http://phrogz.net/JS/NeatJSON/ for this
               this.predefinedComponents.push(() => r);
-          }).catch(()=>{}); // if it's not a JSON file, e.g. README.md
+          }).catch(e=>{ console.log(e); }); // if it's not a JSON file, e.g. README.md
         });
       }
     });

@@ -127,5 +127,13 @@ export default (fullComponent, self, editing = false, isMobile = false) => {
       resizer.addEventListener('mousedown', initResize, false);
 
     }
+    if (comp.externalScripts) {
+      for (let externalScript of comp.externalScripts) {
+        let script = document.createElement('script');
+        script.type = 'text/javascript';
+        script.src = externalScript;
+        document.body.append(script);
+      }
+    }
     return fullComponent;
 };

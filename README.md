@@ -38,4 +38,4 @@ some kind of error in the promise wrapper though, otherwise, fetchNewData doesn'
 valid data with crap data.
 
 * TODO: Next: It's kind of working to fetch predefined components from Github! But reload seems to be borken... maybe because of the JSON.parse
-error??? Also -> List the directory of the github repo, then import every single JS (json) file in that as a component
+error???
