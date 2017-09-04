@@ -132,7 +132,18 @@ export default (fullComponent, self, editing = false, isMobile = false) => {
         let script = document.createElement('script');
         script.type = 'text/javascript';
         script.src = externalScript;
+        let event = new CustomEvent('scriptLoaded', { detail: { script: externalScript } });
+        script.onload = () => node.dispatchEvent(event);
         document.body.append(script);
+      }
+    }
+    if (comp.externalStyles) {
+      for (let externalStyle of comp.externalStyles) {
+        let link = document.createElement('link');
+        link.type = 'text/css';
+        link.rel = 'stylesheet';
+        link.href = externalStyle;
+        document.body.append(link);
       }
     }
     return fullComponent;

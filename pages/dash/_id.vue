@@ -127,6 +127,9 @@ export default {
       for (let comp of this.individualComponents) {
         comp.component.offsetX = comp.node.attributes['offsetX'].value || 0;
         comp.component.offsetY = comp.node.attributes['offsetY'].value || 0;
+        let event = new CustomEvent('beforeSave', {});
+        comp.node.dispatchEvent(event);
+        // TODO: Now if you resize the map after saving, well, there is no map. Restore it somehow.
       }
       let dashToSave = JSON.parse(JSON.stringify({ components: this.individualComponents, svgOffsetX: 0, svgOffsetY: 0 }));
       for (let comp of dashToSave.components) {
@@ -140,8 +143,10 @@ export default {
             this.$store.commit('addAlert', { msg: 'Error saving dashboard.', type: 'error'});
           } else {
             this.$store.commit('addAlert', { msg: 'Dashboard saved successfully.', type: 'success'});
-            for (let interval of window.intervals) {
-              window.clearInterval(window.intervals);
+            if (window.intervals) {
+              for (let interval of window.intervals) {
+                window.clearInterval(window.intervals);
+              }
             }
           }
         });
