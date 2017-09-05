@@ -19,7 +19,8 @@ return {
   settingsDisplay:
     `<div>My settings for my map
       <input id="title" type="text"></input>
-      <div><span>Color: </span><input id="color" type="text"></input></div>
+      <div>To use this map component: each datapoint needs lat, lng, and val. For example:
+      curl http://localhost:3000/d/w/[writeKey]/[sinkName] -X "POST" -v -d "lng=-122.5&lat=37.1&val=22.3"</div>
     </div>`,
   height: 150,
   width: 300,
@@ -99,15 +100,40 @@ return {
               drawChart(e);
             });
             node.addEventListener('data', e => {
-              Object.assign(this.data, e.detail);
+              let uniqueByKey = {};
+              let uniques = {};
+              for (let key of Object.keys(e.detail)) {
+                e.detail[key].map(x => {
+                  let y = JSON.parse(x.data);
+                  uniques[key + y.lat + y.lng] = x;
+                });
+                uniqueByKey[key] = Object.keys(uniques).map(x => uniques[x]);
+              }
+              Object.assign(this.data, uniqueByKey);
               drawChart();
             });
             node.addEventListener('newData', e => {
               if (e.detail.dataSink) {
-                if (this.data[e.detail.dataSink.title].length >= e.detail.dataSink.limit) {
-                  this.data[e.detail.dataSink.title].shift();
+                // if same latlng, replace it
+                let target = JSON.parse(e.detail.newData.data);
+                let replaceOlder = this.data[e.detail.dataSink.title].filter(x => {
+                  let y = JSON.parse(x.data);
+                  if (y.lat === target.lat && y.lng === target.lng) {
+                    return true;
+                  }
+                  return false;
+                });
+                if (replaceOlder[0]) {
+                  replaceOlder[0].data = JSON.parse(replaceOlder[0].data);
+                  replaceOlder[0].data.val = target.val;
+                  replaceOlder[0].data = JSON.stringify(replaceOlder[0].data);
+                  replaceOlder[0].createdAt = e.detail.newData.createdAt;
+                } else {
+                  if (this.data[e.detail.dataSink.title].length >= e.detail.dataSink.limit) {
+                    this.data[e.detail.dataSink.title].shift();
+                  }
+                  this.data[e.detail.dataSink.title].push(e.detail.newData);
                 }
-                this.data[e.detail.dataSink.title].push(e.detail.newData);
               } else {
                 let assignObj = {};
                 assignObj[e.detail.dataSource.title] = e.detail.newData;

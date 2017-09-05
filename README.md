@@ -37,5 +37,8 @@ that just fetches data from a URL when the component is actually displayed.
 some kind of error in the promise wrapper though, otherwise, fetchNewData doesn't know that something borked and will overwrite the component's
 valid data with crap data.
 
-* TODO: Next: It's kind of working to fetch predefined components from Github! But reload seems to be borken... maybe because of the JSON.parse
-error???
+* TODO: Next: Get rid of "Style is not done loading" error for map by triggering scriptLoaded event only on script+css loaded
+
+* Fix issue with map missing after saving dashboard
+
+* Add option for light/dark switch UI, just append style element for 'dark'
