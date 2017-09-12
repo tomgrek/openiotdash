@@ -3,7 +3,7 @@ return {
   title: 'Map',
   uuid: null,
   content:
-  `<div id="map" style="position: absolute; top: 1.5rem; width: calc(100% - 1px); height: calc(100% - calc(1.5rem + 1px));">
+  `<div id="map" style="position: absolute; top: 1.5rem; width: calc(100% - 0.5px); height: calc(100% - calc(1.5rem + 0.5px));">
 
   </div>`,
   preview: `<img style="height:100%; width:100%;" src="https://www.mapbox.com/help/img/ios/switch/4-location-mapbox.jpg"></img>`,
@@ -15,10 +15,11 @@ return {
   defaultSettings: {},
   settings: {
     color: 'darkorchid',
+    icon: 'triangle-stroked-15',
   },
   settingsDisplay:
     `<div>My settings for my map
-      <input id="title" type="text"></input>
+      Icon (e.g. beer-15): <input id="icon" type="text"></input>
       <div>To use this map component: each datapoint needs lat, lng, and val. For example:
       curl http://localhost:3000/d/w/[writeKey]/[sinkName] -X "POST" -v -d "lng=-122.5&lat=37.1&val=22.3"</div>
     </div>`,
@@ -64,10 +65,10 @@ return {
                     },
                   },
                   layout: {
-                    "icon-image": "triangle-stroked-15",
+                    "icon-image": this.settings.icon,
                     "text-field": '{val}',
                     "icon-size": 1.8,
-                    "text-offset": [0, -1],
+                    "text-offset": [0, this.settings.icon ? -1 : 0],
                   },
                 });
               }
@@ -83,7 +84,16 @@ return {
             node.addEventListener('click', e => {
               // console.log(this.settings.myfield);
             });
-            node.addEventListener('scriptLoaded', e => {
+            node.addEventListener('externalResourceLoaded', e => {
+              if (e.detail.type === 'script') {
+                this.scriptLoaded = true;
+              }
+              if (e.detail.type === 'style') {
+                this.styleLoaded = true;
+              }
+              if (!this.styleLoaded || !this.scriptLoaded) {
+                return false;
+              }
               if (!this.map) {
                 mapboxgl.accessToken = 'pk.eyJ1IjoidG9tZ3JlayIsImEiOiJjajcybnp5OGkwMzhvMzNtb2dmeWE2ZWIzIn0.3WV2DSDqOKT_QTunUUpe9A';
                 this.map = new mapboxgl.Map({
@@ -110,7 +120,14 @@ return {
                 uniqueByKey[key] = Object.keys(uniques).map(x => uniques[x]);
               }
               Object.assign(this.data, uniqueByKey);
-              drawChart();
+              let processData = () => {
+                if (this.scriptLoaded && this.styleLoaded) {
+                  setTimeout(drawChart, 2);
+                } else {
+                  setTimeout(processData, 10);
+                }
+              };
+              setTimeout(processData, 1);
             });
             node.addEventListener('newData', e => {
               if (e.detail.dataSink) {
@@ -139,7 +156,6 @@ return {
                 assignObj[e.detail.dataSource.title] = e.detail.newData;
                 Object.assign(this.data, assignObj);
               }
-              console.log('with new datas', this.data);
               drawChart();
             });
             node.addEventListener('input', e => {
@@ -155,7 +171,8 @@ return {
               styleNode.innerHTML = styleFactory(this.uuid);
               styleNode.id = 'style-'+this.uuid;
               document.body.appendChild(styleNode);
-              // drawChart(e);
+              this.styleLoaded = false;
+              this.scriptLoaded = false;
             });
             node.addEventListener('resized', (e) => {
               let ctr = this.map.getCenter();
@@ -179,8 +196,9 @@ return {
               drawChart(e);
             });
             node.addEventListener('beforeSave', e => {
-              console.log('before save');
               delete this.map;
+              this.styleLoaded = false;
+              this.scriptLoaded = false;
             });
             node.addEventListener('deleted', (e) => {
             });

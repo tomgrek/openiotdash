@@ -20,11 +20,6 @@ $ npm start
 * Add the data for a component to the execution context of the component's offlineCode. Should be able to do console.log(this.dataSinks['j4xpli'].data)
 inside the offlineCode. (Needed because we want to be able to do offline fetch's and then store the results, also do actions based on the results)
 
-* Add datasink from external url (e.g. alpha vantage)
-^^ probably taken care of by just defining offlineCode for a component, letting that fetch the data
-^^^^ actually not quite true, we don't always want to save data. dataSources should be a thing, even with offline code now,
-that just fetches data from a URL when the component is actually displayed.
-
 * add, in settings, ability to directly edit the whole code of the component
 
 * add permissions for other users to edit dashboards owned by a user
@@ -37,8 +32,8 @@ that just fetches data from a URL when the component is actually displayed.
 some kind of error in the promise wrapper though, otherwise, fetchNewData doesn't know that something borked and will overwrite the component's
 valid data with crap data.
 
-* TODO: Next: Get rid of "Style is not done loading" error for map by triggering scriptLoaded event only on script+css loaded
-
 * Fix issue with map missing after saving dashboard
 
 * Add option for light/dark switch UI, just append style element for 'dark'
+
+* TODO: Next: Bubbles in canvas ala https://codepen.io/MarioD/pen/gWregQ

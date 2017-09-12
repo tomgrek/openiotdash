@@ -132,7 +132,7 @@ export default (fullComponent, self, editing = false, isMobile = false) => {
         let script = document.createElement('script');
         script.type = 'text/javascript';
         script.src = externalScript;
-        let event = new CustomEvent('scriptLoaded', { detail: { script: externalScript } });
+        let event = new CustomEvent('externalResourceLoaded', { detail: { type: 'script', uri: externalScript } });
         script.onload = () => node.dispatchEvent(event);
         document.body.append(script);
       }
@@ -143,6 +143,8 @@ export default (fullComponent, self, editing = false, isMobile = false) => {
         link.type = 'text/css';
         link.rel = 'stylesheet';
         link.href = externalStyle;
+        let event = new CustomEvent('externalResourceLoaded', { detail: { type: 'style', uri: externalStyle } });
+        link.onload = () => setTimeout(() => node.dispatchEvent(event), 0);
         document.body.append(link);
       }
     }

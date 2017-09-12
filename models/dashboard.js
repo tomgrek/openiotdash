@@ -16,6 +16,9 @@ const Dashboard = sql.define('dashboard', {
   link: {
     type: Sequelize.STRING,
   },
+  scheme: {
+    type: Sequelize.STRING, // light or dark
+  },
 }, {
   timestamps: true,
 });

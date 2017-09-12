@@ -3,6 +3,7 @@
     <ModalRename v-if="showModal_rename" @close="showModal_rename = false" :currentTitle="dashboard.title" :setTitleFn="setTitle"/>
     <ModalSave v-if="showModal_save" @close="showModal_save = false" :currentDashboard="dashboard" :saveFn="saveAll"/>
     <ModalSettings v-if="showModal_settings" @close="showModal_settings = false" :component="selectedComponent"/>
+    <ModalDashSettings v-if="showModal_dashsettings" @close="showModal_dashsettings = false" :currentScheme="dashboard.scheme" :setSchemeFn="setDashScheme"/>
     <my-header :username="username" :extended="dashboard.title"/>
     <div class="main-container">
       <div id="canvasContainer"></div>
@@ -12,7 +13,7 @@
         <div class="sidebar-header">Manage</div>
         <i id="save-dash-button" @click="showModal_save = true" class="material-icons toolicon" style="margin-bottom: 0.5rem; margin-right: 0.5rem; transition: filter 1s ease;" title="Save">save</i>
         <i @click="showModal_rename = true" class="material-icons toolicon" style="margin-bottom: 0.5rem; margin-right: 0.5rem;" title="Rename">title</i>
-        <i class="material-icons toolicon" style="margin-bottom: 0.5rem; margin-right: 0.5rem;" title="Settings">settings</i>
+        <i @click="showModal_dashsettings = true" class="material-icons toolicon" style="margin-bottom: 0.5rem; margin-right: 0.5rem;" title="Settings">settings</i>
         <i class="material-icons toolicon" style="margin-bottom: 0.5rem;" title="Delete">delete</i>
         <div class="sidebar-header">Components</div>
         <div v-for="component, i in predefinedComponents" v-html="component().preview" class="component" draggable=true v-on:dragend="dropped($event, i)"></div>
@@ -33,6 +34,7 @@ import MyHeader from '~/components/Header';
 import ModalRename from '~/components/modal_rename';
 import ModalSave from '~/components/modal_save';
 import ModalSettings from '~/components/modal_settings';
+import ModalDashSettings from '~/components/modal_dashsettings';
 
 import BasicChart from '../../predefined_components/BasicChart';
 import Tester from '../../predefined_components/Tester';
@@ -51,6 +53,7 @@ export default {
     ModalRename,
     ModalSave,
     ModalSettings,
+    ModalDashSettings,
   },
   data() {
     return {
@@ -74,6 +77,7 @@ export default {
       showModal_rename: false,
       showModal_save: false,
       showModal_settings: false,
+      showModal_dashsettings: false,
       selectedComponent: null,
       title: null,
       dashboard: null,

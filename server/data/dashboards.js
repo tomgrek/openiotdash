@@ -11,6 +11,7 @@ router.get('/dashboards/:user', (req, res, next) => {
       'title',
       'link',
       'visibility',
+      'scheme',
     ],
     where: {
       user: req.params.user,
