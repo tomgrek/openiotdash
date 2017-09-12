@@ -1,0 +1,26 @@
+.container, .sidebar {
+  background-color: #222227 !important;
+  color: #fafafb;
+}
+.axis line {
+  stroke: #333;
+}
+.sidebar-header {
+  background-color: #555 !important;
+  color: #fafafb;
+}
+.sidebar i {
+  color: #fafafb;
+}
+.extended-header {
+  color: #eaeaeb !important;
+}
+header {
+  border-bottom: 1px solid #444 !important;
+}
+footer {
+  border-top: 1px solid #444 !important;
+}
+.header-userbutton {
+  background-color: #222227 !important;
+}

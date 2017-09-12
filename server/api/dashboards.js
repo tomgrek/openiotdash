@@ -21,6 +21,10 @@ router.post('/dashboards/save/:what', (req, res, next) => {
       d.visibility = req.body.visibility;
       d.save().then(() => res.status(200).end());
     }
+    if (req.params.what === 'scheme') {
+      d.scheme = req.body.scheme.toLowerCase();
+      d.save().then(() => res.status(200).end());
+    }
     if (req.params.what === 'all') {
       d.definition = req.body.definition;
       d.visibility = req.body.visibility;

@@ -51,6 +51,20 @@ export default {
     },
   },
   methods: {
+    setScheme(scheme) {
+      if (scheme !== 'light') {
+        this.darkStyleSheet = document.createElement('link');
+        this.darkStyleSheet.type = 'text/css';
+        this.darkStyleSheet.rel = 'stylesheet';
+        this.darkStyleSheet.href = '/' + scheme + '.css';
+        document.body.append(this.darkStyleSheet);
+      }
+      if (scheme === 'light') {
+        if (this.darkStyleSheet) {
+          document.body.remove(this.darkStyleSheet);
+        }
+      }
+    },
     nothing(e) {
       e.preventDefault();
       e.stopPropagation();
@@ -80,6 +94,7 @@ export default {
     };
   },
   mounted() {
+    this.setScheme(this.dashboard.scheme);
     let self = this;
     let def = JSON.parse(this.dashboard.definition);
     window.d3 = d3;

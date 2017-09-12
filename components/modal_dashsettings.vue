@@ -30,7 +30,7 @@ export default {
   props: ['currentScheme', 'setSchemeFn'],
   data() {
     return {
-      newScheme: this.$props.currentScheme,
+      newScheme: this.$props.currentScheme[0].toUpperCase() + this.$props.currentScheme.slice(1),
     }
   },
   methods: {
@@ -40,7 +40,6 @@ export default {
     },
   },
   mounted() {
-    console.log(this.$props.currentScheme, this.$store.state);
   },
 }
 </script>

@@ -30,6 +30,7 @@ router.get('/dashboard/:id', (req, res, next) => {
       'definition',
       'visibility',
       'link',
+      'scheme',
     ],
     where: {
       id: req.params.id,
@@ -47,6 +48,7 @@ router.get('/dashboard_link/:link', (req, res, next) => {
       'title',
       'definition',
       'link',
+      'scheme',
     ],
     where: {
       link: req.params.link,

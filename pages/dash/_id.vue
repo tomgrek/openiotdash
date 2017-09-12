@@ -81,6 +81,7 @@ export default {
       selectedComponent: null,
       title: null,
       dashboard: null,
+      darkStyleSheet: null,
     };
   },
   watch: {
@@ -95,8 +96,37 @@ export default {
     },
   },
   methods: {
+    setScheme(scheme) {
+      if (scheme !== 'light') {
+        this.darkStyleSheet = document.createElement('link');
+        this.darkStyleSheet.type = 'text/css';
+        this.darkStyleSheet.rel = 'stylesheet';
+        this.darkStyleSheet.href = '/' + scheme + '.css';
+        document.body.append(this.darkStyleSheet);
+      }
+      if (scheme === 'light') {
+        if (this.darkStyleSheet) {
+          document.body.remove(this.darkStyleSheet);
+        }
+      }
+    },
     fakeDrop(fullComponent) {
       fakedrop(fullComponent, this, true);
+    },
+    setDashScheme(scheme) { // color scheme
+      let oldScheme = this.dashboard.scheme;
+      this.dashboard.scheme = scheme;
+      let body = JSON.stringify({id: this.$route.params.id, scheme: scheme.toLowerCase()});
+      fetch(`/api/dashboards/save/scheme`, {headers: {'Content-Type': 'application/json'}, method: 'POST', body, credentials: 'include'})
+        .then(resp => {
+          if (resp.status !== 200) {
+            this.dashboard.scheme = oldScheme;
+            this.$store.commit('addAlert', { msg: 'Error saving scheme.', type: 'error'});
+          } else {
+            this.$store.commit('addAlert', { msg: 'Scheme saved successfully.', type: 'success'});
+            this.$store.commit('setColorSchemeOfDashboard', {id: parseInt(this.$route.params.id), newScheme: scheme});
+          }
+        });
     },
     setTitle(title) {
       let oldTitle = this.dashboard.title;
@@ -185,6 +215,7 @@ export default {
     };
   },
   mounted() {
+    this.setScheme(this.dashboard.scheme);
     let self = this;
     window.d3 = d3;
     window.Mqtt = mqtt; // a global object, can connect to any MQTT broker
