@@ -24,15 +24,10 @@ export const mutations = {
   renameDashboard: (state, {id, newTitle}) => {
     state.dashboards.filter(x => x.id === id)[0].title = newTitle;
   },
-  setColorSchemeOfDashboard: (state, {id, newScheme}) => {
+  setColorSchemeOfDashboard: (state, {id, newScheme, setScheme}) => {
     newScheme = newScheme.toLowerCase();
     state.dashboards.filter(x => x.id === id)[0].scheme = newScheme;
-    if (newScheme === 'dark') {
-      // append dark stylesheet here
-    }
-    if (newScheme === 'light') {
-      // detach dark stylesheet here
-    }
+    setScheme(newScheme);
   },
   deleteDashboard: (state, id) => {
     state.dashboards = state.dashboards.filter(x => x.id != id);

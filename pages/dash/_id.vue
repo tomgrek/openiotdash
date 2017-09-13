@@ -106,7 +106,7 @@ export default {
       }
       if (scheme === 'light') {
         if (this.darkStyleSheet) {
-          document.body.remove(this.darkStyleSheet);
+          this.darkStyleSheet.remove();
         }
       }
     },
@@ -124,7 +124,7 @@ export default {
             this.$store.commit('addAlert', { msg: 'Error saving scheme.', type: 'error'});
           } else {
             this.$store.commit('addAlert', { msg: 'Scheme saved successfully.', type: 'success'});
-            this.$store.commit('setColorSchemeOfDashboard', {id: parseInt(this.$route.params.id), newScheme: scheme});
+            this.$store.commit('setColorSchemeOfDashboard', {id: parseInt(this.$route.params.id), newScheme: scheme, setScheme: this.setScheme});
           }
         });
     },
