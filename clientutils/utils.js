@@ -133,7 +133,7 @@ export default (fullComponent, self, editing = false, isMobile = false) => {
         script.type = 'text/javascript';
         script.src = externalScript;
         let event = new CustomEvent('externalResourceLoaded', { detail: { type: 'script', uri: externalScript } });
-        script.onload = () => node.dispatchEvent(event);
+        script.onload = () => setTimeout(() => node.dispatchEvent(event), 0);
         document.body.append(script);
       }
     }

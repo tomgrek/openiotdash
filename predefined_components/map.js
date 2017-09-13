@@ -28,6 +28,8 @@ return {
   transform: '',
   offsetX: 0,
   offsetY: 0,
+  scriptLoaded: false,
+  styleLoaded: false,
   externalScripts: [
     'https://api.mapbox.com/mapbox-gl-js/v0.39.1/mapbox-gl.js',
   ],
@@ -54,6 +56,7 @@ return {
                 });
                 if (this.map.getSource('points'+key)) this.map.removeSource('points'+key);
                 if (this.map.getLayer('points'+key)) this.map.removeLayer('points'+key);
+                
                 this.map.addLayer({
                   id: 'points'+key,
                   type: 'symbol',
@@ -102,12 +105,14 @@ return {
                   center: [-122.44, 37.8],
                   zoom: 9
                 });
-                this.map.boxZoom.disable();
-                this.map.doubleClickZoom.disable();
-                this.map.dragPan.disable();
-                this.map.keyboard.enable();
+                this.map.on('load', () => {
+                  this.map.boxZoom.disable();
+                  this.map.doubleClickZoom.disable();
+                  this.map.dragPan.disable();
+                  this.map.keyboard.enable();
+                  drawChart(e);
+                });
               }
-              drawChart(e);
             });
             node.addEventListener('data', e => {
               let uniqueByKey = {};
@@ -187,10 +192,13 @@ return {
                 center: ctr,
                 zoom: zm,
               });
-              this.map.boxZoom.disable();
-              this.map.doubleClickZoom.disable();
-              this.map.dragPan.disable();
-              drawChart(e);
+              this.map.on('load', () => {
+                this.map.boxZoom.disable();
+                this.map.doubleClickZoom.disable();
+                this.map.dragPan.disable();
+                this.map.keyboard.enable();
+                drawChart(e);
+              });
             });
             node.addEventListener('settingsChanged', (e) => {
               drawChart(e);
