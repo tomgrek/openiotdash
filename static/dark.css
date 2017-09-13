@@ -24,6 +24,6 @@ footer {
 .header-userbutton {
   background-color: #222227 !important;
 }
-.modal-container {
+.modal-container, .message {
   color: black;
 }

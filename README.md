@@ -35,5 +35,3 @@ valid data with crap data.
 * Fix issue with map missing after saving dashboard
 
 * TODO: Next: Bubbles in canvas ala https://codepen.io/MarioD/pen/gWregQ
-
-* TODO: Next: Detach dark stylesheet on dash/_id or show/_id unmount. Attach/detach dark stylesheet on scheme change.

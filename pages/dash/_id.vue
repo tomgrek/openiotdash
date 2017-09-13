@@ -40,6 +40,7 @@ import BasicChart from '../../predefined_components/BasicChart';
 import Tester from '../../predefined_components/Tester';
 import Chart from '../../predefined_components/Chart';
 import Bubble from '../../predefined_components/Circle';
+import CanvasBubble from '../../predefined_components/Bubble';
 import Header from '../../predefined_components/Header';
 import Map from '../../predefined_components/Map';
 
@@ -61,7 +62,8 @@ export default {
       components: [],
       individualComponents: [],
       predefinedComponents: [
-          Map,
+         Map,
+         CanvasBubble,
          Chart,
          BasicChart,
          Tester,
