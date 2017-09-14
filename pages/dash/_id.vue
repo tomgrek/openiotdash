@@ -36,7 +36,6 @@ import ModalSave from '~/components/modal_save';
 import ModalSettings from '~/components/modal_settings';
 import ModalDashSettings from '~/components/modal_dashsettings';
 
-import BasicChart from '../../predefined_components/BasicChart';
 import Tester from '../../predefined_components/Tester';
 import Chart from '../../predefined_components/Chart';
 import Bubble from '../../predefined_components/Circle';
@@ -65,7 +64,6 @@ export default {
          Map,
          CanvasBubble,
          Chart,
-         BasicChart,
          Tester,
          Bubble,
          Header,
