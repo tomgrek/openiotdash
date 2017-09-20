@@ -389,6 +389,19 @@ export default {
 
 <style lang="scss" scoped>
 @import "../../assets/css/main.scss";
+
+::-webkit-scrollbar {
+  width: 0.5rem;
+  background-color: #fefeff;
+}
+::-webkit-scrollbar-track {
+
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(11,11,14,0.2);
+  border-radius: 4px;
+}
+
 .title {
   margin: 30px 0;
   color: $primary-text;
@@ -420,6 +433,7 @@ export default {
   border-right: 0;
   padding: 0 0 0 1rem;
   float: right;
+  overflow-y: auto;
   .sidebar-header {
     background-color: $background-dark;
     padding: 0.5rem 0.5rem;
