@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { Dashboard } from '../../models';
 import crypto from 'crypto';
 
-import { runningScripts, offlineScriptContexts, parsedDashboards, stopScript } from '../offlineProcessing';
+import { runningScripts, offlineScriptContexts, parsedDashboards, stopScript, deleteScriptContext } from '../offlineProcessing';
 
 var router = Router();
 
@@ -31,12 +31,13 @@ router.post('/dashboards/save/:what', (req, res, next) => {
       d.title = req.body.title;
       d.save().then(() => {
         for (let component of JSON.parse(req.body.definition).components) {
-          if (Object.keys(runningScripts).includes(component.uuid)) {
-            // TODO: check how this interacts with cluster.isMaster/pm2
-            delete offlineScriptContexts[component.uuid];
-            delete parsedDashboards[d.id];
-            stopScript(component.uuid);
-          }
+          runningScripts().then(scripts => {
+            if (scripts.includes(component.uuid)) {
+              deleteScriptContext(component.uuid);
+              delete parsedDashboards[d.id];
+              stopScript(component.uuid);
+            }
+          });
         }
         res.status(200).end();
       });

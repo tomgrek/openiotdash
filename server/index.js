@@ -21,7 +21,7 @@ async function start() {
   const cluster = require('cluster');
   const passportConfig = require('../config/passport');
   const passportSocketIo = require('passport.socketio');
-
+  const sio_redis = require('socket.io-redis');
   const session = require('express-session');
   const SequelizeStore = require('connect-session-sequelize')(session.Store);
   const sessionStore = new SequelizeStore({
@@ -66,9 +66,9 @@ async function start() {
   }
   var server = require('http').createServer(app); //require('http').Server(app);
 
-  // TODO: Handle socket clustering better -- see indutny/sticky-session
-  if (cluster.isMaster) {
+  if (true) { //cluster.isMaster
     io = require('socket.io')(server);
+    io.adapter(sio_redis({ host: 'localhost', port: 6379 }));
     io.use(passportSocketIo.authorize({
       key: 'connect.sid',
       secret: 'openiotdash',

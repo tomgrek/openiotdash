@@ -8,6 +8,7 @@
 # install dependencies
 $ npm install
 $ brew install zmq (or as necessary for ZeroMQ on your platform)
+$ brew install redis / brew services start redis (or as necessary for Redis on your platform -- or point it elsewhere)
 
 # serve with hot reload at localhost:3000
 $ npm run dev
@@ -15,7 +16,35 @@ $ npm run dev
 # build for production and launch server
 $ npm start
 ```
+
+## nginx configuration for clusters:
+
+Load balancing between 2 nodes, but socketio still works:
+
+```
+upstream io_nodes {
+  ip_hash;
+  server 127.0.0.1:2999;
+  server 127.0.0.1:3000;
+}
+server {
+  listen 3001;
+  server_name localhost;
+  location / {
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "upgrade";
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header Host $host;
+    proxy_http_version 1.1;
+    proxy_pass http://io_nodes;
+  }
+}
+```
+
 ## Things to do next:
+
+* NEXT! scriptloader stuff seems almost working, but scripts never die, so they only run once. Kill it after 10s, then randomly allocate
+it amongst cluster nodes the next time offlineScripts runs.
 
 * Add the data for a component to the execution context of the component's offlineCode. Should be able to do console.log(this.dataSinks['j4xpli'].data)
 inside the offlineCode. (Needed because we want to be able to do offline fetch's and then store the results, also do actions based on the results)

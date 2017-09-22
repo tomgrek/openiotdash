@@ -8,10 +8,20 @@ import fetch from 'node-fetch';
 const vm = require('vm');
 const cluster = require('cluster');
 
+const redisLib = require("redis");
+const redis = redisLib.createClient();
+
 // TODO: Need to make this threadsafe, ie these in-memory objects won't do for concurrency
 let offlineScriptContexts = {};
 let parsedDashboards = {};
-let runningScripts = {};
+let runningScripts = async function() {
+  return new Promise((resolve, reject) => {
+    redis.keys('runningscripts*', (j,k) => resolve(k));
+  });
+};
+// (async function() {
+//   console.log(await runningScripts());
+// })();
 
 const getDataForComponent = sinkList => {
   return new Promise((resolve, reject) => {
@@ -62,14 +72,16 @@ const doOffline = () => {
             // TODO: Need to check for calling code's ownership of dataSink and related dataPoints?
             getDataForComponent(component.component.dataSinks).then(data => {
               // TODO: dont pass in console to the context, once debugging complete
-              if (!offlineScriptContexts[component.component.uuid]) {
-                offlineScriptContexts[component.component.uuid] = new vm.createContext({fetch, component, setInterval, console, data});
-              } else {
-                Object.assign(offlineScriptContexts[component.component.uuid], { data });
-              }
-              if (!runningScripts[component.component.uuid]) {
-                runningScripts[component.component.uuid] = new vm.Script(component.component.offlineCode).runInContext(offlineScriptContexts[component.component.uuid]);
-              }
+              redis.set(component.component.uuid, JSON.stringify({component, data}));
+              runningScripts(component.component.uuid).then(scripts => {
+                console.log(scripts);
+                if (!scripts.includes('runningscripts' + component.component.uuid)) {
+                  redis.get(component.component.uuid, function (err, reply) {
+                    redis.set('runningscripts' + component.component.uuid, true);
+                    new vm.Script(component.component.offlineCode).runInContext(new vm.createContext(Object.assign(JSON.parse(reply), { console, fetch, setInterval })));
+                  });
+                }
+              });
             });
           }
         }
@@ -83,10 +95,13 @@ module.exports = {
   offlineScriptContexts,
   parsedDashboards,
   runningScripts,
+  deleteScriptContext: id => {
+    redis.del(id);
+  },
   stopScript: id => {
     if (runningScripts[id]) {
       runningScripts[id].close();
     }
-    delete runningScripts[id];
+    redis.del(id);
   },
 };
