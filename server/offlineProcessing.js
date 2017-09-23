@@ -10,17 +10,36 @@ const cluster = require('cluster');
 
 const redisLib = require("redis");
 const redis = redisLib.createClient();
+redis.getAsync = key => {
+  return new Promise((resolve, reject) => {
+    redis.get(key, (err, val) => resolve(val));
+  });
+};
 
-// TODO: Need to make this threadsafe, ie these in-memory objects won't do for concurrency
-let offlineScriptContexts = {};
-let parsedDashboards = {};
-let runningScripts = async function() {
+let runningScripts = async() => {
   return new Promise((resolve, reject) => {
     redis.keys('runningscripts*', (j,k) => resolve(k));
   });
 };
-// (async function() {
-//   console.log(await runningScripts());
+let parsedDashboards = async() => {
+  return new Promise((resolve, reject) => {
+    redis.keys('parseddashboards*', (j,k) => {
+      let obj = {};
+      let queries = [];
+      for (let key of k) {
+        queries.push(redis.getAsync(key));
+      }
+      Promise.all(queries).then(vals => {
+        k.map((key, i) => {
+          obj[key.slice(16)] = JSON.parse(vals[i]);
+        });
+        resolve(obj);
+      });
+    });
+  });
+};
+// (async() => {
+//   console.log(await parsedDashboards2());
 // })();
 
 const getDataForComponent = sinkList => {
@@ -62,17 +81,21 @@ const getDataForComponent = sinkList => {
 
 const doOffline = () => {
   setInterval(() => {
-    Dashboard.findAll().then(d => {
+    Dashboard.findAll().then(async(d) => {
       for (let dash of d) {
-        if (!parsedDashboards[dash.id]) parsedDashboards[dash.id] = JSON.parse(dash.definition);
-        if (!parsedDashboards[dash.id].components) continue;
-        for (let component of parsedDashboards[dash.id].components) {
+        let parsedDashes = await parsedDashboards();
+        if (!parsedDashes[dash.id]) {
+          redis.set('parseddashboards' + dash.id, dash.definition);
+          parsedDashes[dash.id] = JSON.parse(dash.definition);
+        }
+        if (!parsedDashes[dash.id].components) continue;
+        for (let component of parsedDashes[dash.id].components) {
           // TODO: extend each of the component datasinks with their read/write keys
           if (component.component.offlineCode) {
             // TODO: Need to check for calling code's ownership of dataSink and related dataPoints?
             getDataForComponent(component.component.dataSinks).then(data => {
               // TODO: dont pass in console to the context, once debugging complete
-              redis.set(component.component.uuid, JSON.stringify({component, data}));
+              redis.set(component.component.uuid, JSON.stringify({component, data}), 'EX', 10);
               runningScripts(component.component.uuid).then(scripts => {
                 console.log(scripts);
                 if (!scripts.includes('runningscripts' + component.component.uuid)) {
@@ -92,7 +115,6 @@ const doOffline = () => {
 
 module.exports = {
   doOffline,
-  offlineScriptContexts,
   parsedDashboards,
   runningScripts,
   deleteScriptContext: id => {

@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { Dashboard } from '../../models';
 import crypto from 'crypto';
 
-import { runningScripts, offlineScriptContexts, parsedDashboards, stopScript, deleteScriptContext } from '../offlineProcessing';
+import { runningScripts, parsedDashboards, stopScript, deleteScriptContext } from '../offlineProcessing';
 
 var router = Router();
 
