@@ -43,8 +43,6 @@ server {
 
 ## Things to do next:
 
-* Check MQTT broker still fully functional end-to-end with new settings.
-
 * Add connector for MQTT to use Kafka backend
 
 * Add the data for a component to the execution context of the component's offlineCode. Should be able to do console.log(this.dataSinks['j4xpli'].data)

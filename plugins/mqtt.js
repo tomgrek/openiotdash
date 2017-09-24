@@ -2,11 +2,12 @@
 
 import { baseUrl } from '../components/config/config';
 
+// eg mqtt pub -t 'write/c2928b4027d2e4/j4xbpkli' -h 'localhost' -p 1883 -m '{"value":"30"}'
+
 const fetch = require('node-fetch');
 const mosca = require('mosca');
-
 let createMqttStuff = (server) => {
-  let pubsubsettings = {
+  let moscaSettings = {
     type: 'redis',
     redis: require('redis'),
     db: 0,
@@ -14,7 +15,7 @@ let createMqttStuff = (server) => {
     return_buffers: true,
     host: 'localhost'
   };
-  const mqttServer = new mosca.Server({ host: 'localhost', port: 1883, persistence: { factory: mosca.persistence.Redis } });
+  const mqttServer = new mosca.Server({ host: 'localhost', port: 1883, backend: moscaSettings, persistence: { factory: mosca.persistence.Redis } });
   mqttServer.attachHttpServer(server);
   mqttServer.on('published', function(packet, client) {
     if (packet.qos === undefined) return false; // it's a client connect/disconnect msg
@@ -32,7 +33,8 @@ let createMqttStuff = (server) => {
     const sinkTitle = packet.topic.split('/')[2];
     const writeKey = packet.topic.split('/')[1];
     const value = packet.payload.toString();
-    fetch(`${baseUrl}/d/w/${writeKey}/${sinkTitle}`, { headers: { 'Content-Type' : 'application/x-www-form-urlencoded' }, method: 'POST', body: `mqtt=true&val=${value}`})
+    console.log(`${baseUrl}/d/w/${writeKey}/${sinkTitle}`, value);
+    fetch(`${baseUrl}/d/w/${writeKey}/${sinkTitle}`, { headers: { 'Content-Type' : 'application/x-www-form-urlencoded' }, method: 'POST', body: `mqtt=true&val=${encodeURIComponent(value)}`})
       .then(r => {
         console.log(r.status);
       })

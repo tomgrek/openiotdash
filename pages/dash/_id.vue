@@ -379,7 +379,7 @@ export default {
             r.json().then(r => {
               // use http://phrogz.net/JS/NeatJSON/ for this
               this.predefinedComponents.push(() => r);
-          }).catch(e=>{ console.log(e); }); // if it's not a JSON file, e.g. README.md
+          }).catch(e=>{  }); // do nothing if it's not a JSON file, e.g. README.md
         }).catch(e=>console.log);
       }
     });

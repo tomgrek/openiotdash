@@ -60,7 +60,7 @@ export default (fullComponent, self, editing = false, isMobile = false) => {
     let node = fullComponent.node;
     (() => { eval(comp.script) }).call(isMobile ? Object.assign(comp, { width: node.clientWidth }) : comp);
     let createdEvent = new CustomEvent('created', { detail: { uuid, width: parseInt(isMobile ? node.clientWidth : comp.width), height: parseInt(comp.height) } });
-    fullComponent.node.dispatchEvent(createdEvent);
+    setTimeout(() => fullComponent.node.dispatchEvent(createdEvent), 0);
 
     Promise.all(keyQueries).then(keys => {
       let dataQueries = [];
