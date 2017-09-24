@@ -6,9 +6,15 @@ const fetch = require('node-fetch');
 const mosca = require('mosca');
 
 let createMqttStuff = (server) => {
-  // TODO: This is just a temporary way to get it working with 2 processes -> put the second mqtt broker on 1884
-  // query whether >1 mqtt broker even necessary.
-  const mqttServer = new mosca.Server({ host: 'localhost', port: process.env.PORT == '3000' ? 1883 : 1884 });
+  let pubsubsettings = {
+    type: 'redis',
+    redis: require('redis'),
+    db: 0,
+    port: 6379,
+    return_buffers: true,
+    host: 'localhost'
+  };
+  const mqttServer = new mosca.Server({ host: 'localhost', port: 1883, persistence: { factory: mosca.persistence.Redis } });
   mqttServer.attachHttpServer(server);
   mqttServer.on('published', function(packet, client) {
     if (packet.qos === undefined) return false; // it's a client connect/disconnect msg

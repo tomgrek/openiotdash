@@ -1,6 +1,6 @@
 'use strict';
 
-import { baseUrl } from '../components/config/config';
+import { baseUrl, offlineScriptsRunAtIntervalMillis, offlineScriptMaxLifetimeMillis } from '../components/config/config';
 import { Dashboard, Datapoint } from '../models';
 
 import fetch from 'node-fetch';
@@ -16,31 +16,32 @@ redis.getAsync = key => {
   });
 };
 
+// central store of all running scripts, shared across cluster nodes
 let runningScripts = async() => {
   return new Promise((resolve, reject) => {
     redis.keys('runningscripts*', (j,k) => resolve(k));
   });
 };
-let parsedDashboards = async() => {
-  return new Promise((resolve, reject) => {
-    redis.keys('parseddashboards*', (j,k) => {
-      let obj = {};
-      let queries = [];
-      for (let key of k) {
-        queries.push(redis.getAsync(key));
-      }
-      Promise.all(queries).then(vals => {
-        k.map((key, i) => {
-          obj[key.slice(16)] = JSON.parse(vals[i]);
-        });
-        resolve(obj);
-      });
-    });
-  });
-};
-// (async() => {
-//   console.log(await parsedDashboards2());
-// })();
+let myRunningScripts = {};
+
+// let parsedDashboards = async() => {
+//   return new Promise((resolve, reject) => {
+//     redis.keys('parseddashboards*', (j,k) => {
+//       let obj = {};
+//       let queries = [];
+//       for (let key of k) {
+//         queries.push(redis.getAsync(key));
+//       }
+//       Promise.all(queries).then(vals => {
+//         k.map((key, i) => {
+//           obj[key.slice(16)] = JSON.parse(vals[i]);
+//         });
+//         resolve(obj);
+//       });
+//     });
+//   });
+// };
+let parsedDashboards = {};
 
 const getDataForComponent = sinkList => {
   return new Promise((resolve, reject) => {
@@ -80,12 +81,12 @@ const getDataForComponent = sinkList => {
 // TODO: if script is dead, update its data
 
 const doOffline = () => {
-  setInterval(() => {
+  const doFn = () => {
     Dashboard.findAll().then(async(d) => {
       for (let dash of d) {
-        let parsedDashes = await parsedDashboards();
+        let parsedDashes = parsedDashboards; //await parsedDashboards();
         if (!parsedDashes[dash.id]) {
-          redis.set('parseddashboards' + dash.id, dash.definition);
+          //redis.set('parseddashboards' + dash.id, dash.definition);
           parsedDashes[dash.id] = JSON.parse(dash.definition);
         }
         if (!parsedDashes[dash.id].components) continue;
@@ -95,13 +96,12 @@ const doOffline = () => {
             // TODO: Need to check for calling code's ownership of dataSink and related dataPoints?
             getDataForComponent(component.component.dataSinks).then(data => {
               // TODO: dont pass in console to the context, once debugging complete
-              redis.set(component.component.uuid, JSON.stringify({component, data}), 'EX', 10);
+              redis.set('offlinescriptcontexts' + component.component.uuid, JSON.stringify({component, data}), 'PX', offlineScriptMaxLifetimeMillis);
               runningScripts(component.component.uuid).then(scripts => {
-                console.log(scripts);
                 if (!scripts.includes('runningscripts' + component.component.uuid)) {
-                  redis.get(component.component.uuid, function (err, reply) {
-                    redis.set('runningscripts' + component.component.uuid, true);
-                    new vm.Script(component.component.offlineCode).runInContext(new vm.createContext(Object.assign(JSON.parse(reply), { console, fetch, setInterval })));
+                  redis.get('offlinescriptcontexts' + component.component.uuid, function (err, reply) {
+                    redis.set('runningscripts' + component.component.uuid, true, 'PX', offlineScriptMaxLifetimeMillis);
+                    myRunningScripts[component.component.uuid] = new vm.Script(component.component.offlineCode).runInContext(new vm.createContext(Object.assign(JSON.parse(reply), { console, fetch, setInterval })), {timeout: offlineScriptMaxLifetimeMillis});
                   });
                 }
               });
@@ -110,7 +110,9 @@ const doOffline = () => {
         }
       }
     });
-  }, 10000);
+    setTimeout(doFn, offlineScriptsRunAtIntervalMillis + Number.parseInt((Math.random() * 200) - 100));
+  }
+  setTimeout(doFn, offlineScriptsRunAtIntervalMillis + Number.parseInt((Math.random() * 200) - 100));
 };
 
 module.exports = {
@@ -120,10 +122,12 @@ module.exports = {
   deleteScriptContext: id => {
     redis.del(id);
   },
-  stopScript: id => {
-    if (runningScripts[id]) {
-      runningScripts[id].close();
+  stopScript: ({uuid, id}) => {
+    if (myRunningScripts[uuid]) {
+      myRunningScripts[uuid].close();
     }
+    redis.del('offlinescriptcontexts' + uuid);
+    redis.del('parseddashboards' + id);
     redis.del(id);
   },
 };

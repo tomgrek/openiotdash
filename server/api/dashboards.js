@@ -34,8 +34,7 @@ router.post('/dashboards/save/:what', (req, res, next) => {
           runningScripts().then(scripts => {
             if (scripts.includes(component.uuid)) {
               deleteScriptContext(component.uuid);
-              delete parsedDashboards[d.id];
-              stopScript(component.uuid);
+              stopScript({uuid: component.uuid, id: d.id});
             }
           });
         }

@@ -82,7 +82,9 @@ async function start() {
       socketFns.subscribeUser(socket, socket.request.user.id);
     });
     // mqtt settings (including MQ, persistence) are in this file.
-    require('../plugins/mqtt')(server);
+    if (process.env.PORT == '3000') {
+      require('../plugins/mqtt')(server);
+    }
 
     // offline stuff
     require('./offlineProcessing').doOffline();

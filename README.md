@@ -43,8 +43,9 @@ server {
 
 ## Things to do next:
 
-* NEXT! scriptloader stuff seems almost working, but scripts never die, so they only run once. Kill it after 10s, then randomly allocate
-it amongst cluster nodes the next time offlineScripts runs.
+* Check MQTT broker still fully functional end-to-end with new settings.
+
+* Add connector for MQTT to use Kafka backend
 
 * Add the data for a component to the execution context of the component's offlineCode. Should be able to do console.log(this.dataSinks['j4xpli'].data)
 inside the offlineCode. (Needed because we want to be able to do offline fetch's and then store the results, also do actions based on the results)
@@ -63,4 +64,10 @@ valid data with crap data.
 
 * Fix issue with map missing after saving dashboard
 
-* TODO: Next: Bubbles in canvas ala https://codepen.io/MarioD/pen/gWregQ
+* Perfect canvas Bubbles
+
+* Perfect sparkline component
+
+* Add proper charting component
+
+* Add proper preview imagery to all components
