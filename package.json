@@ -9,6 +9,7 @@
     "build": "nuxt build && backpack build",
     "start": "cross-env NODE_ENV=production node build/main.js",
     "startAsCluster": "pm2 kill && NODE_ENV=production pm2 start build/main.js -i 0 --name 'iot'",
+    "startTwoCluster": "NODE_ENV=production PORT=3000 node build/main.js & NODE_ENV=production PORT=2999 node build/main.js && fg",
     "precommit": "npm run lint",
     "lint": "eslint --ext .js,.vue --ignore-path .gitignore ."
   },
@@ -35,10 +36,12 @@
     "passport-local": "^1.0.0",
     "passport.socketio": "^3.7.0",
     "pg": "^7.2.0",
+    "redis": "^2.8.0",
     "request": "^2.81.0",
     "sequelize": "^4.8.0",
     "socket.io": "^2.0.3",
     "socket.io-client": "^2.0.3",
+    "socket.io-redis": "^5.2.0",
     "source-map-support": "^0.4.16",
     "sqlite": "^2.8.0"
   },

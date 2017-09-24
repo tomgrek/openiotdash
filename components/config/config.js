@@ -16,4 +16,6 @@ module.exports = {
   dbuser: 'openiotdash',
   dbpassword: 'openiotdash',
   gitUrl: 'https://api.github.com/repos/tomgrek/test-repoforcomponents/contents', // e.g. https://api.github.com/repos/[user]/[repo]/contents
+  offlineScriptMaxLifetimeMillis: 10000, // scripts can run for max 10s then are killed
+  offlineScriptsRunAtIntervalMillis: 10000, // not exact -- will be within +/- 100ms
 };

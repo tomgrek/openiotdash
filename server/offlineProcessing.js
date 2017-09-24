@@ -1,6 +1,6 @@
 'use strict';
 
-import { baseUrl } from '../components/config/config';
+import { baseUrl, offlineScriptsRunAtIntervalMillis, offlineScriptMaxLifetimeMillis } from '../components/config/config';
 import { Dashboard, Datapoint } from '../models';
 
 import fetch from 'node-fetch';
@@ -8,10 +8,40 @@ import fetch from 'node-fetch';
 const vm = require('vm');
 const cluster = require('cluster');
 
-// TODO: Need to make this threadsafe, ie these in-memory objects won't do for concurrency
-let offlineScriptContexts = {};
+const redisLib = require("redis");
+const redis = redisLib.createClient();
+redis.getAsync = key => {
+  return new Promise((resolve, reject) => {
+    redis.get(key, (err, val) => resolve(val));
+  });
+};
+
+// central store of all running scripts, shared across cluster nodes
+let runningScripts = async() => {
+  return new Promise((resolve, reject) => {
+    redis.keys('runningscripts*', (j,k) => resolve(k));
+  });
+};
+let myRunningScripts = {};
+
+// let parsedDashboards = async() => {
+//   return new Promise((resolve, reject) => {
+//     redis.keys('parseddashboards*', (j,k) => {
+//       let obj = {};
+//       let queries = [];
+//       for (let key of k) {
+//         queries.push(redis.getAsync(key));
+//       }
+//       Promise.all(queries).then(vals => {
+//         k.map((key, i) => {
+//           obj[key.slice(16)] = JSON.parse(vals[i]);
+//         });
+//         resolve(obj);
+//       });
+//     });
+//   });
+// };
 let parsedDashboards = {};
-let runningScripts = {};
 
 const getDataForComponent = sinkList => {
   return new Promise((resolve, reject) => {
@@ -51,42 +81,53 @@ const getDataForComponent = sinkList => {
 // TODO: if script is dead, update its data
 
 const doOffline = () => {
-  setInterval(() => {
-    Dashboard.findAll().then(d => {
+  const doFn = () => {
+    Dashboard.findAll().then(async(d) => {
       for (let dash of d) {
-        if (!parsedDashboards[dash.id]) parsedDashboards[dash.id] = JSON.parse(dash.definition);
-        if (!parsedDashboards[dash.id].components) continue;
-        for (let component of parsedDashboards[dash.id].components) {
+        let parsedDashes = parsedDashboards; //await parsedDashboards();
+        if (!parsedDashes[dash.id]) {
+          //redis.set('parseddashboards' + dash.id, dash.definition);
+          parsedDashes[dash.id] = JSON.parse(dash.definition);
+        }
+        if (!parsedDashes[dash.id].components) continue;
+        for (let component of parsedDashes[dash.id].components) {
           // TODO: extend each of the component datasinks with their read/write keys
           if (component.component.offlineCode) {
             // TODO: Need to check for calling code's ownership of dataSink and related dataPoints?
             getDataForComponent(component.component.dataSinks).then(data => {
               // TODO: dont pass in console to the context, once debugging complete
-              if (!offlineScriptContexts[component.component.uuid]) {
-                offlineScriptContexts[component.component.uuid] = new vm.createContext({fetch, component, setInterval, console, data});
-              } else {
-                Object.assign(offlineScriptContexts[component.component.uuid], { data });
-              }
-              if (!runningScripts[component.component.uuid]) {
-                runningScripts[component.component.uuid] = new vm.Script(component.component.offlineCode).runInContext(offlineScriptContexts[component.component.uuid]);
-              }
+              redis.set('offlinescriptcontexts' + component.component.uuid, JSON.stringify({component, data}), 'PX', offlineScriptMaxLifetimeMillis);
+              runningScripts(component.component.uuid).then(scripts => {
+                if (!scripts.includes('runningscripts' + component.component.uuid)) {
+                  redis.get('offlinescriptcontexts' + component.component.uuid, function (err, reply) {
+                    redis.set('runningscripts' + component.component.uuid, true, 'PX', offlineScriptMaxLifetimeMillis);
+                    myRunningScripts[component.component.uuid] = new vm.Script(component.component.offlineCode).runInContext(new vm.createContext(Object.assign(JSON.parse(reply), { console, fetch, setInterval })), {timeout: offlineScriptMaxLifetimeMillis});
+                  });
+                }
+              });
             });
           }
         }
       }
     });
-  }, 10000);
+    setTimeout(doFn, offlineScriptsRunAtIntervalMillis + Number.parseInt((Math.random() * 200) - 100));
+  }
+  setTimeout(doFn, offlineScriptsRunAtIntervalMillis + Number.parseInt((Math.random() * 200) - 100));
 };
 
 module.exports = {
   doOffline,
-  offlineScriptContexts,
   parsedDashboards,
   runningScripts,
-  stopScript: id => {
-    if (runningScripts[id]) {
-      runningScripts[id].close();
+  deleteScriptContext: id => {
+    redis.del(id);
+  },
+  stopScript: ({uuid, id}) => {
+    if (myRunningScripts[uuid]) {
+      myRunningScripts[uuid].close();
     }
-    delete runningScripts[id];
+    redis.del('offlinescriptcontexts' + uuid);
+    redis.del('parseddashboards' + id);
+    redis.del(id);
   },
 };
