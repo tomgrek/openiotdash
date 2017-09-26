@@ -35,6 +35,7 @@ let createMqttStuff = (server) => {
     publishClientDisconnect: false,
     publishSubscriptions: false,
   });
+  const mqttServer = new mosca.Server({ host: 'localhost', port: 1883, persistence: { factory: mosca.persistence.Redis } });
   mqttServer.attachHttpServer(server);
 
   var kafka = require('kafka-node');
