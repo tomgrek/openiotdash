@@ -5,7 +5,7 @@
   "author": "Tom Grek <tom.grek@gmail.com>",
   "private": true,
   "scripts": {
-    "dev": "backpack dev",
+    "dev": "PORT=3000 backpack dev",
     "build": "nuxt build && backpack build",
     "start": "cross-env NODE_ENV=production node build/main.js",
     "startAsCluster": "pm2 kill && NODE_ENV=production pm2 start build/main.js -i 0 --name 'iot'",
@@ -26,6 +26,7 @@
     "express-session": "^1.15.5",
     "form-data": "^2.3.1",
     "fs": "0.0.1-security",
+    "kafka-node": "^2.2.3",
     "level-codec": "^7.0.1",
     "marked": "^0.3.6",
     "mosca": "^2.5.2",

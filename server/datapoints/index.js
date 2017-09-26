@@ -31,7 +31,11 @@ router.post('/w/:writekey/:title', (req, res, next) => {
     if (sink.dataValues.writeKey !== req.params.writekey) return res.status(401).end();
     let data = req.body;
     if (data.mqtt) {
-      data = data.val;
+      // e.g. data.val here will be lng=-122.5&lat=37.1&val=112
+      let queryString = decodeURIComponent(data.val);
+      let obj = {};
+      queryString.split('&').map(x => x.split('=')).map(y => obj[y[0]] = y[1]);
+      data = JSON.stringify(obj);
     } else {
       data = JSON.stringify(req.body);
     }

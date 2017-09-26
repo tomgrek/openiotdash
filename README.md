@@ -41,9 +41,16 @@ server {
 }
 ```
 
-## Things to do next:
+## To start Kafka:
 
-* Check MQTT broker still fully functional end-to-end with new settings.
+If you want to use it and don't have an existing endpoint.
+
+```
+bin/zookeeper-server-start.sh config/zookeeper.properties
+bin/kafka-server-start.sh config/server.properties
+```
+
+## Things to do next:
 
 * Add connector for MQTT to use Kafka backend
 
