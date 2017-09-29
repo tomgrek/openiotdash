@@ -1,6 +1,7 @@
 'use strict';
 
 import { Nuxt, Builder } from 'nuxt';
+import { port as DEFAULT_PORT, kafka } from '../components/config/config';
 import express from 'express';
 import data from './data';
 import auth from './auth';
@@ -36,7 +37,7 @@ async function start() {
 
   const app = express();
   const host = process.env.HOST || '127.0.0.1';
-  const port = process.env.PORT || 3000;
+  const port = process.env.PORT || DEFAULT_PORT;
   app.set('port', port);
 
   app.use(session({
@@ -82,8 +83,11 @@ async function start() {
       socketFns.subscribeUser(socket, socket.request.user.id);
     });
     // mqtt settings (including MQ, persistence) are in this file.
-    if (process.env.PORT == '3000') {
-      require('../plugins/mqtt')(server);
+    if (process.env.PORT == DEFAULT_PORT) {
+      require('../plugins/mqtt').createMqttStuff(server);
+    }
+    if (kafka.useKafka) {
+      require('../plugins/kafkaconsumer');
     }
 
     // offline stuff

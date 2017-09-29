@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { Dashboard } from '../../models';
 import crypto from 'crypto';
 
-import { runningScripts, parsedDashboards, stopScript, deleteScriptContext } from '../offlineProcessing';
+import { runningScripts, parsedDashboards, stopScript } from '../offlineProcessing';
 
 var router = Router();
 
@@ -31,12 +31,7 @@ router.post('/dashboards/save/:what', (req, res, next) => {
       d.title = req.body.title;
       d.save().then(() => {
         for (let component of JSON.parse(req.body.definition).components) {
-          runningScripts().then(scripts => {
-            if (scripts.includes(component.uuid)) {
-              deleteScriptContext(component.uuid);
-              stopScript({uuid: component.uuid, id: d.id});
-            }
-          });
+          stopScript({uuid: component.uuid, id: d.id});
         }
         res.status(200).end();
       });

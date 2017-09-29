@@ -46,7 +46,6 @@ export default {
     };
   },
   mounted() {
-    //setTimeout(() => fetch('/zig', {credentials: 'include'}).then(res => res.json()).then(z => this.zig = z.yay), 2000);
   },
 }
 </script>

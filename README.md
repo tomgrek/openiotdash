@@ -52,18 +52,17 @@ bin/kafka-server-start.sh config/server.properties
 
 ## Things to do next:
 
-* Add connector for MQTT to use Kafka backend
+* TODO: Next: Currently working on this: Kafka consumer should do something useful, ie save the datapoint
 
-* Add the data for a component to the execution context of the component's offlineCode. Should be able to do console.log(this.dataSinks['j4xpli'].data)
-inside the offlineCode. (Needed because we want to be able to do offline fetch's and then store the results, also do actions based on the results)
+* If datasink is added or deleted, kafka topics should update.
+
+* Datapoint on save should also publish to kafka
+
+* POST endpoints should allow the write key to be 'PRIVATE', in which case it's contained in the header as Authorization: Bearer
 
 * add, in settings, ability to directly edit the whole code of the component
 
 * add permissions for other users to edit dashboards owned by a user
-
-* add ability to set how often the offlineCode runs
-
-* add (couchDB & postgres) connector, then use pm2 (pm2 start build/main.js -i 0 --name "openiotproject")
 
 * TODO: Next: Line 228, modal_settings -> ensure borken urls don't bork the app by wrapping the fetch in promisewrapper. Need to return (resolve)
 some kind of error in the promise wrapper though, otherwise, fetchNewData doesn't know that something borked and will overwrite the component's
@@ -78,3 +77,21 @@ valid data with crap data.
 * Add proper charting component
 
 * Add proper preview imagery to all components
+
+## Components to make:
+
+* Color picker
+
+* Configurable buttons component - thru settings can add different buttons that trigger different endpoints (will this require a kind
+  of templating language for components? Hope not)
+
+## HOWTO publish a message through Kafka
+
+```
+bin/kafka-console-producer.sh --broker-list localhost:9092 --topic "write_[writekey]_[sinkname]" --property parse.key=true --property key.separator=,
+
+then in the REPL
+
+use any random key comma value e.g.
+
+oitd,{"value":10}

@@ -19,7 +19,9 @@ redis.getAsync = key => {
 // central store of all running scripts, shared across cluster nodes
 let runningScripts = async() => {
   return new Promise((resolve, reject) => {
-    redis.keys('runningscripts*', (j,k) => resolve(k));
+    redis.keys('runningscripts*', (j,k) => {
+      resolve(k);
+    });
   });
 };
 let myRunningScripts = {};
@@ -57,7 +59,7 @@ const getDataForComponent = sinkList => {
             datasink: sink.id,
           },
           limit: sink.limit,
-          order: [sink.orderBy.split(' ')],
+          order: (sink.orderBy && sink.orderBy !== '') ? [sink.orderBy.split(' ')] : '',
         })
       );
     }
@@ -96,8 +98,10 @@ const doOffline = () => {
             // TODO: Need to check for calling code's ownership of dataSink and related dataPoints?
             getDataForComponent(component.component.dataSinks).then(data => {
               // TODO: dont pass in console to the context, once debugging complete
-              redis.set('offlinescriptcontexts' + component.component.uuid, JSON.stringify({component, data}), 'PX', offlineScriptMaxLifetimeMillis);
-              runningScripts(component.component.uuid).then(scripts => {
+              let dataSinks = {}; // rearrange the data so it can be accessed within the offline code as this.dataSinks['jx4spj1'].data
+              data.map(x => dataSinks[x.sink] = { readKey: x.readKey, data: x.data });
+              redis.set('offlinescriptcontexts' + component.component.uuid, JSON.stringify({component, data, dataSinks}), 'PX', offlineScriptMaxLifetimeMillis);
+              runningScripts().then(scripts => {
                 if (!scripts.includes('runningscripts' + component.component.uuid)) {
                   redis.get('offlinescriptcontexts' + component.component.uuid, function (err, reply) {
                     redis.set('runningscripts' + component.component.uuid, true, 'PX', offlineScriptMaxLifetimeMillis);
@@ -119,15 +123,16 @@ module.exports = {
   doOffline,
   parsedDashboards,
   runningScripts,
-  deleteScriptContext: id => {
-    redis.del(id);
-  },
   stopScript: ({uuid, id}) => {
     if (myRunningScripts[uuid]) {
       myRunningScripts[uuid].close();
+      delete myRunningScripts[uuid];
+    }
+    if (parsedDashboards[id]) {
+      delete parsedDashboards[id];
     }
     redis.del('offlinescriptcontexts' + uuid);
     redis.del('parseddashboards' + id);
-    redis.del(id);
+    redis.del('runningscripts' + uuid);
   },
 };
