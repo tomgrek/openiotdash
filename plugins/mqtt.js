@@ -57,7 +57,6 @@ let createMqttStuff = (server) => {
   mqttServer.attachHttpServer(server);
 
   mqttServer.on('published', function(packet, client) {
-    console.log(packet);//
     if (packet.qos === undefined) return false; // it's a client connect/disconnect msg
     const command = packet.topic.split('/')[0];
     if (command === 'publish') {

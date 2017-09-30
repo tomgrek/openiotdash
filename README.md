@@ -52,8 +52,6 @@ bin/kafka-server-start.sh config/server.properties
 
 ## Things to do next:
 
-* TODO: Next: Currently working on this: Kafka consumer should do something useful, ie save the datapoint
-
 * If datasink is added or deleted, kafka topics should update.
 
 * Datapoint on save should also publish to kafka
@@ -89,9 +87,23 @@ valid data with crap data.
 
 ```
 bin/kafka-console-producer.sh --broker-list localhost:9092 --topic "write_[writekey]_[sinkname]" --property parse.key=true --property key.separator=,
-
+```
 then in the REPL
 
 use any random key comma value e.g.
 
 oitd,{"value":10}
+
+```
+bin/kafka-console-producer.sh --broker-list localhost:9092 --topic "write_1598ebb72d78a3_j75a8bzc" --property parse.key=true --property key.separator=,
+```
+
+>asd,lng=-122.5&lat=37.1&val=222
+
+## HOWTO publish a message through MQTT
+
+For the map component:
+
+```
+mqtt pub -t 'write/1598ebb72d78a3/j75a8bzc' -h 'localhost' -p 1883 -m 'lng=-122.5&lat=37.1&val=120'
+```
