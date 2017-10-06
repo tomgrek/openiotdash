@@ -19,9 +19,10 @@ module.exports = {
   offlineScriptMaxLifetimeMillis: 10000, // scripts can run for max 10s then are killed
   offlineScriptsRunAtIntervalMillis: 10000, // not exact -- will be within +/- 100ms
   messageQueueBackend: 'dontcare', // 'dontcare' or 'redis' or 'kafka'
-  messageQueueHost: '', // or 'localhost' (or per your setup)
-  messageQueuePort: '', // or '6379' for redis or '2181' for kafka (or per your setup) or blank for dontcare
+  messageQueueHost: 'localhost', // or 'localhost' (or per your setup)
+  messageQueuePort: '2181', // or '6379' for redis or '2181' for kafka (or per your setup) or blank for dontcare
   kafka: { // If you just use kafka as a MQTT message queue, this can be blank, but maybe you want OITD to be a regular Kafka consumer/producer as well
-    useKafka: true,
+    useKafka: true, // publish to Kafka on datapoint writes
+    kafkaToMQTTTopics: [], // e.g. ['MYTOPIC']
   },
 };

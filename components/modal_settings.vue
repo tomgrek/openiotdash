@@ -200,6 +200,8 @@ export default {
       }
       let dataEvent = new CustomEvent('data', { detail: {} });
       this.$props.component.node.dispatchEvent(dataEvent);
+      this.selectedSinks = [];
+      this.toggleAllSinks({target: false});
     },
     deleteDatasource() {
       this.copyOfDatasources = this.copyOfDatasources.filter(x => !this.selectedSources.map(y => y.id).includes(x.id));

@@ -48,13 +48,24 @@ If you want to use it and don't have an existing endpoint.
 ```
 bin/zookeeper-server-start.sh config/zookeeper.properties
 bin/kafka-server-start.sh config/server.properties
+
+maybe edit server.properties and add:
+auto.create.topics.enable=true
+
 ```
 
 ## Things to do next:
 
-* If datasink is added or deleted, kafka topics should update.
+* user should be able to delete datasinks (not per-component, but on a global basis to them) (...and update kafka topics)
 
-* Datapoint on save should also publish to kafka
+* optional schema validation on datasink write
+
+* in offline code and code that runs on sink write, stats should be available to the component's code (for stream analytics/anomaly detection). Mean, std, min/max.
+Store these in redis and update them (there's a stream algorithm for std) on writes.
+
+* user should be able to rename datasinks
+
+* inconsistency between datasink write endpoints -- d/w/writekey/id? or d/w/writekey/[uuid/title]??
 
 * POST endpoints should allow the write key to be 'PRIVATE', in which case it's contained in the header as Authorization: Bearer
 
@@ -100,10 +111,28 @@ bin/kafka-console-producer.sh --broker-list localhost:9092 --topic "write_1598eb
 
 >asd,lng=-122.5&lat=37.1&val=222
 
-## HOWTO publish a message through MQTT
+## Use this as a Kafka-to-MQTT bridge
 
-For the map component:
+Messages published through Kafka to any topic in the list kafkaToMQTTTopics will be brokered to MQTT.
+
+Check this with: ```mqtt subscribe -h localhost -p 1883 -t "MYTOPIC"```
+
+## HOWTO: MQTT
+
+To publish - for the map component, for example:
 
 ```
 mqtt pub -t 'write/1598ebb72d78a3/j75a8bzc' -h 'localhost' -p 1883 -m 'lng=-122.5&lat=37.1&val=120'
+```
+
+To use OITD dash just as a MQTT broker that receives messages and publishes them for use elsewhere, replace write above with publish.
+Publishing a message doesn't create any data point or any UI changes (no websocket message is published, e.g.):
+
+```
+mqtt pub -t 'publish/MYTOPIC' -h 'localhost' -p 1883 -m 'SOME MESSAGE'
+
+To subscribe, from the command line:
+
+```
+mqtt subscribe -h localhost -p 1883 -t "MYTOPIC"
 ```

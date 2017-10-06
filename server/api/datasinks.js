@@ -3,6 +3,8 @@ import { Datasink } from '../../models';
 import { getKey, getUuid } from '../../config/utils_server';
 import { baseUrl } from '../../components/config/config';
 
+import { addTopic, removeTopic } from '../../plugins/kafkaconsumer.js';
+
 var router = Router();
 
 router.post('/datasinks/saveCode', (req, res, next) => {
@@ -22,10 +24,16 @@ router.post('/datasinks/add', (req, res, next) => {
     definition: '',
     visibility: 0,
   }).then(d => {
+    addTopic(d.dataValues.writeKey, uuid);
     res.json({ datasink: d, url: baseUrl + `/d/w/${d.dataValues.writeKey}/${d.dataValues.id}` });
   }).catch(e => {
     res.status(500).end();
   });
+});
+
+router.post('/datasinks/delete', (req, res, next) => {
+  // TODO: implement datasink delete
+  // removeTopic(key, sinkname);
 });
 
 router.post('/datasinks/changeVisibility', (req, res, next) => {

@@ -19,31 +19,71 @@ const options = {
   groupId: 'openiotproject',
   fetchMaxWaitMs: 1000,
   fetchMaxBytes: 1024 * 1024,
-  host: messageQueueHost + ':' + messageQueuePort,
+  host: messageQueueHost + ':' + messageQueuePort, // should be a zookeeper instance
   protocol: ['roundrobin'],
   fromOffset: 'latest',
 };
 
-// TODO: The subscribed kafka topics should update when any user adds/deletes a datasink
+// kafka to mqtt bridge
+const bridge = new ConsumerGroup(options, kafkaConfig.kafkaToMQTTTopics);
+bridge.on('message', (message) => {
+  publishToMQTT({
+    topic: message.topic,
+    payload: message.value.toString(),
+    qos: 0,
+    retain: false,
+  });
+});
+
+let consumer;
+
+const messageReceived = (message) => {
+  console.log(message);
+  // if topic[0] = 'write' and topic[1] = the correct write key and topic[2] = the sink id, then fetch(/d/w/....) with message.value
+  let parts = message.topic.split('_'); // cant use / in kafka, replace with _
+  if (parts[0] === 'write') {
+    fetch(`${baseUrl}/d/w/${parts[1]}/${parts[2]}`, { headers: { 'Content-Type' : 'application/x-www-form-urlencoded' }, method: 'POST', body: `mqtt=true&val=${encodeURIComponent(message.value)}`})
+      .catch(console.log);
+  }
+};
+
 Datasink.findAll({}).then(sinks => {
   let kafkaTopics = [];
   for (let sink of sinks) {
-    kafkaTopics.push(`publish_${sink.writeKey}_${sink.title}`);
     kafkaTopics.push(`write_${sink.writeKey}_${sink.title}`);
   }
-  const consumer = new ConsumerGroup(options, kafkaTopics);
+  consumer = new ConsumerGroup(options, kafkaTopics);
+  consumer.on('message', messageReceived);
 
-  consumer.on('message', function (message) {
-    // TODO : take action ...
-    // if topic[0] = 'write' and topic[1] = the correct write key and topic[2] = the sink id, then fetch(/d/w/....) with message.value
-    let parts = message.topic.split('_'); // cant use / in kafka, replace with _
-    if (parts[0] === 'publish') {
-      console.log(parts[1], parts[2], message.value);
-    }
-    if (parts[0] === 'write') {
-      // TODO: currently here, looks like value is not being passed from a kafka console write.
-      fetch(`${baseUrl}/d/w/${parts[1]}/${parts[2]}`, { headers: { 'Content-Type' : 'application/x-www-form-urlencoded' }, method: 'POST', body: `mqtt=true&val=${encodeURIComponent(message.value)}`})
-        .catch(console.log);
-    }
-  });
 });
+
+export function removeTopic(writeKey, title) {
+  console.log('DELETING DATA SINKS NOT IMPLEMENTED YET!');
+};
+
+export function addTopic(writeKey, title) {
+  let topics = consumer.topics.concat(`write_${writeKey}_${title}`);
+
+  consumer.client.createTopics([`write_${writeKey}_${title}`], false, () => {
+    consumer.close(true, () => {
+      consumer = new ConsumerGroup(options, topics);
+      consumer.on('message', messageReceived);
+    });
+  });
+
+  // Tried to do it this way via addTopic, but that seems buggy in the node-kafka library; it also requires that topic already exists
+  // for now, because adding sinks is will not happen that often relatively, just recreate the consumer. Not ideal but..
+  // let tempClient = new kafka.Client(messageQueueHost + ':' + messageQueuePort, 'openiotprojecttemp');
+  // tempClient.on('ready', () => {
+  //   let producer = new kafka.HighLevelProducer(tempClient);
+  //   producer.on('ready', (err, data) => {
+  //     producer.createTopics([`write_${writeKey}_${title}`], true, (err,data) => {
+  //       // producer.send([{topic: [`write_${writeKey}_${title}`], message: ['start']}], (err, data) => {
+  //         setTimeout(() => { consumer.addTopics([`write_${writeKey}_${title}`], (err, data) => {
+  //           //setTimeout(() => tempClient.close(console.log), 1000);
+  //         }); }, 1000);
+  //       //});
+  //     });
+  //   });
+  // });
+};
