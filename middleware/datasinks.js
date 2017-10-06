@@ -2,8 +2,8 @@ import axios from '~/plugins/axios';
 
 export default async function (context) {
   if (context.isServer) {
-    let dashboards = await axios.get('/data/datasinks/' + context.req.user.id);
-    context.datasinks = dashboards.data;
+    let datasinks = await axios.get('/data/datasinks/' + context.req.user.id);
+    context.datasinks = datasinks.data;
     if (context.store && context.store.state) {
       context.store.state.datasinks = context.datasinks;
     }

@@ -65,15 +65,11 @@ Store these in redis and update them (there's a stream algorithm for std) on wri
 
 * user should be able to rename datasinks
 
-* inconsistency between datasink write endpoints -- d/w/writekey/id? or d/w/writekey/[uuid/title]?? Be wary of this, but I've standardized
-on titles instead of id's, and fixed the discrepancy with d/w and d/r. Ensure it's not possible to create two datasinks -- or rename
-one of them -- to be the same as an existing datasink.
-
 * add, in settings, ability to directly edit the whole code of the component
 
 * add permissions for other users to edit dashboards owned by a user
 
-* TODO: Next: Line 228, modal_settings -> ensure borken urls don't bork the app by wrapping the fetch in promisewrapper. Need to return (resolve)
+* Line 228, modal_settings -> ensure borken urls don't bork the app by wrapping the fetch in promisewrapper. Need to return (resolve)
 some kind of error in the promise wrapper though, otherwise, fetchNewData doesn't know that something borked and will overwrite the component's
 valid data with crap data.
 
@@ -86,6 +82,12 @@ valid data with crap data.
 * Add proper charting component
 
 * Add proper preview imagery to all components
+
+## Not really TODO but some stuff
+
+* inconsistency between datasink write endpoints -- d/w/writekey/id? or d/w/writekey/[uuid/title]?? Be wary of this, but I've standardized
+on titles instead of id's, and fixed the discrepancy with d/w and d/r. Ensure it's not possible to create two datasinks -- or rename
+one of them -- to be the same as an existing datasink.
 
 ## Components to make:
 

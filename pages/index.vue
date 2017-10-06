@@ -21,6 +21,21 @@
           </ul>
         </div>
       </div>
+      <div class="dashboards-header">
+        <span class="dashboards-title">My Datasinks</span>
+        <button class="small-button new-button" v-on:click="newDashboard">New</button>
+        <button class="small-button delete-button" v-on:click="deleteDashboard">Delete</button>
+      </div>
+      <div class="datasinks-list">
+        <ul>
+          <li v-for="datasink, i in datasinks" class="datasink-list-item">
+            <input type="checkbox" v-model="listOfSinkCheckboxes[i]"></input>
+            <span class="link-cell" :title="datasink.title">{{datasink.title}}</span>
+            <span class="link-cell wide" :title="datasink.title"></span>
+          </li>
+        </ul>
+      </div>
+    </div>
       <div><nuxt-link v-if="username === null" to="/login">Log In</nuxt-link></div>
       <div><nuxt-link v-if="username === null" to="/signup">Create An Account</nuxt-link></div>
     </div>
@@ -35,13 +50,14 @@ import MyHeader from '~/components/Header.vue';
 
 export default {
   name: 'index',
-  middleware: ['authentication', 'dashboards'],
+  middleware: ['authentication', 'dashboards', 'datasinks'],
   components: {
     MyHeader,
   },
   data() {
     return {
       listOfCheckboxes: [],
+      listOfSinkCheckboxes: [],
       indexOptions,
     };
   },
@@ -59,6 +75,9 @@ export default {
     dashboards() {
       return this.$store.state.dashboards;
     },
+    datasinks() {
+      return this.$store.state.datasinks;
+    },
   },
   watch: {
     dashboards(val) {
@@ -67,6 +86,7 @@ export default {
   },
   mounted() {
     this.listOfCheckboxes = this.dashboards.map(x => false);
+    this.listOfSinkCheckboxes = this.datasinks.map(x => false);
   },
   methods: {
     getLink(link, visibility) {
@@ -121,6 +141,10 @@ export default {
   display: inline-block;
   width: 66%;
   line-height: 4rem;
+  max-height: calc(100% - 20vh);
+  overflow-y: scroll;
+  overflow-y: overlay;
+  overflow-x: hidden;
 }
 .dashboards-header {
   background-color: $background-dark;
@@ -169,6 +193,38 @@ export default {
     top: 0.5rem;
   }
   .dashboards-list-item {
+    text-align: left;
+    padding: 0 1rem;
+    position: relative;
+  }
+}
+.datasinks-list {
+  position: relative;
+  line-height: 2rem;
+  li {
+    list-style: none;
+  }
+  .link-cell {
+    display: inline-block;
+    width: 36%;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow:hidden;
+  }
+  .link-cell:hover {
+    text-decoration: underline;
+  }
+  .wide {
+    width: 63%;
+    color: gray;
+    font-size: 0.8rem;
+  }
+  input[type="checkbox"] {
+    position: absolute;
+    left: -1.4rem;
+    top: 0.5rem;
+  }
+  .datasink-list-item {
     text-align: left;
     padding: 0 1rem;
     position: relative;
