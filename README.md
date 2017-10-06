@@ -65,9 +65,9 @@ Store these in redis and update them (there's a stream algorithm for std) on wri
 
 * user should be able to rename datasinks
 
-* inconsistency between datasink write endpoints -- d/w/writekey/id? or d/w/writekey/[uuid/title]??
-
-* POST endpoints should allow the write key to be 'PRIVATE', in which case it's contained in the header as Authorization: Bearer
+* inconsistency between datasink write endpoints -- d/w/writekey/id? or d/w/writekey/[uuid/title]?? Be wary of this, but I've standardized
+on titles instead of id's, and fixed the discrepancy with d/w and d/r. Ensure it's not possible to create two datasinks -- or rename
+one of them -- to be the same as an existing datasink.
 
 * add, in settings, ability to directly edit the whole code of the component
 
@@ -93,6 +93,22 @@ valid data with crap data.
 
 * Configurable buttons component - thru settings can add different buttons that trigger different endpoints (will this require a kind
   of templating language for components? Hope not)
+
+## HOWTO publish a datapoint
+
+Can put the write key into the url for very simple devices; if you set headers though try the second one (it keeps the token/writekey
+secret, because while third parties can read a URL, they can't read a header.
+
+```
+curl http://localhost:3000/d/w/1598ebb72d78a3/j75a8bzc -X "POST" -v -d "lng=-122.5&lat=37.1&val=107"
+
+curl http://localhost:3000/d/w/PRIVATE/j75a8bzc -X "POST" -v -d "lng=-122.5&lat=37.1&val=109" -H "Authorization: Bearer 1598ebsdfsdf"
+```
+
+(Also, MQTT and Kafka work, but see their separate sections)
+
+## HOWTO read data points
+
 
 ## HOWTO publish a message through Kafka
 

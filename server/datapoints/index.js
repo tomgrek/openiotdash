@@ -16,6 +16,8 @@ var router = Router();
 // The value is intentionally left as a string -- we can't infer it from a single datapoint, and
 // writes should be faster than read/analysis
 router.post('/w/:writekey/:title', (req, res, next) => {
+  let token = req.params.writekey;
+  if (token === 'PRIVATE') token = req.headers.authorization.substr(7);
   Datasink.findOne({
     attributes: [
       'writeKey',
@@ -28,7 +30,7 @@ router.post('/w/:writekey/:title', (req, res, next) => {
     },
   }).then(sink => {
     if (!sink) return res.status(400).end();
-    if (sink.dataValues.writeKey !== req.params.writekey) return res.status(401).end();
+    if (sink.dataValues.writeKey !== token) return res.status(401).end();
     let data = req.body;
     if (data.mqtt) {
       // e.g. data.val here will be lng=-122.5&lat=37.1&val=112
@@ -92,17 +94,20 @@ router.get('/w/:writekey/:title/:value', (req, res, next) => {
 
 // GET endpoint for very simple devices/code
 // data is stored as JSON { value: [val] }
-router.get('/r/:readkey/:id', (req, res, next) => {
+router.get('/r/:readkey/:title', (req, res, next) => {
+  let readkey = req.params.readkey;
+  if (readkey === 'PRIVATE') readkey = req.headers.authorization.substr(7);
   Datasink.findOne({
     attributes: [
       'readKey',
+      'id',
     ],
     where: {
-      id: req.params.id,
+      title: req.params.title,
     },
   }).then(sink => {
     if (!sink) return res.status(400).end();
-    if (sink.dataValues.readKey !== req.params.readkey) return res.status(401).end();
+    if (sink.dataValues.readKey !== readkey) return res.status(401).end();
     let limit = parseInt(req.query.limit) || undefined;
     let order = undefined;
     let key = req.query.key || undefined;
@@ -114,7 +119,7 @@ router.get('/r/:readkey/:id', (req, res, next) => {
         'createdAt',
       ],
       where: {
-        datasink: req.params.id,
+        datasink: sink.dataValues.id,
       },
       limit,
       order,
