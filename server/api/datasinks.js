@@ -24,16 +24,38 @@ router.post('/datasinks/add', (req, res, next) => {
     definition: '',
     visibility: 0,
   }).then(d => {
-    addTopic(d.dataValues.writeKey, uuid);
-    res.json({ datasink: d, url: baseUrl + `/d/w/${d.dataValues.writeKey}/${d.dataValues.id}` });
+    addTopic(d.dataValues.writeKey, d.dataValues.title);
+    res.json({ datasink: d, url: baseUrl + `/d/w/${d.dataValues.writeKey}/${d.dataValues.title}` });
   }).catch(e => {
     res.status(500).end();
   });
 });
 
-router.post('/datasinks/delete', (req, res, next) => {
-  // TODO: implement datasink delete
-  // removeTopic(key, sinkname);
+router.get('/datasinks/delete', (req, res, next) => {
+  let idAsArray = req.query.id;
+  if (!Array.isArray(req.query.id)) {
+    idAsArray = [req.query.id];
+  }
+  for (var id of idAsArray) {
+    Datasink.findOne({
+      attributes: [
+        'writeKey',
+        'title',
+      ],
+      where: {
+        id,
+      },
+    }).then(datasink => {
+      Datasink.destroy({
+        where: {
+          id: parseInt(id),
+          user: req.user.id,
+        },
+      });
+      removeTopic(datasink.dataValues.writeKey, datasink.dataValues.title);
+    });
+  }
+  res.status(200).end();
 });
 
 router.post('/datasinks/changeVisibility', (req, res, next) => {

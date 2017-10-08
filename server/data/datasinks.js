@@ -12,11 +12,13 @@ router.get('/datasinks/:user', (req, res, next) => {
       'title',
       'definition', // not so much a definition than code to run when dp received
       'visibility',
+      'createdAt',
     ],
     where: {
       user: req.params.user,
     },
   }).then(datasinks => {
+    // TODO add an extra column on datasink that contains timestamp of last write, so no need to do this other query.
     let queries = [];
     for (let sink of datasinks) {
       queries.push(Datapoint.max('createdAt', { where: { datasink: sink.id } }));

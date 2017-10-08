@@ -4,6 +4,8 @@
 
 ## Build Setup
 
+Note that at least Node v8 is required.
+
 ``` bash
 # install dependencies
 $ npm install
@@ -56,7 +58,7 @@ auto.create.topics.enable=true
 
 ## Things to do next:
 
-* user should be able to delete datasinks (not per-component, but on a global basis to them) (...and update kafka topics)
+* improve display of datasinks on index page - add data like url, last write etc.
 
 * optional schema validation on datasink write
 

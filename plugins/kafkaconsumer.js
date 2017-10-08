@@ -58,7 +58,11 @@ Datasink.findAll({}).then(sinks => {
 });
 
 export function removeTopic(writeKey, title) {
-  console.log('DELETING DATA SINKS NOT IMPLEMENTED YET!');
+  let topics = consumer.topics.filter(x => x !== `write_${writeKey}_${title}`);
+  consumer.close(true, () => {
+    consumer = new ConsumerGroup(options, topics);
+    consumer.on('message', messageReceived);
+  });
 };
 
 export function addTopic(writeKey, title) {

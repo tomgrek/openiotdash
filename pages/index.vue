@@ -23,18 +23,29 @@
       </div>
       <div class="dashboards-header">
         <span class="dashboards-title">My Datasinks</span>
-        <button class="small-button new-button" v-on:click="newDashboard">New</button>
-        <button class="small-button delete-button" v-on:click="deleteDashboard">Delete</button>
+        <button class="small-button new-button" v-on:click="newDatasink">New</button>
+        <button class="small-button delete-button" v-on:click="deleteDatasink">Delete</button>
       </div>
-      <div class="datasinks-list">
-        <ul>
-          <li v-for="datasink, i in datasinks" class="datasink-list-item">
-            <input type="checkbox" v-model="listOfSinkCheckboxes[i]"></input>
-            <span class="link-cell" :title="datasink.title">{{datasink.title}}</span>
-            <span class="link-cell wide" :title="datasink.title"></span>
-          </li>
-        </ul>
-      </div>
+      <table class="datasinks-list">
+        <thead>
+          <tr>
+            <th></th>
+            <th>Title</th>
+            <th>Last Write</th>
+            <th>Read Key</th>
+            <th>Write Key</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="sink-row" v-for="datasink, i in datasinks">
+            <td class="sink-cell"><input type="checkbox" v-model="listOfSinkCheckboxes[i]"></input></td>
+            <td class="sink-cell">{{datasink.title}}</td>
+            <td class="sink-cell">{{formatTime(datasink.latestDataPoint)}}</td>
+            <td class="sink-cell">{{datasink.readKey}}</td>
+            <td class="sink-cell">{{datasink.writeKey}}</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
       <div><nuxt-link v-if="username === null" to="/login">Log In</nuxt-link></div>
       <div><nuxt-link v-if="username === null" to="/signup">Create An Account</nuxt-link></div>
@@ -44,6 +55,7 @@
 
 <script>
 import { title, indexOptions, baseUrl } from "~/components/config/config";
+import { dows } from "~/config/mappings";
 
 import axios from '~/plugins/axios';
 import MyHeader from '~/components/Header.vue';
@@ -89,6 +101,11 @@ export default {
     this.listOfSinkCheckboxes = this.datasinks.map(x => false);
   },
   methods: {
+    formatTime(val) {
+      if (!val) return '[Never]';
+      let date = new Date(val);
+      return dows[date.getDay()] + ', ' + date.getFullYear() + '/' + date.getMonth() + '/' + date.getDay() + ' ' + date.getHours().toString().padStart(2,'0') + ':' + date.getMinutes().toString().padStart(2, '0');
+    },
     getLink(link, visibility) {
       // for internal, routed links
       if (visibility === 0) return ''
@@ -98,6 +115,28 @@ export default {
       // for external links
       if (visibility === 0) return '[Not publicly visible]'
       return baseUrl + '/show/' + link;
+    },
+    newDatasink(e) {
+    },
+    deleteDatasink(e) {
+      let toDelete = this.listOfSinkCheckboxes.reduce((acc, x, i) => {
+        if (x) {
+          acc.push(this.datasinks[i].id);
+        }
+        return acc;
+      }, []);
+      let qs = '';
+      for (let item of toDelete) {
+        qs = qs + `id=${item}&`;
+      }
+      fetch(`/api/datasinks/delete?${qs}`, {credentials: 'include'})
+      .then(res => {
+        for (let sink of toDelete) {
+          this.$store.commit('deleteDatasink', sink);
+        }
+        this.listOfSinkCheckboxes = this.listOfSinkCheckboxes.map(x => false);
+        this.$store.commit('addAlert', { msg: 'Datasink(s) deleted', type: 'success'});
+      });
     },
     newDashboard(e) {
       fetch('/api/dashboards/new', {credentials: 'include'}).then(r => r.json())
@@ -122,6 +161,7 @@ export default {
         for (let dash of toDelete) {
           this.$store.commit('deleteDashboard', dash);
         }
+        this.listOfCheckboxes = this.listOfCheckboxes.map(x => false);
         this.$store.commit('addAlert', { msg: 'Dashboard(s) deleted', type: 'success'});
       });
     },
@@ -200,29 +240,19 @@ export default {
 }
 .datasinks-list {
   position: relative;
-  line-height: 2rem;
-  li {
-    list-style: none;
+  line-height: 2.5rem;
+  padding: 0 1rem;
+  width: 100%;
+  text-align: left;
+  .sink-row {
   }
-  .link-cell {
-    display: inline-block;
-    width: 36%;
+  .sink-cell {
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow:hidden;
   }
-  .link-cell:hover {
-    text-decoration: underline;
-  }
-  .wide {
-    width: 63%;
-    color: gray;
-    font-size: 0.8rem;
-  }
   input[type="checkbox"] {
-    position: absolute;
-    left: -1.4rem;
-    top: 0.5rem;
+    margin-right: 1rem;
   }
   .datasink-list-item {
     text-align: left;

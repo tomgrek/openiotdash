@@ -35,6 +35,9 @@ export const mutations = {
   setSelectedDashboard: (state, dashboard) => {
     state.selectedDashboard = dashboard;
   },
+  deleteDatasink: (state, id) => {
+    state.datasinks = state.datasinks.filter(x => x.id != id);
+  },
   addNewDatasink: (state, datasink) => {
     state.datasinks.push(datasink);
   },
