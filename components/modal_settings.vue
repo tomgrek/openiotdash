@@ -224,7 +224,7 @@ export default {
         if (this.$props.component.component.dataSinks[sink].limit) {
           limit = `limit=${this.$props.component.component.dataSinks[sink].limit}`;
         }
-        dataQueries.push(fetch(`/d/r/${this.$props.component.component.dataSinks[sink].readKey}/${this.$props.component.component.dataSinks[sink].id}?${orderBy}${limit}`, {credentials: 'include'}).then(r => r.json()));
+        dataQueries.push(fetch(`/d/r/${this.$props.component.component.dataSinks[sink].readKey}/${this.$props.component.component.dataSinks[sink].title}?${orderBy}${limit}`, {credentials: 'include'}).then(r => r.json()));
       }
       for (let source of this.$props.component.component.dataSources) {
         dataQueries.push(wrapPromise(fetch(source.url)));

@@ -109,7 +109,7 @@ export default {
       }
     },
     formatTime(t) {
-      if (t === null) return '';
+      if (!t) return '[Never]';
       let d = new Date(t);
       return d.toLocaleString();
     },

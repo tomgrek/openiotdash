@@ -9,7 +9,7 @@
       <p style="margin-before: 0;">Code here will be executed when a new data point comes in for this data sink. In this code you have
         access to the data as <i>data</i>, the component, its datasinks and sources, and the <i>fetch</i> method.</p>
       <div class="code-container-outer" id="codeContainer">
-        <textarea style="width: 100%; height: calc(100% - 7rem);" placeholder="fetch(`http://localhost:3000/d/r/${sink.readKey}/${sink.id}?limit=10`).then(r => r.json()).then(d => { console.log(d); }).catch(console.log);" v-model="sinkCode"/>
+        <textarea style="width: 100%; height: calc(100% - 7rem);" placeholder="fetch(`http://localhost:3000/d/r/${sink.readKey}/${sink.title}?limit=10`).then(r => r.json()).then(d => { console.log(d); }).catch(console.log);" v-model="sinkCode"/>
       </div>
       <div style="position: absolute; bottom: 1rem; right: 1.5rem; display: inline-block; width:100%;">
         <button class="small-button" @click="$emit('close')" style="float: right;">{{buttonText}}</button>
@@ -35,7 +35,7 @@ export default {
   },
   methods: {
     saveCode() {
-      this.$props.sink.definition = this.sinkCode;
+      this.$store.commit('saveSinkCode', { datasinkId: this.$props.sink.id, code: this.sinkCode });
       this.buttonText = 'Close';
       const body = JSON.stringify({
         id: this.$props.sink.id,
@@ -54,8 +54,10 @@ export default {
 <style lang="scss" scoped>
 @import "~assets/css/main.scss";
 .modal-wrapper {
-  display: table-cell;
-  vertical-align: middle;
+  position: fixed;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  left: 50%;
 }
 .modal-container {
   width: 50vw;

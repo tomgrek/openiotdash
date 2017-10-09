@@ -32,6 +32,8 @@
             <th></th>
             <th>Title</th>
             <th>Last Write</th>
+            <th title="Whether sink can be publicly read">Visibility</th>
+            <th title="Code that runs when a new datapoint comes in">Code</th>
             <th>Read Key</th>
             <th>Write Key</th>
           </tr>
@@ -41,6 +43,8 @@
             <td class="sink-cell"><input type="checkbox" v-model="listOfSinkCheckboxes[i]"></input></td>
             <td class="sink-cell">{{datasink.title}}</td>
             <td class="sink-cell">{{formatTime(datasink.latestDataPoint)}}</td>
+            <td class="sink-cell link"><i class="material-icons" @click="toggleSinkVisibility(datasink)">{{visibilityIcon(datasink)}}</i></td>
+            <td class="sink-cell link"><i class="material-icons" @click="showCodeEditWindow(datasink)">settings_input_antenna</i></td>
             <td class="sink-cell">{{datasink.readKey}}</td>
             <td class="sink-cell">{{datasink.writeKey}}</td>
           </tr>
@@ -50,6 +54,7 @@
       <div><nuxt-link v-if="username === null" to="/login">Log In</nuxt-link></div>
       <div><nuxt-link v-if="username === null" to="/signup">Create An Account</nuxt-link></div>
     </div>
+    <ModalCodeEdit v-if="codeEditWindowVisible" :sink="selectedSink" @close="dismissModals"/>
   </section>
 </template>
 
@@ -59,18 +64,22 @@ import { dows } from "~/config/mappings";
 
 import axios from '~/plugins/axios';
 import MyHeader from '~/components/Header.vue';
+import ModalCodeEdit from '~/components/modal_codeedit.vue';
 
 export default {
   name: 'index',
   middleware: ['authentication', 'dashboards', 'datasinks'],
   components: {
     MyHeader,
+    ModalCodeEdit,
   },
   data() {
     return {
       listOfCheckboxes: [],
       listOfSinkCheckboxes: [],
       indexOptions,
+      selectedSink: null,
+      codeEditWindowVisible: false,
     };
   },
   async asyncData(context) {
@@ -101,10 +110,37 @@ export default {
     this.listOfSinkCheckboxes = this.datasinks.map(x => false);
   },
   methods: {
+    dismissModals() {
+      this.codeEditWindowVisible = false;
+    },
+    showCodeEditWindow(sink) {
+      this.selectedSink = sink;
+      this.codeEditWindowVisible = true;
+    },
+    toggleSinkVisibility(sink) {
+      this.$store.commit('toggleSinkVisibility', sink.id);
+      const body = JSON.stringify({
+        id: sink.id,
+        visibility: sink.visibility,
+      });
+      fetch(`/api/datasinks/changeVisibility/`, { credentials: 'include', method: 'POST', body, headers: {'Content-Type': 'application/json'} })
+      .then(() => {
+        this.$store.commit('addAlert', { msg: 'Visibility of data sinks successfully set.', type: 'success'});
+        this.$emit('close');
+      })
+      .catch(e => {
+        this.$store.commit('addAlert', { msg: 'Problem setting visibility: ' + e, type: 'error'});
+        this.$emit('close');
+      });
+    },
+    visibilityIcon(sink) {
+      if (sink.visibility === 1) return 'visibility';
+      return 'visibility_off';
+    },
     formatTime(val) {
       if (!val) return '[Never]';
       let date = new Date(val);
-      return dows[date.getDay()] + ', ' + date.getFullYear() + '/' + date.getMonth() + '/' + date.getDay() + ' ' + date.getHours().toString().padStart(2,'0') + ':' + date.getMinutes().toString().padStart(2, '0');
+      return dows[date.getDay()] + ', ' + date.toLocaleString();
     },
     getLink(link, visibility) {
       // for internal, routed links
@@ -250,6 +286,9 @@ export default {
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow:hidden;
+    &.link {
+      cursor: pointer;
+    }
   }
   input[type="checkbox"] {
     margin-right: 1rem;

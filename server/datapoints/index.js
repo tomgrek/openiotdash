@@ -126,7 +126,7 @@ router.get('/r/:readkey/:title', (req, res, next) => {
     }).then(dp => {
       if (key) {
         if (number) {
-          // e.g. curl http://localhost:3000/d/r/90ef6eb8c1766a/1\?limit\=2\&key\=value\&numeric=true
+          // e.g. curl http://localhost:3000/d/r/90ef6eb8c1766a/j8fg4f2\?limit\=2\&key\=value\&numeric=true
           return res.json(dp.map(x => parseFloat(JSON.parse(x.data)[key])));
         } else {
           return res.json(dp.map(x => JSON.parse(x.data)[key]));

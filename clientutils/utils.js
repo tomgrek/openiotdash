@@ -73,7 +73,7 @@ export default (fullComponent, self, editing = false, isMobile = false) => {
         if (comp.dataSinks[key].limit) {
           limit = `limit=${comp.dataSinks[key].limit}`;
         }
-        dataQueries.push(fetch(`/d/r/${keys[key].readKey}/${comp.dataSinks[key].id}?${orderBy}${limit}`, {credentials: 'include'}).then(r => r.json()));
+        dataQueries.push(fetch(`/d/r/${keys[key].readKey}/${comp.dataSinks[key].title}?${orderBy}${limit}`, {credentials: 'include'}).then(r => r.json()));
       }
       Promise.all(dataQueries).then(data => {
         let detail = {};

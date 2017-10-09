@@ -58,8 +58,6 @@ auto.create.topics.enable=true
 
 ## Things to do next:
 
-* improve display of datasinks on index page - add data like url, last write etc.
-
 * optional schema validation on datasink write
 
 * in offline code and code that runs on sink write, stats should be available to the component's code (for stream analytics/anomaly detection). Mean, std, min/max.
