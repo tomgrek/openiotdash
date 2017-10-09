@@ -4,7 +4,7 @@
       <div class="modal-wrapper">
         <div class="modal-container">
           <span class="close-icon" @click="$emit('close')"><i class="material-icons">close</i></span>
-          <div class="modal-header">Rename Dashboard</div>
+          <div class="modal-header">Rename</div>
 
           <div>
             <input type="text" v-model="newTitle" style="width: 100%;"></input>
@@ -12,7 +12,7 @@
 
           <div style="position: relative; display: inline-block; margin-top: 0.5rem; width:100%;">
             <button class="small-button" @click="$emit('close')" style="float: right;">Cancel</button>
-            <button class="small-button" @click="setTitle()" style="margin-right: 0.5rem; float:right;">Save</button>
+            <button class="small-button" @click="setTitle" style="margin-right: 0.5rem; float:right;">Save</button>
           </div>
 
         </div>
@@ -33,7 +33,6 @@ export default {
   methods: {
     setTitle() {
       this.$props.setTitleFn(this.newTitle);
-      this.$emit('close');
     },
   },
 }

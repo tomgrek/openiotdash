@@ -41,7 +41,7 @@
         <tbody>
           <tr class="sink-row" v-for="datasink, i in datasinks">
             <td class="sink-cell"><input type="checkbox" v-model="listOfSinkCheckboxes[i]"></input></td>
-            <td class="sink-cell">{{datasink.title}}</td>
+            <td class="sink-cell text-link" title="Click to rename" @click="showRenameWindow(datasink)">{{datasink.title}}</td>
             <td class="sink-cell">{{formatTime(datasink.latestDataPoint)}}</td>
             <td class="sink-cell link"><i class="material-icons" @click="toggleSinkVisibility(datasink)">{{visibilityIcon(datasink)}}</i></td>
             <td class="sink-cell link"><i class="material-icons" @click="showCodeEditWindow(datasink)">settings_input_antenna</i></td>
@@ -55,6 +55,7 @@
       <div><nuxt-link v-if="username === null" to="/signup">Create An Account</nuxt-link></div>
     </div>
     <ModalCodeEdit v-if="codeEditWindowVisible" :sink="selectedSink" @close="dismissModals"/>
+    <ModalRename v-if="renameWindowVisible" :setTitleFn="renameDatasink" :currentTitle="selectedSink.title" @close="dismissModals"/>
   </section>
 </template>
 
@@ -65,6 +66,7 @@ import { dows } from "~/config/mappings";
 import axios from '~/plugins/axios';
 import MyHeader from '~/components/Header.vue';
 import ModalCodeEdit from '~/components/modal_codeedit.vue';
+import ModalRename from '~/components/modal_rename.vue';
 
 export default {
   name: 'index',
@@ -72,6 +74,7 @@ export default {
   components: {
     MyHeader,
     ModalCodeEdit,
+    ModalRename,
   },
   data() {
     return {
@@ -80,6 +83,7 @@ export default {
       indexOptions,
       selectedSink: null,
       codeEditWindowVisible: false,
+      renameWindowVisible: false,
     };
   },
   async asyncData(context) {
@@ -110,12 +114,39 @@ export default {
     this.listOfSinkCheckboxes = this.datasinks.map(x => false);
   },
   methods: {
+    renameDatasink(newName) {
+      const body = JSON.stringify({
+        id: this.selectedSink.id,
+        title: newName,
+      });
+      fetch(`/api/datasinks/rename/`, { credentials: 'include', method: 'POST', body, headers: {'Content-Type': 'application/json'} })
+      .then(res => {
+        if (res.status === 400) {
+          this.$store.commit('addAlert', { msg: 'Invalid title for data sink.', type: 'error' });
+        } else if (res.status === 409) {
+          this.$store.commit('addAlert', { msg: 'Another data sink with that title already exists.', type: 'error' });
+        } else {
+          this.$store.commit('renameDatasink', { datasinkId: this.selectedSink.id, title: newName });
+          this.$store.commit('addAlert', { msg: 'Title of data sink successfully set.', type: 'success'});
+          this.dismissModals();
+        }
+      })
+      .catch(e => {
+        this.$store.commit('addAlert', { msg: 'Problem setting title: ' + e, type: 'error'});
+        this.dismissModals();
+      });
+    },
     dismissModals() {
       this.codeEditWindowVisible = false;
+      this.renameWindowVisible = false;
     },
     showCodeEditWindow(sink) {
       this.selectedSink = sink;
       this.codeEditWindowVisible = true;
+    },
+    showRenameWindow(sink) {
+      this.selectedSink = sink;
+      this.renameWindowVisible = true;
     },
     toggleSinkVisibility(sink) {
       this.$store.commit('toggleSinkVisibility', sink.id);
@@ -126,11 +157,9 @@ export default {
       fetch(`/api/datasinks/changeVisibility/`, { credentials: 'include', method: 'POST', body, headers: {'Content-Type': 'application/json'} })
       .then(() => {
         this.$store.commit('addAlert', { msg: 'Visibility of data sinks successfully set.', type: 'success'});
-        this.$emit('close');
       })
       .catch(e => {
         this.$store.commit('addAlert', { msg: 'Problem setting visibility: ' + e, type: 'error'});
-        this.$emit('close');
       });
     },
     visibilityIcon(sink) {
@@ -288,6 +317,12 @@ export default {
     overflow:hidden;
     &.link {
       cursor: pointer;
+    }
+    &.text-link {
+      cursor: pointer;
+      &:hover {
+        text-decoration: underline;
+      }
     }
   }
   input[type="checkbox"] {

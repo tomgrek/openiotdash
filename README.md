@@ -63,8 +63,6 @@ auto.create.topics.enable=true
 * in offline code and code that runs on sink write, stats should be available to the component's code (for stream analytics/anomaly detection). Mean, std, min/max.
 Store these in redis and update them (there's a stream algorithm for std) on writes.
 
-* user should be able to rename datasinks
-
 * add, in settings, ability to directly edit the whole code of the component
 
 * add permissions for other users to edit dashboards owned by a user
@@ -88,6 +86,8 @@ valid data with crap data.
 * inconsistency between datasink write endpoints -- d/w/writekey/id? or d/w/writekey/[uuid/title]?? Be wary of this, but I've standardized
 on titles instead of id's, and fixed the discrepancy with d/w and d/r. Ensure it's not possible to create two datasinks -- or rename
 one of them -- to be the same as an existing datasink.
+
+* Question: If user renames datasink, their components might stop working. Allow this? Or rename everything within components/dashboards?
 
 ## Components to make:
 

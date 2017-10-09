@@ -41,6 +41,9 @@ export const mutations = {
   addNewDatasink: (state, datasink) => {
     state.datasinks.push(datasink);
   },
+  renameDatasink: (state, {datasinkId, title}) => {
+    state.datasinks.filter(x => x.id == datasinkId)[0].title = title;
+  },
   toggleSinkVisibility: (state, datasinkId) => {
     let sink = state.datasinks.filter(x => x.id == datasinkId)[0];
     sink.visibility = 1 - sink.visibility;

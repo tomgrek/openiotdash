@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { Datasink } from '../../models';
-import { getKey, getUuid } from '../../config/utils_server';
+import { getKey, getUuid, validateTitle } from '../../config/utils_server';
 import { baseUrl } from '../../components/config/config';
 
 import { addTopic, removeTopic } from '../../plugins/kafkaconsumer.js';
@@ -11,6 +11,22 @@ router.post('/datasinks/saveCode', (req, res, next) => {
   Datasink.update({ definition: req.body.definition }, { where: { id: req.body.id, user: req.user.id, }}).then(() => {
     return res.status(200).end();
   }).catch(() => res.status(500).end());
+});
+
+router.post('/datasinks/rename', (req, res, next) => {
+  if (!validateTitle(req.body.title)) return res.status(400).end();
+  Datasink.findOne({
+    where: {
+      title: req.body.title,
+    },
+  }).then(sink => {
+    if (sink) {
+      return res.status(409).end();
+    }
+    Datasink.update({ title: req.body.title }, { where: { id: req.body.id, user: req.user.id, }}).then(() => {
+      return res.status(200).end();
+    }).catch(() => res.status(500).end());
+  });
 });
 
 router.post('/datasinks/add', (req, res, next) => {
@@ -36,14 +52,14 @@ router.get('/datasinks/delete', (req, res, next) => {
   if (!Array.isArray(req.query.id)) {
     idAsArray = [req.query.id];
   }
-  for (var id of idAsArray) {
+  for (let id of idAsArray) {
     Datasink.findOne({
       attributes: [
         'writeKey',
         'title',
       ],
       where: {
-        id,
+        id: parseInt(id),
       },
     }).then(datasink => {
       Datasink.destroy({
@@ -52,7 +68,11 @@ router.get('/datasinks/delete', (req, res, next) => {
           user: req.user.id,
         },
       });
-      removeTopic(datasink.dataValues.writeKey, datasink.dataValues.title);
+      try {
+        removeTopic(datasink.dataValues.writeKey, datasink.dataValues.title);
+      } catch(e) {
+        console.error('It appears you have Kafka enabled, but the server is not responding');
+      }
     });
   }
   res.status(200).end();
