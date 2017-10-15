@@ -27,17 +27,28 @@ return {
     x: 0,
     y: 0,
   },
+  animationFrame: null,
   script: `
             const drawChart = (e) => {
-              if (!e) e = { detail: {} };
+              let val = 0;
+              if (this.animationFrame) {
+                window.cancelAnimationFrame(this.animationFrame);
+              }
+              let firstKey = Object.keys(this.data)[0];
+              if (firstKey) {
+                let lastDP = this.data[firstKey][this.data[firstKey].length - 1];
+                if (lastDP.data) {
+                  let parsed = JSON.parse(lastDP.data);
+                  if (parsed.value) val = parsed.value;
+                }
+              }
               let canvas = document.querySelector('#canvas' + this.uuid);
               let ctx = canvas.getContext('2d');
               let bubbles = [];
-              let bubbleCount = 50;
-              let bubbleSpeed = 0.6;
+              let bubbleCount = Math.min(Math.max(val, 0) * 50, 100);
+              let bubbleSpeed = Math.min(Math.max(val, 0), 2.0);
               let popLines = 6;
               let popDistance = 40;
-
               const animate = () => {
                   ctx.clearRect(0, 0, canvas.clientWidth, canvas.clientHeight + 24);
 
@@ -66,10 +77,10 @@ return {
                     }
                   }
 
-                  window.requestAnimationFrame(animate);
+                  this.animationFrame = window.requestAnimationFrame(animate);
                 }
 
-                window.requestAnimationFrame(animate);
+                this.animationFrame = window.requestAnimationFrame(animate);
 
                 function createBubble() {
                   this.position = {x: 0, y: 0};
@@ -210,12 +221,6 @@ return {
                     ctx.stroke();
                   };
                 }
-                const mouseMove = e => {
-                  this.mouseOffset.x = e.offsetX;
-                  this.mouseOffset.y = e.offsetY;
-                }
-                canvas.addEventListener('mousemove', mouseMove);
-
             };
             node.addEventListener('dblclick', e => {
               e.preventDefault();
@@ -225,11 +230,12 @@ return {
               // console.log(this.settings.myfield);
             });
             node.addEventListener('data', e => {
-              Object.assign(this.data, e.detail.data);
+              Object.assign(this.data, e.detail);
+              drawChart(e);
             });
             node.addEventListener('newData', e => {
               if (e.detail.dataSink) {
-                if (this.data[e.detail.dataSink.title].length >= e.detail.dataSink.limit) {
+                if (this.data[e.detail.dataSink.title] && this.data[e.detail.dataSink.title].length >= e.detail.dataSink.limit) {
                   this.data[e.detail.dataSink.title].shift();
                 }
                 this.data[e.detail.dataSink.title].push(e.detail.newData);

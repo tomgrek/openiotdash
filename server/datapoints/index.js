@@ -132,6 +132,8 @@ router.get('/r/:readkey/:title', (req, res, next) => {
           return res.json(dp.map(x => JSON.parse(x.data)[key]));
         }
       } else {
+        // always return an array of datapoints
+        if (!Array.isArray(dp)) return res.json([dp]);
         return res.json(dp);
       }
     }).catch(e => {
