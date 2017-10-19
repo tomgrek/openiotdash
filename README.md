@@ -73,9 +73,7 @@ valid data with crap data.
 
 * Fix issue with map missing after saving dashboard
 
-* Perfect canvas Bubbles -- stop them blowing to the left always; improve the code a bit, then done
-
-* When user adds a datasink to a component, there isnt a new websocket listening for new data, so add one.
+* Generally optimize canvas bubbles (low prio)
 
 * Perfect sparkline component
 

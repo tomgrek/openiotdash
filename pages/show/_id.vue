@@ -18,7 +18,7 @@ import socket from '~/plugins/socket.io.js'
 import { getUuid } from '~/plugins/utils';
 import MyHeader from '~/components/Header';
 
-import fakedrop from '../../clientutils/utils';
+import { fakeDrop } from '../../clientutils/utils';
 
 export default {
   name: 'dash',
@@ -70,7 +70,7 @@ export default {
       e.stopPropagation();
     },
     fakeDrop(fullComponent, isMobile) {
-      fakedrop(fullComponent, this, false, isMobile);
+      fakeDrop(fullComponent, this, false, isMobile);
     },
   },
   async asyncData(context) {

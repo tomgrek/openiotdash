@@ -43,7 +43,7 @@ import CanvasBubble from '../../predefined_components/Bubble';
 import Header from '../../predefined_components/Header';
 import Map from '../../predefined_components/Map';
 
-import fakedrop from '../../clientutils/utils';
+import { fakeDrop, updateableDropPart } from '../../clientutils/utils';
 
 export default {
   name: 'dash',
@@ -111,7 +111,7 @@ export default {
       }
     },
     fakeDrop(fullComponent) {
-      fakedrop(fullComponent, this, true);
+      return fakeDrop(fullComponent, this, true);
     },
     setDashScheme(scheme) { // color scheme
       let oldScheme = this.dashboard.scheme;
@@ -183,6 +183,9 @@ export default {
               }
             }
           }
+          for (let comp of this.individualComponents) {
+            updateableDropPart(comp);
+          }
         });
     },
     nothing(e) {
@@ -195,7 +198,7 @@ export default {
       let newComp = { component: this.predefinedComponents[id]() };
       newComp.component.offsetX = e.pageX - (newComp.component.width/2);
       newComp.component.offsetY = e.pageY - newComp.component.height;
-      let comp = fakedrop(newComp, this, true);
+      let comp = this.fakeDrop(newComp, this, true);
       comp.uuid = comp.component.uuid;
       this.$store.commit('addAlert', { msg: 'Hold shift to resize', type: 'info'});
     },
@@ -211,10 +214,11 @@ export default {
   },
   head() {
     return {
-      title: this.dashboard.title,
+      title: this.dashboard ? this.dashboard.title : '',
     };
   },
   mounted() {
+    if (!this.dashboard) return;
     this.setScheme(this.dashboard.scheme);
     let self = this;
     window.d3 = d3;
@@ -373,16 +377,18 @@ export default {
         this.fakeDrop(component);
       }
     }
-    fetch(gitUrl).then(r => r.json()).then(r => {
-      for (let file of r) {
-        fetch(file.download_url).then(r => {
-            r.json().then(r => {
-              // use http://phrogz.net/JS/NeatJSON/ for this
-              this.predefinedComponents.push(() => r);
-          }).catch(e=>{  }); // do nothing if it's not a JSON file, e.g. README.md
-        }).catch(e=>console.log);
-      }
-    });
+    if (gitUrl) {
+      fetch(gitUrl).then(r => r.json()).then(r => {
+        for (let file of r) {
+          fetch(file.download_url).then(r => {
+              r.json().then(r => {
+                // use http://phrogz.net/JS/NeatJSON/ for this
+                this.predefinedComponents.push(() => r);
+            }).catch(e=>{  }); // do nothing if it's not a JSON file, e.g. README.md
+          }).catch(e=>console.log);
+        }
+      });
+    }
   },
 }
 </script>

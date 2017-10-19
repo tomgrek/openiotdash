@@ -1,6 +1,54 @@
-import { getUuid } from '~/plugins/utils';
+const getUuid = require('~/plugins/utils').getUuid;
 
-export default (fullComponent, self, editing = false, isMobile = false) => {
+const updateableDropPart = (fullComponent) => {
+  let comp = fullComponent.component;
+  let keyQueries = [];
+  for (let sink of comp.dataSinks) {
+    keyQueries.push(fetch('/apina/datasinks/getReadKey/'+sink.id, {credentials: 'include'}).then(r => r.json()));
+    window.socket.on(sink.title, newData => {
+      let newDataEvent = new CustomEvent('newData', { detail: { dataSink: sink, newData } });
+      fullComponent.node.dispatchEvent(newDataEvent);
+    });
+  }
+  for (let source of comp.dataSources) {
+    fetch(source.url).then(r => r.json()).then(resp => {
+      let newDataEvent = new CustomEvent('newData', { detail: { dataSource: source, newData: resp } });
+      fullComponent.node.dispatchEvent(newDataEvent);
+    });
+    if (source.interval) {
+      fullComponent.intervals.push({sourceTitle: source.title, timer: setInterval(() => {
+        fetch(source.url).then(r => r.json()).then(resp => {
+          let newDataEvent = new CustomEvent('newData', { detail: { dataSource: source, newData: resp } });
+          fullComponent.node.dispatchEvent(newDataEvent);
+        });
+      }, source.interval) });
+    }
+  }
+  Promise.all(keyQueries).then(keys => {
+    let dataQueries = [];
+    for (let key in keys) {
+      comp.dataSinks[key].readKey = keys[key].readKey;
+      let orderBy = '', limit = '';
+      if (comp.dataSinks[key].orderBy) {
+        orderBy = `orderBy=${comp.dataSinks[key].orderBy}&`;
+      }
+      if (comp.dataSinks[key].limit) {
+        limit = `limit=${comp.dataSinks[key].limit}`;
+      }
+      dataQueries.push(fetch(`/d/r/${keys[key].readKey}/${comp.dataSinks[key].title}?${orderBy}${limit}`, {credentials: 'include'}).then(r => r.json()));
+    }
+    Promise.all(dataQueries).then(data => {
+      let detail = {};
+      for (let key in keys) {
+        detail[keys[key].title] = data[key];
+      }
+      let dataEvent = new CustomEvent('data', { detail });
+      fullComponent.node.dispatchEvent(dataEvent);
+    });
+  });
+};
+
+const fakeDrop = (fullComponent, self, editing = false, isMobile = false) => {
 
     let comp = fullComponent.component;
     let c = d3.select('.canvas-container');
@@ -34,56 +82,14 @@ export default (fullComponent, self, editing = false, isMobile = false) => {
       .html(`<span id="componentTitle-${uuid}">${comp.title}</span>`);
 
     self.components.push(div);
-    let keyQueries = [];
-    for (let sink of comp.dataSinks) {
-      keyQueries.push(fetch('/apina/datasinks/getReadKey/'+sink.id, {credentials: 'include'}).then(r => r.json()));
-      window.socket.on(sink.title, newData => {
-        let newDataEvent = new CustomEvent('newData', { detail: { dataSink: sink, newData } });
-        fullComponent.node.dispatchEvent(newDataEvent);
-      });
-    }
-    for (let source of comp.dataSources) {
-      fetch(source.url).then(r => r.json()).then(resp => {
-        let newDataEvent = new CustomEvent('newData', { detail: { dataSource: source, newData: resp } });
-        fullComponent.node.dispatchEvent(newDataEvent);
-      });
-      if (source.interval) {
-        fullComponent.intervals.push({sourceTitle: source.title, timer: setInterval(() => {
-          fetch(source.url).then(r => r.json()).then(resp => {
-            let newDataEvent = new CustomEvent('newData', { detail: { dataSource: source, newData: resp } });
-            fullComponent.node.dispatchEvent(newDataEvent);
-          });
-        }, source.interval) });
-      }
-    }
+
+    updateableDropPart(fullComponent);
+
     self.individualComponents.push({uuid, component: comp, node: fullComponent.node, intervals: fullComponent.intervals });
     let node = fullComponent.node;
     (() => { eval(comp.script) }).call(isMobile ? Object.assign(comp, { width: node.clientWidth }) : comp);
     let createdEvent = new CustomEvent('created', { detail: { uuid, width: parseInt(isMobile ? node.clientWidth : comp.width), height: parseInt(comp.height) } });
     setTimeout(() => fullComponent.node.dispatchEvent(createdEvent), 0);
-
-    Promise.all(keyQueries).then(keys => {
-      let dataQueries = [];
-      for (let key in keys) {
-        comp.dataSinks[key].readKey = keys[key].readKey;
-        let orderBy = '', limit = '';
-        if (comp.dataSinks[key].orderBy) {
-          orderBy = `orderBy=${comp.dataSinks[key].orderBy}&`;
-        }
-        if (comp.dataSinks[key].limit) {
-          limit = `limit=${comp.dataSinks[key].limit}`;
-        }
-        dataQueries.push(fetch(`/d/r/${keys[key].readKey}/${comp.dataSinks[key].title}?${orderBy}${limit}`, {credentials: 'include'}).then(r => r.json()));
-      }
-      Promise.all(dataQueries).then(data => {
-        let detail = {};
-        for (let key in keys) {
-          detail[keys[key].title] = data[key];
-        }
-        let dataEvent = new CustomEvent('data', { detail });
-        fullComponent.node.dispatchEvent(dataEvent);
-      });
-    });
 
     if (editing && !isMobile) {
       let tb = node.querySelector(`.title-bar`);
@@ -127,6 +133,8 @@ export default (fullComponent, self, editing = false, isMobile = false) => {
       resizer.addEventListener('mousedown', initResize, false);
 
     }
+
+
     if (comp.externalScripts) {
       for (let externalScript of comp.externalScripts) {
         let script = document.createElement('script');
@@ -149,4 +157,9 @@ export default (fullComponent, self, editing = false, isMobile = false) => {
       }
     }
     return fullComponent;
+};
+
+export {
+  fakeDrop,
+  updateableDropPart,
 };

@@ -35,7 +35,7 @@ return {
                 window.cancelAnimationFrame(this.animationFrame);
               }
               let firstKey = Object.keys(this.data)[0];
-              if (firstKey) {
+              if (firstKey && this.data && this.data[firstKey]) {
                 let lastDP = this.data[firstKey][this.data[firstKey].length - 1];
                 if (lastDP.data) {
                   let parsed = JSON.parse(lastDP.data);
@@ -43,6 +43,7 @@ return {
                 }
               }
               let canvas = document.querySelector('#canvas' + this.uuid);
+              if (!canvas) return;
               let ctx = canvas.getContext('2d');
               let bubbles = [];
               let bubbleCount = Math.min(Math.max(val, 0) * 50, 100);
