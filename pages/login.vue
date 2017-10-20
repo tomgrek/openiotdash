@@ -2,7 +2,7 @@
   <section class="container">
     <my-header :username="null"/>
     <h1 class="title">
-      Log In
+      Log In <span class="sub-text">(or <router-link to="/signup">sign up</router-link>)</span>
     </h1>
     <div class="form-container">
       <form action="/auth/login" method="post">
@@ -66,5 +66,12 @@ export default {
 input[type="submit"] {
   border-radius: 4px;
   background-color: $button-color;
+}
+.sub-text {
+  font-size: 1rem;
+  a {
+    text-decoration: underline;
+    color: gray;
+  }
 }
 </style>

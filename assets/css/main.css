@@ -44,6 +44,9 @@ button {
   border-radius: 4px;
   cursor: pointer;
 }
+input[type="submit"] {
+  cursor: pointer;
+}
 input[type="submit"]:hover, .small-button:hover {
   filter: brightness(0.9);
   color: white;
