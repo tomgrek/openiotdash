@@ -16,7 +16,8 @@ router.get('/datasinks/getReadKey/:id', (req, res, next) => {
         id: req.params.id,
       },
     }).then(ds => {
-      return res.send(ds).end();
+      res.send(ds);
+      res.end();
     }).catch(e => {
       console.log(e);
       return res.status(500).end();
@@ -32,7 +33,8 @@ router.get('/datasinks/getReadKey/:id', (req, res, next) => {
         id: req.params.id,
       },
     }).then(ds => {
-      res.send(ds).end();
+      res.send(ds);
+      return res.end();
     }).catch(e => {
       console.log(e);
       res.status(500).end();

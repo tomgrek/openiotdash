@@ -14,9 +14,14 @@ return {
   defaultSettings: {},
   settings: {
     color: 'darkorchid',
+    bgColor: '#81bdff',
+    bubbleColor: '#ccefff',
   },
   settingsDisplay:
-    `<div>My settings for my bubble
+    `<div>
+    <h3>Settings for this component:</h3>
+    <div><span>Color: </span><input id="bgColor" type="text"></input></div>
+    <div><span>Bubble: </span><input id="bubbleColor" type="text"></input></div>
     </div>`,
   height: 150,
   width: 300,
@@ -51,7 +56,7 @@ return {
               let popLines = 6;
               let popDistance = 40;
               const animate = () => {
-                  ctx.clearRect(0, 0, canvas.clientWidth, canvas.clientHeight + 24);
+                  ctx.clearRect(0, 0, this.width, this.height + 24);
 
                   ctx.beginPath();
                   for (var i = 0; i < bubbles.length; i++) {
@@ -60,7 +65,7 @@ return {
                     bubbles[i].render();
 
                     if(bubbles[i].count < 0 - bubbles[i].radius) {
-                      bubbles[i].count = canvas.clientHeight + bubbles[i].yOff;
+                      bubbles[i].count = this.height + bubbles[i].yOff;
                     } else {
                       bubbles[i].count -= bubbleSpeed;
                     }
@@ -82,7 +87,8 @@ return {
                 }
 
                 this.animationFrame = window.requestAnimationFrame(animate);
-
+                let color = this.settings.bgColor;
+                let bubbleColor = this.settings.bubbleColor;
                 function createBubble() {
                   this.position = {x: 0, y: 0};
                   this.radius = 8 + Math.random() * 6;
@@ -90,7 +96,7 @@ return {
                   this.yOff = Math.random() * canvas.clientHeight;
                   this.distanceBetweenWaves = 50 + Math.random() * 40;
                   this.count = canvas.clientHeight + this.yOff;
-                  this.color = '#8bc9ee';
+                  this.color = bubbleColor;
                   this.lines = [];
                   this.popping = false;
                   this.maxRotation = 85;
@@ -136,7 +142,7 @@ return {
 
                     if (!this.popping) {
                       ctx.beginPath();
-                      ctx.strokeStyle = '#8bc9ee';
+                      ctx.strokeStyle = bubbleColor;
                       ctx.lineWidth = 1;
                       ctx.arc(0, 0, this.radius - 3, 0, Math.PI*1.5, true);
                       ctx.stroke();
@@ -203,7 +209,7 @@ return {
                     this.updateValues();
 
                     ctx.beginPath();
-                    ctx.strokeStyle = '#8bc9ee';
+                    ctx.strokeStyle = bubbleColor;
                     ctx.lineWidth = 2;
                     ctx.moveTo(this.x, this.y);
                     if (this.x < this.bubble.position.x) {
@@ -264,13 +270,24 @@ return {
               canvasNode.id = 'canvas'+this.uuid;
               canvasNode.style.width = '100%';
               canvasNode.style.height = '100%';
-              canvasNode.style['background-color'] = '#1188bb';
+              canvasNode.style['background-color'] = this.settings.bgColor;
               document.querySelector('[uuid=' + this.uuid + ']').querySelector('.bubble').appendChild(canvasNode);
               drawChart();
             });
             node.addEventListener('resized', (e) => {
+              let meNode = document.querySelector('[uuid=' + this.uuid + ']').querySelector('.bubble');
+              meNode.removeChild(meNode.querySelector('canvas'));
+              let canvasNode = document.createElement('canvas');
+              canvasNode.id = 'canvas'+this.uuid;
+              canvasNode.style.width = '100%';
+              canvasNode.style.height = '100%';
+              canvasNode.style['background-color'] = this.settings.bgColor;
+              meNode.appendChild(canvasNode);
+              drawChart();
             });
             node.addEventListener('settingsChanged', (e) => {
+              let meNode = document.querySelector('[uuid=' + this.uuid + ']').querySelector('.bubble');
+              meNode.querySelector('canvas').style['background-color'] = this.settings.bgColor;
               drawChart(e);
             });
             node.addEventListener('beforeSave', e => {
@@ -283,6 +300,6 @@ return {
               this.offsetY = e.detail.offsetY;
             });
           `,
-  style: `return '#'+uuid+' {  }' `,
+  style: `return '#'+uuid+' { color: red }; '#'+uuid+ 'span { color: red; }' `,
   }
 }

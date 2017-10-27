@@ -59,8 +59,8 @@ export default {
 .form-container {
   border: 1px solid $border-color;
   display: inline-block;
-  width: 33%;
-  max-width: 26rem;
+  width: auto;
+  max-width: 50vw;
   line-height: 4rem;
 }
 input[type="submit"] {
