@@ -286,8 +286,8 @@ return {
               drawChart();
             });
             node.addEventListener('settingsChanged', (e) => {
-              let meNode = document.querySelector('[uuid=' + this.uuid + ']').querySelector('.bubble');
-              meNode.querySelector('canvas').style['background-color'] = this.settings.bgColor;
+              let myCanvas = document.querySelector('[uuid=' + this.uuid + '] .bubble canvas');
+              myCanvas.style['background-color'] = this.settings.bgColor;
               drawChart(e);
             });
             node.addEventListener('beforeSave', e => {
@@ -300,6 +300,7 @@ return {
               this.offsetY = e.detail.offsetY;
             });
           `,
-  style: `return '#'+uuid+' { color: red }; '#'+uuid+ 'span { color: red; }' `,
+  style: 'return `[uuid=${uuid}] .component-settings { color: green; } \
+            #${uuid} span { color: blue; }`',
   }
 }

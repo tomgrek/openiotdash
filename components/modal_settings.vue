@@ -1,7 +1,7 @@
 <template>
   <transition name="modal">
     <div class="modal-mask">
-      <div class="modal-wrapper">
+      <div class="modal-wrapper" :uuid="component.uuid">
         <div v-if="mainWindowVisible" class="modal-container">
           <span class="close-icon" @click="$emit('close')"><i class="material-icons">close</i></span>
           <div class="modal-header">Settings</div>
@@ -21,7 +21,7 @@
               console.log(component.dataSinks);
             }, 1000);" v-model="componentsOfflineCode"/>
           </div>
-          <div v-if="activeComponent === 'settings_tab'">
+          <div v-if="activeComponent === 'settings_tab'" class="component-settings">
             <form ref="activeSettings" v-html="component.component.settingsDisplay" />
           </div>
           <div v-if="activeComponent === 'dataSinks_tab'">

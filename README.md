@@ -58,9 +58,6 @@ auto.create.topics.enable=true
 
 ## Things to do next:
 
-* TODO: Next: Figuring out why style doesn't work properly for styling settings. Then ensuring style works
-for bubble component settings.
-
 * optional schema validation on datasink write
 
 * in offline code and code that runs on sink write, stats should be available to the component's code (for stream analytics/anomaly detection). Mean, std, min/max.
