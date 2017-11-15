@@ -229,6 +229,7 @@ export default {
       for (let source of this.$props.component.component.dataSources) {
         dataQueries.push(wrapPromise(fetch(source.url)));
       }
+
       Promise.all(dataQueries).then(data => {
         let detail = {};
         for (let sink in this.$props.component.component.dataSinks) {
@@ -257,6 +258,7 @@ export default {
             // it was a caught exception
             detail[this.$props.component.component.dataSources[source].title] = [];
           }
+          detail[this.$props.component.component.dataSources[source].title].stats = getStats(this.$props.component.component.dataSources[source], r);
         }
         let dataEvent = new CustomEvent('data', { detail });
         this.$props.component.node.dispatchEvent(dataEvent);

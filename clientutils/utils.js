@@ -1,5 +1,7 @@
 const getUuid = require('~/plugins/utils').getUuid;
 
+import getStats from './getStats';
+
 const updateableDropPart = (fullComponent) => {
   let comp = fullComponent.component;
   let keyQueries = [];
@@ -41,6 +43,7 @@ const updateableDropPart = (fullComponent) => {
       let detail = {};
       for (let key in keys) {
         detail[keys[key].title] = data[key];
+        detail[keys[key].title].stats = getStats(keys[key], data[key]);
       }
       let dataEvent = new CustomEvent('data', { detail });
       fullComponent.node.dispatchEvent(dataEvent);

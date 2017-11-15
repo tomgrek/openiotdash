@@ -238,6 +238,7 @@ return {
             });
             node.addEventListener('data', e => {
               Object.assign(this.data, e.detail);
+              console.log(this.data);
               drawChart(e);
             });
             node.addEventListener('newData', e => {
