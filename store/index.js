@@ -51,6 +51,9 @@ export const mutations = {
   saveSinkCode: (state, {datasinkId, code}) => {
     state.datasinks.filter(x => x.id == datasinkId)[0].definition = code;
   },
+  saveSinkSchema: (state, {datasinkId, schema}) => {
+    state.datasinks.filter(x => x.id == datasinkId)[0].schema = schema;
+  },
   clearAll: (state) => {
     // For logout
     state.authUser = null;

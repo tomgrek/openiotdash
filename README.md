@@ -58,12 +58,8 @@ auto.create.topics.enable=true
 
 ## Things to do next:
 
-* optional schema validation on datasink write
-
 * in offline code and code that runs on sink write, stats should be available to the component's code (for stream analytics/anomaly detection). Mean, std, min/max.
 Store these in redis and update them (there's a stream algorithm for std) on writes.
-
-* add, in settings, ability to directly edit the whole code of the component
 
 * add permissions for other users to edit dashboards owned by a user
 
@@ -88,6 +84,11 @@ on titles instead of id's, and fixed the discrepancy with d/w and d/r. Ensure it
 one of them -- to be the same as an existing datasink.
 
 * Question: If user renames datasink, their components might stop working. Allow this? Or rename everything within components/dashboards?
+
+* In schema validation, properties come through (in the POST body) as strings. If user/schema expects them to be a number, this
+would cause an error. Currently, it converts all string-but-really-a-number objects to numbers (see line 50 of datapoints/index.js)
+but only ONE level deep, so user might be confused if their schema is looking for numeric properties on nested objects. Maybe
+doing the numeric-string-to-actual-number conversion recursively would be better. 
 
 ## Components to make:
 

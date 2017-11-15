@@ -421,10 +421,11 @@ export default {
   white-space: nowrap;
   padding: 1rem 0 0 0;
   border-bottom: 1px solid $border-color;
+  overflow-x: hidden;
+  font-size: 0.9rem;
 }
 .tab {
   display: inline-block;
-  width: 25%;
   color: $light-text;
   font-weight: 500;
   vertical-align: middle;
@@ -432,7 +433,7 @@ export default {
   box-sizing: border-box;
   border-radius: 4px 4px 0 0;
   border: solid 2px transparent;
-  padding: 0 0.5rem;
+  padding: 0 0.4rem;
 }
 .tab[data-active] {
   border-color: $border-color;

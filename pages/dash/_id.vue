@@ -16,7 +16,7 @@
         <i @click="showModal_dashsettings = true" class="material-icons toolicon" style="margin-bottom: 0.5rem; margin-right: 0.5rem;" title="Settings">settings</i>
         <i class="material-icons toolicon" style="margin-bottom: 0.5rem;" title="Delete">delete</i>
         <div class="sidebar-header">Components</div>
-        <div v-for="component, i in predefinedComponents" v-html="component().preview" class="component" draggable=true v-on:dragend="dropped($event, i)"></div>
+        <div v-for="component, i in predefinedComponents" v-html="component().preview" class="component" draggable=true v-on:dragstart="startDrag($event, i)" v-on:dragend="dropped($event, i)"></div>
       </div>
     </div>
   </section>
@@ -191,6 +191,11 @@ export default {
     nothing(e) {
       e.preventDefault();
       e.stopPropagation();
+    },
+    startDrag(e, id) {
+      e.dataTransfer.setData("text/html", e.target.id);
+      let me = document.getElementsByClassName('component')[id];
+      e.dataTransfer.setDragImage(me, me.clientWidth / 2, me.clientHeight / 2);
     },
     dropped(e, id) {
       e.preventDefault();

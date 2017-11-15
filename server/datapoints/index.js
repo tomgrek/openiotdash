@@ -5,6 +5,8 @@ import { Datasink, Datapoint } from '../../models';
 
 import { sendMsg } from '../socketEndpoints';
 
+const schemaValidator = require('jsonschema').validate;
+
 const vm = require('vm');
 let parsedDatasinkScripts = {};
 
@@ -15,7 +17,7 @@ var router = Router();
 // e.g. curl http://localhost:3000/d/w/c2928b4027d2e4/1 -X "POST" -v -d "value=3.1415"
 // The value is intentionally left as a string -- we can't infer it from a single datapoint, and
 // writes should be faster than read/analysis
-router.post('/w/:writekey/:title', (req, res, next) => {
+router.post('/w/:writekey/:title', async (req, res, next) => {
   let token = req.params.writekey;
   if (token === 'PRIVATE') token = req.headers.authorization.substr(7);
   Datasink.findOne({
@@ -24,6 +26,7 @@ router.post('/w/:writekey/:title', (req, res, next) => {
       'readKey',
       'id',
       'definition',
+      'schema',
     ],
     where: {
       title: req.params.title,
@@ -31,16 +34,34 @@ router.post('/w/:writekey/:title', (req, res, next) => {
   }).then(sink => {
     if (!sink) return res.status(400).end();
     if (sink.dataValues.writeKey !== token) return res.status(401).end();
+
     let data = req.body;
     if (data.mqtt) {
       // e.g. data.val here will be lng=-122.5&lat=37.1&val=112
       let queryString = decodeURIComponent(data.val);
       let obj = {};
       queryString.split('&').map(x => x.split('=')).map(y => obj[y[0]] = y[1]);
-      data = JSON.stringify(obj);
-    } else {
-      data = JSON.stringify(req.body);
+      data = obj;
     }
+
+    if (sink.dataValues.schema) {
+      try {
+        let schema = JSON.parse(sink.dataValues.schema);
+        for (let key of Object.keys(data)) {
+          if (data[key] == parseFloat(data[key])) {
+            data[key] = parseFloat(data[key]);
+          }
+        }
+        let validatorResult = schemaValidator(data, schema);
+        if (validatorResult.errors.length) return res.json({error:"Does not fit schema: " + validatorResult.errors[0].stack});
+      } catch(e) {
+        console.error(e);
+        return res.json({error: "The specified schema is probably invalid JSON."});
+      }
+    }
+
+    data = JSON.stringify(data);
+
     Datapoint.create({
       datasink: sink.dataValues.id,
       data,
@@ -59,6 +80,7 @@ router.post('/w/:writekey/:title', (req, res, next) => {
       return res.status(500).end();
     });
   }).catch(e => {
+    console.error(e);
     return res.status(500).end();
   });
 });
@@ -70,12 +92,14 @@ router.get('/w/:writekey/:title/:value', (req, res, next) => {
     attributes: [
       'writeKey',
       'id',
+      'schema',
     ],
     where: {
       title: req.params.title,
     },
   }).then(sink => {
     if (!sink) return res.status(400).end();
+    if (sink.schema) return res.status(405).end();
     if (sink.dataValues.writeKey !== req.params.writekey) return res.status(401).end();
     let data = JSON.stringify({ value: req.params.value });
     Datapoint.create({

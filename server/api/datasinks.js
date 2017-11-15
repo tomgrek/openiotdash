@@ -7,6 +7,12 @@ import { addTopic, removeTopic } from '../../plugins/kafkaconsumer.js';
 
 var router = Router();
 
+router.post('/datasinks/saveSchema', (req, res, next) => {
+  Datasink.update({ schema: req.body.schema }, { where: { id: req.body.id, user: req.user.id, }}).then(() => {
+    return res.status(200).end();
+  }).catch(() => res.status(500).end());
+});
+
 router.post('/datasinks/saveCode', (req, res, next) => {
   Datasink.update({ definition: req.body.definition }, { where: { id: req.body.id, user: req.user.id, }}).then(() => {
     return res.status(200).end();

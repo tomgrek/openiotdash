@@ -13,6 +13,7 @@ router.get('/datasinks/:user', (req, res, next) => {
       'definition', // not so much a definition than code to run when dp received
       'visibility',
       'createdAt',
+      'schema',
     ],
     where: {
       user: req.params.user,

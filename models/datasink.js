@@ -24,6 +24,9 @@ const Datasink = sql.define('datasink', {
   visibility: {
     type: Sequelize.INTEGER, // 0 = private, 1 = visible with link (ie public but unlisted)
   },
+  schema: {
+    type: Sequelize.STRING,
+  },
 }, {
   timestamps: true,
 });

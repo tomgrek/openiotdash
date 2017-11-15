@@ -31,6 +31,7 @@
           <tr>
             <th></th>
             <th>Title</th>
+            <th>Schema</th>
             <th>Last Write</th>
             <th title="Whether sink can be publicly read">Visibility</th>
             <th title="Code that runs when a new datapoint comes in">Code</th>
@@ -42,9 +43,10 @@
           <tr class="sink-row" v-for="datasink, i in datasinks">
             <td class="sink-cell"><input type="checkbox" v-model="listOfSinkCheckboxes[i]"></input></td>
             <td class="sink-cell text-link" title="Click to rename" @click="showRenameWindow(datasink)">{{datasink.title}}</td>
+            <td class="sink-cell" title="Click to edit" @click="showSchemaWindow(datasink)" style="cursor: pointer;">{{datasink.schema ? '[Edit]' : '[None- Edit]'}}</td>
             <td class="sink-cell">{{formatTime(datasink.latestDataPoint)}}</td>
-            <td class="sink-cell link"><i class="material-icons" @click="toggleSinkVisibility(datasink)">{{visibilityIcon(datasink)}}</i></td>
-            <td class="sink-cell link"><i class="material-icons" @click="showCodeEditWindow(datasink)">settings_input_antenna</i></td>
+            <td class="sink-cell link icon-cell"><i class="material-icons" @click="toggleSinkVisibility(datasink)">{{visibilityIcon(datasink)}}</i></td>
+            <td class="sink-cell link icon-cell"><i class="material-icons" @click="showCodeEditWindow(datasink)">settings_input_antenna</i></td>
             <td class="sink-cell">{{datasink.readKey}}</td>
             <td class="sink-cell">{{datasink.writeKey}}</td>
           </tr>
@@ -56,6 +58,7 @@
     </div>
     <ModalCodeEdit v-if="codeEditWindowVisible" :sink="selectedSink" @close="dismissModals"/>
     <ModalRename v-if="renameWindowVisible" :setTitleFn="renameDatasink" :currentTitle="selectedSink.title" @close="dismissModals"/>
+    <ModalSchemaEdit v-if="schemaWindowVisible" :sink="selectedSink" @close="dismissModals"/>
   </section>
 </template>
 
@@ -67,6 +70,7 @@ import axios from '~/plugins/axios';
 import MyHeader from '~/components/Header.vue';
 import ModalCodeEdit from '~/components/modal_codeedit.vue';
 import ModalRename from '~/components/modal_rename.vue';
+import ModalSchemaEdit from '~/components/modal_schemaedit.vue';
 
 export default {
   name: 'index',
@@ -75,6 +79,7 @@ export default {
     MyHeader,
     ModalCodeEdit,
     ModalRename,
+    ModalSchemaEdit,
   },
   data() {
     return {
@@ -84,6 +89,7 @@ export default {
       selectedSink: null,
       codeEditWindowVisible: false,
       renameWindowVisible: false,
+      schemaWindowVisible: false,
     };
   },
   async asyncData(context) {
@@ -139,6 +145,7 @@ export default {
     dismissModals() {
       this.codeEditWindowVisible = false;
       this.renameWindowVisible = false;
+      this.schemaWindowVisible = false;
     },
     showCodeEditWindow(sink) {
       this.selectedSink = sink;
@@ -147,6 +154,10 @@ export default {
     showRenameWindow(sink) {
       this.selectedSink = sink;
       this.renameWindowVisible = true;
+    },
+    showSchemaWindow(sink) {
+      this.selectedSink = sink;
+      this.schemaWindowVisible = true;
     },
     toggleSinkVisibility(sink) {
       this.$store.commit('toggleSinkVisibility', sink.id);
@@ -323,6 +334,9 @@ export default {
       &:hover {
         text-decoration: underline;
       }
+    }
+    &.icon-cell {
+      // text-align: center;
     }
   }
   input[type="checkbox"] {
