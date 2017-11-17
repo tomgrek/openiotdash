@@ -97,7 +97,7 @@ export default {
   },
   methods: {
     setScheme(scheme) {
-      if (scheme !== 'light') {
+      if (scheme && scheme !== 'light') {
         this.darkStyleSheet = document.createElement('link');
         this.darkStyleSheet.type = 'text/css';
         this.darkStyleSheet.rel = 'stylesheet';
