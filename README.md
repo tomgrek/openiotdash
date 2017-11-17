@@ -69,15 +69,13 @@ valid data with crap data.
 
 * Fix issue with map missing after saving dashboard
 
-* Generally optimize canvas bubbles (low prio)
-
-* Perfect sparkline component
+* Perfect sparkline component (add ability to show >1 line)
 
 * Add proper charting component
 
-* Add proper preview imagery to all components
-
 ## Not really TODO but some stuff
+
+* Generally optimize canvas bubbles (low prio)
 
 * inconsistency between datasink write endpoints -- d/w/writekey/id? or d/w/writekey/[uuid/title]?? Be wary of this, but I've standardized
 on titles instead of id's, and fixed the discrepancy with d/w and d/r. Ensure it's not possible to create two datasinks -- or rename
@@ -88,7 +86,7 @@ one of them -- to be the same as an existing datasink.
 * In schema validation, properties come through (in the POST body) as strings. If user/schema expects them to be a number, this
 would cause an error. Currently, it converts all string-but-really-a-number objects to numbers (see line 50 of datapoints/index.js)
 but only ONE level deep, so user might be confused if their schema is looking for numeric properties on nested objects. Maybe
-doing the numeric-string-to-actual-number conversion recursively would be better. 
+doing the numeric-string-to-actual-number conversion recursively would be better.
 
 ## Components to make:
 
