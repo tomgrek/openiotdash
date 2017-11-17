@@ -6,7 +6,7 @@ return {
   `<div style="position: absolute; top: 1.5rem;">
 
   </div>`,
-  preview: `<img style="height:100%; width:100%;" src="https://upload.wikimedia.org/wikipedia/commons/6/6d/FTSE_100_index_chart_since_1984.png"></img>`,
+  preview: `<img style="height:100%; width:100%;" src="/sparkline.png"></img>`,
   data: {},
   dataSources: [
   ],
@@ -17,7 +17,7 @@ return {
     color: 'darkorchid',
   },
   settingsDisplay:
-    `<div>My settings for my chart component
+    `<div>My settings for my Sparkline component
       <input id="title" type="text"></input>
       <div><span>Color: </span><input id="color" type="text"></input></div>
     </div>`,

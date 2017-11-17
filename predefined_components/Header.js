@@ -6,7 +6,7 @@ return {
   `<div style="position: absolute; top: 1.5rem;">
     <h1 id="texttodisplay"></h1>
   </div>`,
-  preview: `<img style="height:100%; width:100%;" src="https://placehold.it/200x100"></img>`,
+  preview: `<img style="height:100%; width:100%;" src="/header.png"></img>`,
   data: {},
   dataSources: [],
   dataSinks: [],

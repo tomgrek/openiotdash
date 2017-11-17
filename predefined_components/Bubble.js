@@ -5,7 +5,7 @@ return {
   content:
   `<div class="bubble" style="position: absolute; top: 1.5rem; width: calc(100% - 0.5px); height: calc(100% - calc(1.5rem + 0.5px));">
   </div>`,
-  preview: `<img style="height:100%; width:100%;" src="https://upload.wikimedia.org/wikipedia/commons/1/10/Bubble_shot_%282443185091%29.jpg"></img>`,
+  preview: `<img style="height:100%; width:100%;" src="/bubbles.png"></img>`,
   data: {},
   dataSources: [
   ],

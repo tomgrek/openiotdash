@@ -6,7 +6,7 @@ return {
   `<div id="map" style="position: absolute; top: 1.5rem; width: calc(100% - 0.5px); height: calc(100% - calc(1.5rem + 0.5px));">
 
   </div>`,
-  preview: `<img style="height:100%; width:100%;" src="https://www.mapbox.com/help/img/ios/switch/4-location-mapbox.jpg"></img>`,
+  preview: `<img style="height:100%; width:100%;" src="/mapcomponent.png"></img>`,
   data: {},
   dataSources: [
   ],
@@ -56,7 +56,7 @@ return {
                 });
                 if (this.map.getSource('points'+key)) this.map.removeSource('points'+key);
                 if (this.map.getLayer('points'+key)) this.map.removeLayer('points'+key);
-                
+
                 this.map.addLayer({
                   id: 'points'+key,
                   type: 'symbol',
