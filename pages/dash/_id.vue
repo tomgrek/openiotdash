@@ -218,8 +218,15 @@ export default {
     };
   },
   head() {
+    if (!this.dashboard) {
+      // this is only needed because presently nuxt doesn't re-call asyncData to load the
+      // dashboard object when webpack does a hot push. And maybe there's a bug in Vue because
+      // it's impossible to try/catch/prevent.
+      location.reload();
+    }
+    if (this.dashboard && this.dashboard.title) return { title: this.dashboard.title };
     return {
-      title: this.dashboard ? this.dashboard.title : '',
+      title: '',
     };
   },
   mounted() {
