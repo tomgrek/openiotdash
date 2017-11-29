@@ -52,9 +52,16 @@
           </tr>
         </tbody>
       </table>
+      <div class="dashboards-header">
+        <span class="dashboards-title">My Authorized Devices</span>
+        <button class="small-button new-button" v-on:click="newDatasink">New</button>
+        <button class="small-button delete-button" v-on:click="deleteDatasink">Delete</button>
+      </div>
+      <table class="datasinks-list">
+      </table>
     </div>
-      <div><nuxt-link v-if="username === null" to="/login">Log In</nuxt-link></div>
-      <div><nuxt-link v-if="username === null" to="/signup">Create An Account</nuxt-link></div>
+    <div><nuxt-link v-if="username === null" to="/login">Log In</nuxt-link></div>
+    <div><nuxt-link v-if="username === null" to="/signup">Create An Account</nuxt-link></div>
     </div>
     <ModalCodeEdit v-if="codeEditWindowVisible" :sink="selectedSink" @close="dismissModals"/>
     <ModalRename v-if="renameWindowVisible" :setTitleFn="renameDatasink" :currentTitle="selectedSink.title" @close="dismissModals"/>
