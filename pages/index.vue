@@ -87,6 +87,7 @@
     <ModalCodeEdit v-if="codeEditWindowVisible" :sink="selectedSink" @close="dismissModals"/>
     <ModalRename v-if="renameWindowVisible" :setTitleFn="renameDatasink" :currentTitle="selectedSink.title" @close="dismissModals"/>
     <ModalSchemaEdit v-if="schemaWindowVisible" :sink="selectedSink" @close="dismissModals"/>
+    <ModalNewDevice v-if="newDeviceWindowVisible" @close="dismissModals"/>
   </section>
 </template>
 
@@ -99,6 +100,7 @@ import MyHeader from '~/components/Header.vue';
 import ModalCodeEdit from '~/components/modal_codeedit.vue';
 import ModalRename from '~/components/modal_rename.vue';
 import ModalSchemaEdit from '~/components/modal_schemaedit.vue';
+import ModalNewDevice from '~/components/modal_newdevice';
 
 export default {
   name: 'index',
@@ -108,6 +110,7 @@ export default {
     ModalCodeEdit,
     ModalRename,
     ModalSchemaEdit,
+    ModalNewDevice,
   },
   data() {
     return {
@@ -119,6 +122,7 @@ export default {
       codeEditWindowVisible: false,
       renameWindowVisible: false,
       schemaWindowVisible: false,
+      newDeviceWindowVisible: false,
     };
   },
   async asyncData(context) {
@@ -181,6 +185,7 @@ export default {
       this.codeEditWindowVisible = false;
       this.renameWindowVisible = false;
       this.schemaWindowVisible = false;
+      this.newDeviceWindowVisible = false;
     },
     showCodeEditWindow(sink) {
       this.selectedSink = sink;
@@ -193,6 +198,9 @@ export default {
     showSchemaWindow(sink) {
       this.selectedSink = sink;
       this.schemaWindowVisible = true;
+    },
+    showNewDeviceWindow() {
+      this.newDeviceWindowVisible = true;
     },
     toggleSinkVisibility(sink) {
       this.$store.commit('toggleSinkVisibility', sink.id);
@@ -227,13 +235,8 @@ export default {
       if (visibility === 0) return '[Not publicly visible]'
       return baseUrl + '/show/' + link;
     },
-    async newDevice(e) {
-      // TODO: need a way to provision many devices at once, maybe download certs/keys as a csv.
-      let body = JSON.stringify({
-        title: 'new device',
-      });
-      let resp = await fetch('/api/devices/create', { credentials: 'include', method: 'POST', body, headers: {'Content-Type': 'application/json'} }).then(r => r.json());
-      this.$store.commit('addDevice', resp.device);
+    newDevice(e) {
+      this.newDeviceWindowVisible = true;
     },
     deleteDevice(e) {
     },
