@@ -8,6 +8,7 @@
       <div v-if="username !== null">
         <div class="dashboards-header">
           <span class="dashboards-title">My Dashboards</span>
+          <i class="material-icons inline" title="Dashboards provide a canvas to visualize and control data.">info_outline</i>
           <button class="small-button new-button" v-on:click="newDashboard">New</button>
           <button class="small-button delete-button" v-on:click="deleteDashboard">Delete</button>
         </div>
@@ -23,6 +24,7 @@
       </div>
       <div class="dashboards-header">
         <span class="dashboards-title">My Datasinks</span>
+        <i class="material-icons inline" title="Datasinks provide endpoints to send data to.">info_outline</i>
         <button class="small-button new-button" v-on:click="newDatasink">New</button>
         <button class="small-button delete-button" v-on:click="deleteDatasink">Delete</button>
       </div>
@@ -53,9 +55,10 @@
         </tbody>
       </table>
       <div class="dashboards-header">
-        <span class="dashboards-title">My Authorized Devices</span>
-        <button class="small-button new-button" v-on:click="newDatasink">New</button>
-        <button class="small-button delete-button" v-on:click="deleteDatasink">Delete</button>
+        <span class="dashboards-title">My Authorized Devices
+        <i class="material-icons inline" title="You can set datasinks to only accept writes from authorized devices that possess a secret x.509 key uniquely identifying them.">info_outline</i></span>
+        <button class="small-button new-button" v-on:click="newDevice">New</button>
+        <button class="small-button delete-button" v-on:click="deleteDevice">Delete</button>
       </div>
       <table class="datasinks-list">
       </table>
@@ -81,7 +84,7 @@ import ModalSchemaEdit from '~/components/modal_schemaedit.vue';
 
 export default {
   name: 'index',
-  middleware: ['authentication', 'dashboards', 'datasinks'],
+  middleware: ['authentication', 'dashboards', 'datasinks', 'devices'],
   components: {
     MyHeader,
     ModalCodeEdit,
@@ -115,6 +118,9 @@ export default {
     },
     datasinks() {
       return this.$store.state.datasinks;
+    },
+    devices() {
+      return this.$store.state.devices;
     },
   },
   watch: {
@@ -199,7 +205,15 @@ export default {
       if (visibility === 0) return '[Not publicly visible]'
       return baseUrl + '/show/' + link;
     },
+    async newDevice(e) {
+      // TODO: need a way to provision many devices at once, maybe download certs/keys as a csv.
+      let resp = await fetch('/api/devices/create', { credentials: 'include' }).then(r => r.json());
+      console.log(resp);
+    },
+    deleteDevice(e) {
+    },
     newDatasink(e) {
+      // TODO
     },
     deleteDatasink(e) {
       let toDelete = this.listOfSinkCheckboxes.reduce((acc, x, i) => {
@@ -354,5 +368,12 @@ export default {
     padding: 0 1rem;
     position: relative;
   }
+}
+.material-icons.inline {
+  top: 0.45rem;
+  left: 1rem;
+  position: relative;
+  color: gray;
+  cursor: help;
 }
 </style>

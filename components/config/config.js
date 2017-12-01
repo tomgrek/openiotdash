@@ -25,4 +25,15 @@ module.exports = {
     useKafka: true, // publish to Kafka on datapoint writes
     kafkaToMQTTTopics: [], // e.g. ['MYTOPIC']
   },
+  certOptions: {
+    // if you want to issue x509 certificates to devices, you can change these defaults for the cert.
+    issuer: {
+      commonName: 'Open IoT Project',
+      orgName: 'Open IoT Project',
+      shortName: 'My Open IoT Organizational Unit',
+      locality: 'Bay Area',
+      stateName: 'California',
+    },
+    monthsValid: 12, // months up to maximum 39
+  },
 };

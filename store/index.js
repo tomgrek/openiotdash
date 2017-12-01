@@ -4,6 +4,7 @@ export const state = () => ({
   authUser: null,
   dashboards: null,
   datasinks: null,
+  devices: null,
   selectedDashboard: null,
   alerts: [],
 });
