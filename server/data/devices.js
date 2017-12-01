@@ -7,6 +7,7 @@ router.get('/devices/:user', (req, res, next) => {
   Device.findAll({
     attributes: [
       'id',
+      'title',
       'cert',
       'privateKey', // TODO should not store the private key
       'publicKey',
@@ -17,7 +18,7 @@ router.get('/devices/:user', (req, res, next) => {
       user: req.params.user,
     },
   }).then(devices => {
-    res.json({ devices });
+    res.json(devices);
   });
 });
 

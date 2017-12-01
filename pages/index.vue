@@ -61,6 +61,24 @@
         <button class="small-button delete-button" v-on:click="deleteDevice">Delete</button>
       </div>
       <table class="datasinks-list">
+        <thead>
+          <tr>
+            <th></th>
+            <th>Title</th>
+            <th>Public Key</th>
+            <th>Authorized On</th>
+            <th>Expires</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="sink-row" v-for="device, i in devices">
+            <td class="sink-cell"><input type="checkbox" v-model="listOfDeviceCheckboxes[i]"></input></td>
+            <td class="sink-cell">{{device.title}}</td>
+            <td class="sink-cell" :title="device.publicKey">... {{device.publicKey.slice(-45,-36)}}</td>
+            <td class="sink-cell">{{formatTime(device.from)}}</td>
+            <td class="sink-cell">{{formatTime(device.to)}}</td>
+          </tr>
+        </tbody>
       </table>
     </div>
     <div><nuxt-link v-if="username === null" to="/login">Log In</nuxt-link></div>
@@ -95,6 +113,7 @@ export default {
     return {
       listOfCheckboxes: [],
       listOfSinkCheckboxes: [],
+      listOfDeviceCheckboxes: [],
       indexOptions,
       selectedSink: null,
       codeEditWindowVisible: false,
@@ -131,6 +150,9 @@ export default {
   mounted() {
     this.listOfCheckboxes = this.dashboards.map(x => false);
     this.listOfSinkCheckboxes = this.datasinks.map(x => false);
+    if (this.devices.length) {
+      this.listOfDeviceCheckboxes = this.devices.map(x => false);
+    }
   },
   methods: {
     renameDatasink(newName) {
@@ -208,7 +230,7 @@ export default {
     async newDevice(e) {
       // TODO: need a way to provision many devices at once, maybe download certs/keys as a csv.
       let resp = await fetch('/api/devices/create', { credentials: 'include' }).then(r => r.json());
-      console.log(resp);
+      this.$store.commit('addDevice', resp.device);
     },
     deleteDevice(e) {
     },

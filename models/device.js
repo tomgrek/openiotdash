@@ -9,6 +9,9 @@ const Device = sql.define('device', {
   user: {
     type: Sequelize.INTEGER,
   },
+  title: {
+    type: Sequelize.STRING,
+  },
   cert: {
     type: Sequelize.TEXT,
   },

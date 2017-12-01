@@ -37,13 +37,19 @@ export const mutations = {
     state.selectedDashboard = dashboard;
   },
   deleteDatasink: (state, id) => {
-    state.datasinks = state.datasinks.filter(x => x.id != id);
+    state.datasinks = state.datasinks.filter(x => x.id != id); // TODO WHY NOT TYPESAFE CHECKING?
   },
   addNewDatasink: (state, datasink) => {
     state.datasinks.push(datasink);
   },
   renameDatasink: (state, {datasinkId, title}) => {
     state.datasinks.filter(x => x.id == datasinkId)[0].title = title;
+  },
+  deleteDevice: (state, id) => {
+    state.devices = state.devices.filter(x => x.id !== id);
+  },
+  addDevice: (state, device) => {
+    state.devices.push(device);
   },
   toggleSinkVisibility: (state, datasinkId) => {
     let sink = state.datasinks.filter(x => x.id == datasinkId)[0];
