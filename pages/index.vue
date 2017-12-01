@@ -229,7 +229,10 @@ export default {
     },
     async newDevice(e) {
       // TODO: need a way to provision many devices at once, maybe download certs/keys as a csv.
-      let resp = await fetch('/api/devices/create', { credentials: 'include' }).then(r => r.json());
+      let body = JSON.stringify({
+        title: 'new device',
+      });
+      let resp = await fetch('/api/devices/create', { credentials: 'include', method: 'POST', body, headers: {'Content-Type': 'application/json'} }).then(r => r.json());
       this.$store.commit('addDevice', resp.device);
     },
     deleteDevice(e) {

@@ -7,7 +7,7 @@ const certgen = require('self-cert');
 
 var router = Router();
 
-router.get('/devices/create', async (req, res, next) => {
+router.post('/devices/create', async (req, res, next) => {
   let now = new Date();
   let to = new Date(now);
   to = new Date(to.setMonth(to.getMonth() + certOptions.monthsValid));
@@ -17,7 +17,7 @@ router.get('/devices/create', async (req, res, next) => {
   });
   let d = await Device.create({
     user: req.user.id,
-    title: 'new device',
+    title: req.body.title,
     cert: certificate.certificate,
     publicKey: certificate.publicKey,
     privateKey: certificate.privateKey,
